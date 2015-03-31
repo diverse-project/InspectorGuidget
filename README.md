@@ -1,7 +1,69 @@
 # InspectorGuidget
 A tool to find blob listeners in Java code
 
-## Examples of Blob Listener in other GUI toolkits
+## Examples of Blob Listeners GUI toolkits
+
+### Swing
+
+```java
+public class MenuListener implements ActionListener, CaretListener {
+ //...
+ protected boolean selectedText;
+
+@Override public void actionPerformed(ActionEvent e) {
+  Object src = e.getSource();
+  if(src instanceof JMenuItem || src instanceof JButton){
+		 String cmd = e.getActionCommand();
+		 if(cmd.equals("Copy")){
+			 if(selectedText)
+				 output.copy();
+		 }else if(cmd.equals("Cut")){
+			  output.cut();
+		 }else if(cmd.equals("Paste")){
+			 output.paste();
+		 }
+		 // etc.
+		}
+  }
+  @Override public void caretUpdate(CaretEvent e){
+   	selectedText = e.getDot() != e.getMark();
+   	updateStateOfMenus(selectedText);	
+ }
+}
+```
+
+```java
+public void actionPerformed(ActionEvent event) {
+   if(event.getSource() == view.moveDown) {
+      //...
+   } else if(event.getSource() == view.moveLeft) {
+      //...
+   } else if(event.getSource() == view.moveRight) {
+      //...
+   } else if(event.getSource() == view.moveUp) {
+      //...
+   } else if(event.getSource() == view.zoomIn) {
+      //...
+   } else if(event.getSource() == view.zoomOut) {
+      //...
+   }
+}
+```
+
+```java
+public void actionPerformed(ActionEvent evt) {
+   Object target = evt.getSource();
+   if (target instanceof JButton) {
+      //...
+   } else if (target instanceof JTextField) {
+      //...
+   } else if (target instanceof JCheckBox) {
+      //...
+   } else if (target instanceof JComboBox) {
+      //...
+   }
+}
+```
 
 ### SWT
 
