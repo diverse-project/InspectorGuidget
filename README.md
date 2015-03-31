@@ -1,11 +1,11 @@
 # InspectorGuidget
 A tool to find blob listeners in Java code
 
-# Examples of Blob Listener in other GUI toolkits
+## Examples of Blob Listener in other GUI toolkits
 
-## SWT
+### SWT
 
-```
+```java
 public class SelectionEventListener extends AbstractListener implements Listener {
 	private int selectMethod;
 	
@@ -72,10 +72,10 @@ public class SelectionEventListener extends AbstractListener implements Listener
 		}
         ...
 ```
-[https://github.com/beccsi/delias/blob/a58df6ef45328d6b1495c424293e776a02e33e48/de.mobis.delias/src/org/teamweaver/delias/commons/SelectionEventListener.java](source)
-[examples/delias-a58df6ef45328d6b1495c424293e776a02e33e48.zip](cache)
+[source](https://github.com/beccsi/delias/blob/a58df6ef45328d6b1495c424293e776a02e33e48/de.mobis.delias/src/org/teamweaver/delias/commons/SelectionEventListener.java)
+[cache](examples/delias-a58df6ef45328d6b1495c424293e776a02e33e48.zip)
 
-```
+```java
     @Override
     public void handleEvent(Event event) {
         if (!(event.widget instanceof Button)){
@@ -90,12 +90,12 @@ public class SelectionEventListener extends AbstractListener implements Listener
     }
 ```
 
-[https://github.com/Unidata/awips2/blob/c9f28fd5943170b88cac2e3af3b0234ac444b705/cave/com.raytheon.uf.viz.collaboration.ui/src/com/raytheon/uf/viz/collaboration/ui/login/ServerListListener.java](source)
-[examples/awips2-upc_14.4.1.zip](cache)
+[source](https://github.com/Unidata/awips2/blob/c9f28fd5943170b88cac2e3af3b0234ac444b705/cave/com.raytheon.uf.viz.collaboration.ui/src/com/raytheon/uf/viz/collaboration/ui/login/ServerListListener.java)
+[cache](examples/awips2-upc_14.4.1.zip)
 
-## GWT
+### GWT
 
-```
+```java
 	@Override
 	public void onClick(ClickEvent event) {
 		if (event.getSource() == clearDatastoreButton) {
@@ -116,6 +116,6 @@ public class SelectionEventListener extends AbstractListener implements Listener
 	}
 ```
 
-[https://github.com/zackriegman/ConceptMapper/blob/12ac53b27950e0b1c12dc803e57c355c675f4905/src/org/argmap/client/ModeAdmin.java](source)
-[examples/ConceptMapper-12ac53b27950e0b1c12dc803e57c355c675f4905.zip](cache)
+[source](https://github.com/zackriegman/ConceptMapper/blob/12ac53b27950e0b1c12dc803e57c355c675f4905/src/org/argmap/client/ModeAdmin.java)
+[cache](examples/ConceptMapper-12ac53b27950e0b1c12dc803e57c355c675f4905.zip)
 
