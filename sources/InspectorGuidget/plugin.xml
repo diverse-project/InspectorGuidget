@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IProject"
+            id="InspectorGuidget.contribution1">
+         <menu
+               label="InspectorGuidget"
+               path="additions"
+               id="InspectorGuidget.menu1">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Detect GUI listeners"
+               class="inspectorguidgetplugin.popup.actions.GUIListeners"
+               menubarPath="InspectorGuidget.menu1/group1"
+               enablesFor="1"
+               id="InspectorGuidget.GUIListeners">
+         </action>
+         <action
+               label="Detect Conditional GUI Listeners"
+               class="inspectorguidgetplugin.popup.actions.CondListeners"
+               menubarPath="InspectorGuidget.menu1/group1"
+               enablesFor="1"
+               id="InspectorGuidget.CondListeners">
+         </action>
+         <action
+               label="Detect GUI commands"
+               class="inspectorguidgetplugin.popup.actions.GUICommands"
+               menubarPath="InspectorGuidget.menu1/group1"
+               enablesFor="1"
+               id="InspectorGuidget.GUICommands">
+         </action>
+         <action
+               label="Detect Blob listeners"
+               class="inspectorguidgetplugin.popup.actions.BlobListeners"
+               menubarPath="InspectorGuidget.menu1/group1"
+               enablesFor="1"
+               id="InspectorGuidget.BlobListeners">
+         </action>
+         <!--<action
+               label="Find BlobListeners2"
+               class="inspectorguidgetplugin.popup.actions.BlobListener2"
+               menubarPath="InspectorGuidget.menu1/group1"
+               enablesFor="1"
+               id="InspectorGuidget.BlobListener2">
+         </action>      
+         <menu
+               label="Test"
+               path="InspectorGuidget.menu1/group2"
+               id="subMenu">
+            <separator
+                  name="group2">
+            </separator>
+         </menu>-->
+       	<!--  <action
+               label="CommandsNotSelected"
+               class="inspectorguidgetplugin.popup.test.CommandsNotSelected"
+               menubarPath="InspectorGuidget.menu1/subMenu/group2"
+               enablesFor="1"
+               id="InspectorGuidget.CommandsNotSelected">
+         </action>-->
+          
+      </objectContribution>
+   </extension>
+   
+   <extension
+      point="org.eclipse.ui.views">
+      <category
+            name="InspectorGuidget"
+            id="ListenerView">
+      </category>
+      <view
+            name="GUI Listeners view"
+            icon="icons/sample.gif"
+            category="ListenerView"
+            class="views.ListenerView"
+            id="views.ListenerView">
+      </view>
+      <view
+            name="Cond GUI listeners view"
+            icon="icons/sample.gif"
+            category="ListenerView"
+            class="views.CondListenerView"
+            id="views.CondListenerView">
+      </view>
+      <view
+            name="GUI Command view"
+            icon="icons/sample.gif"
+            category="ListenerView"
+            class="views.CommandView"
+            id="views.CommandView">
+      </view>
+      <view
+            name="Blob listeners view"
+            icon="icons/sample.gif"
+            category="ListenerView"
+            class="views.BlobListenerView"
+            id="views.BlobListenerView">
+      </view>
+      <!-- <view
+            name="Blob listeners2 view"
+            icon="icons/sample.gif"
+            category="ListenerView"
+            class="views.BlobListener2View"
+            id="views.BlobListener2View">
+      </view>-->  
+   </extension>
+   
+   <extension
+      point = "org.eclipse.ui.preferencePages">
+       <page 
+       		id="InspectorGuidget.preferences"
+	    	class="inspectorguidgetplugin.preferences.PreferencePage"
+            name="InspectorGuidget">
+       </page>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="inspectorguidgetplugin.preferences.PreferenceInit">
+      </initializer>
+   </extension>
+    
+</plugin>
