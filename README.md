@@ -17,6 +17,10 @@ To run InspectorGuidget:
   6. Left click on each result will open the corresponding piece of code.
   7. (Optional) To store the results (e.g., detected GUI listeners, blob listeners) check each one in that view, this will create a txt file in that path.
 
+## Data
+
+The analysed Java project can be provided on demand (too big to be put on a server).<br/>
+The data extracted from these projects are provided in the 'data' folder of the repository.
 
 ## Examples of Blob Listeners GUI toolkits
 
