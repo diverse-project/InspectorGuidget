@@ -187,6 +187,10 @@ public class CfgBuilder {
 		List<CtStatement> update = forLoop.getForUpdate();
 		CtExpression<Boolean> condition = forLoop.getExpression();
 		CtUnaryOperator<Boolean> negCondition = factory.Core().createUnaryOperator();
+		
+		if(condition==null)// null condition in the loop... eg for(;;)
+			return new SubGraph(cfg);
+			
 		negCondition.setOperand(condition);
 		negCondition.setKind(UnaryOperatorKind.NOT);
 		// negCondition.setParent(condition);
