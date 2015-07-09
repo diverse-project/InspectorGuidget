@@ -45,7 +45,7 @@ public class GUIListeners extends AbstractAction {
 		infoMapping = new HashMap<IMarker, CtMethod>();
 		
 		String projectName = project.getName();
-		IJavaProject jProject = JavaCore.create(project);
+//		IJavaProject jProject = JavaCore.create(project);
 		
 		try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("views.ListenerView");
@@ -73,7 +73,7 @@ public class GUIListeners extends AbstractAction {
 			
 				infoMapping.put(m, method); //store mapping
 				
-				ListenerView.getSingleton().addMarker(m); //update the view
+				ListenerView.addMarker(m); //update the view
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -83,9 +83,9 @@ public class GUIListeners extends AbstractAction {
 
 
 	@Override
-	protected List<AbstractProcessor> buildProcessors(){
+	protected List<AbstractProcessor<?>> buildProcessors(){
 		listeners = new ListenersWrapper();
-		List<AbstractProcessor> processors = new ArrayList<AbstractProcessor>();
+		List<AbstractProcessor<?>> processors = new ArrayList<>();
 		processors.add(new SimpleListenerProcessor(listeners));
 		return processors;
 	}

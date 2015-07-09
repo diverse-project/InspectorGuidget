@@ -1,11 +1,15 @@
 package inspectorguidget.analyser;
+import java.awt.Component;
 import java.util.ArrayList;
-
+import java.util.EventListener;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
+
+import javax.swing.JComponent;
+
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtLiteral;
-import spoon.reflect.declaration.CtSimpleType;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtArrayTypeReference;
@@ -17,13 +21,13 @@ import spoon.reflect.reference.CtTypeReference;
  * the method calls of listener registrations
  */
 public class ListenerType {
-	CtTypeReference awtComponentRef;
-	CtTypeReference swingComponentRef;
-	CtTypeReference eventListenerRef;
-	CtTypeReference eventRef;
-	List<CtTypeReference> swingListeners;
-	List<CtTypeReference> awtListeners;
-	List<CtTypeReference> adapterListeners;
+	CtTypeReference<Component> awtComponentRef;
+	CtTypeReference<JComponent> swingComponentRef;
+	CtTypeReference<EventListener> eventListenerRef;
+	CtTypeReference<EventObject> eventRef;
+	List<CtTypeReference<?>> swingListeners;
+	List<CtTypeReference<?>> awtListeners;
+	List<CtTypeReference<?>> adapterListeners;
 	List<String> registers;
 	Factory fac;
 	public ListenerType(Factory factory){
@@ -143,8 +147,8 @@ public class ListenerType {
         //registers.addLabeledSpinner("addLabeledSpinner");
 	}
 	
-	public boolean isComponent(CtTypeReference comp){	
-		CtTypeReference type = getTypeReference(comp);
+	public boolean isComponent(CtTypeReference<?> comp){	
+		CtTypeReference<?> type = getTypeReference(comp);
 		if (type != null){
 			if (type.isSubtypeOf(awtComponentRef)){
 				return true;
@@ -156,9 +160,9 @@ public class ListenerType {
 		return false;
 	}
 
-	public boolean isEventRef(CtTypeReference event){			
-		CtTypeReference type = getTypeReference(event);
-		//System.out.println(type);//JabRef is crashing here: javax.swing.JDialog.KeystrokeTable
+	public boolean isEventRef(CtTypeReference<?> event){			
+		CtTypeReference<?> type = getTypeReference(event);
+		System.out.println(type + " " + event.getQualifiedName());//JabRef is crashing here: javax.swing.JDialog.KeystrokeTable
 		if (type != null){
 			if (type.isSubtypeOf(eventRef)){
 				return true;
@@ -171,9 +175,9 @@ public class ListenerType {
 	}
 	
 	
-	public boolean containsEventRef(Set<CtVariable> vars){
+	public boolean containsEventRef(Set<CtVariable<?>> vars){
 		
-		for (CtVariable var : vars){
+		for (CtVariable<?> var : vars){
 			
 			if (var.getType().isSubtypeOf(eventRef)){
 				return true;
@@ -185,9 +189,9 @@ public class ListenerType {
 		return false;
 	}
 	
-	public boolean containsComponentType(Set<CtVariable> vars){
+	public boolean containsComponentType(Set<CtVariable<?>> vars){
 			
-			for (CtVariable var : vars){
+			for (CtVariable<?> var : vars){
 				
 				if (var.getType().isSubtypeOf(awtComponentRef)){
 					return true;
@@ -199,10 +203,10 @@ public class ListenerType {
 			return false;
 	}
 	
-	public boolean isComponentRef(CtExpression expr){	
+	public boolean isComponentRef(CtExpression<?> expr){	
 		//CtTypeReference type2 = expr.getType();
-		CtTypeReference typeRef = getExprReference(expr);
-		CtTypeReference type = getTypeReference(typeRef);//Check if this will be needed
+		CtTypeReference<?> typeRef = getExprReference(expr);
+//		CtTypeReference<?> type = getTypeReference(typeRef);//Check if this will be needed
 		if (typeRef != null){
 			
 			if (typeRef.isSubtypeOf(awtComponentRef)){
@@ -216,11 +220,11 @@ public class ListenerType {
 		return false;
 	}
 	
-	private CtTypeReference getExprReference(CtExpression expr) {	
+	private CtTypeReference<?> getExprReference(CtExpression<?> expr) {	
 		if (expr instanceof CtLiteral){
-			CtLiteral literal = (CtLiteral) expr;
+			CtLiteral<?> literal = (CtLiteral<?>) expr;
 			if (literal.getValue() instanceof CtTypeReference){//Workaround for exprs such as -1
-				CtTypeReference type = (CtTypeReference) literal.getValue();
+				CtTypeReference<?> type = (CtTypeReference<?>) literal.getValue();
 				if (type.getDeclaration() != null){
 					return type.getDeclaration().getReference();
 				}
@@ -238,19 +242,19 @@ public class ListenerType {
 	/*
 	 * Get the correctly type when a type is array: class[]
 	 */
-	public CtTypeReference getTypeReference (CtTypeReference type){
+	public CtTypeReference<?> getTypeReference (CtTypeReference<?> type){
 		if (type instanceof CtArrayTypeReference){
-			CtArrayTypeReference arrayType = (CtArrayTypeReference) type;
+			CtArrayTypeReference<?> arrayType = (CtArrayTypeReference<?>) type;
 			return arrayType.getComponentType();
 		}
 		return type;
 	}
 
-	public List<CtTypeReference> getSwingListenersRef(){
+	public List<CtTypeReference<?>> getSwingListenersRef(){
 		return swingListeners;
 	}
 	
-	public List<CtTypeReference> getAWTListenersRef(){
+	public List<CtTypeReference<?>> getAWTListenersRef(){
 		return awtListeners;
 	}
 	
@@ -265,16 +269,16 @@ public class ListenerType {
 		return false;
 	}
 	
-	/**
-	 * Return true if the declaration of the type is in the analyzed source code
-	 */
-	private boolean isDeclaredInsourceCode(CtTypeReference type){
-		if(type != null) {
-			CtSimpleType dec = type.getDeclaration();
-			if (dec != null){
-				return true;
-			}	
-		}
-		return false;
-	}
+//	/**
+//	 * Return true if the declaration of the type is in the analyzed source code
+//	 */
+//	private boolean isDeclaredInsourceCode(CtTypeReference<?> type){
+//		if(type != null) {
+//			CtType<?> dec = type.getDeclaration();
+//			if (dec != null){
+//				return true;
+//			}	
+//		}
+//		return false;
+//	}
 }

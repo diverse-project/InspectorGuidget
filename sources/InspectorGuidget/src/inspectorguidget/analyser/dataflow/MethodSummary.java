@@ -1,13 +1,13 @@
 package inspectorguidget.analyser.dataflow;
 
-import java.util.ArrayList;
+import inspectorguidget.analyser.cfg.BasicBlock;
+import inspectorguidget.analyser.cfg.ControlFlowGraph;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import inspectorguidget.analyser.cfg.BasicBlock;
-import inspectorguidget.analyser.cfg.ControlFlowGraph;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtCodeElement;
@@ -69,42 +69,42 @@ public class MethodSummary {
 		return res;
 	}
 	
-	/**
-	 * Find conditions from beginning of the control flow to the action's block
-	 */
-	private List<CtExpression> gatherFlowConditions(CtCodeElement action){ //TODO: can have multi-paths
-		
-		//Find an execution path that contains action
-		List<List<BasicBlock>> paths = cfg.getExecutionPaths(); //TODO: compute exec paths once for all actions
-		List<BasicBlock> candidatePath = null;
-		BasicBlock containerBlock = null;
-		for(List<BasicBlock> path : paths){
-			containerBlock = getContainingBlock(action, path);
-			if(containerBlock != null){
-				candidatePath = path;
-				break;
-			}
-		}
-		
-		//Gather condition to the action's block
-		List<CtExpression> res = new ArrayList<CtExpression>();
-		if(candidatePath != null){
-			BasicBlock current = candidatePath.get(0);
-			for(int i = 1; i < candidatePath.size(); i++){
-				BasicBlock next = candidatePath.get(i);
-				res.add(current.getCondition(next));
-				
-				if(next == containerBlock){
-					break;
-				}
-				else{
-					current = next;
-				}
-			}
-		}
-		
-		return res;
-	}
+//	/**
+//	 * Find conditions from beginning of the control flow to the action's block
+//	 */
+//	private List<CtExpression> gatherFlowConditions(CtCodeElement action){ //TODO: can have multi-paths
+//		
+//		//Find an execution path that contains action
+//		List<List<BasicBlock>> paths = cfg.getExecutionPaths(); //TODO: compute exec paths once for all actions
+//		List<BasicBlock> candidatePath = null;
+//		BasicBlock containerBlock = null;
+//		for(List<BasicBlock> path : paths){
+//			containerBlock = getContainingBlock(action, path);
+//			if(containerBlock != null){
+//				candidatePath = path;
+//				break;
+//			}
+//		}
+//		
+//		//Gather condition to the action's block
+//		List<CtExpression> res = new ArrayList<CtExpression>();
+//		if(candidatePath != null){
+//			BasicBlock current = candidatePath.get(0);
+//			for(int i = 1; i < candidatePath.size(); i++){
+//				BasicBlock next = candidatePath.get(i);
+//				res.add(current.getCondition(next));
+//				
+//				if(next == containerBlock){
+//					break;
+//				}
+//				else{
+//					current = next;
+//				}
+//			}
+//		}
+//		
+//		return res;
+//	}
 	
 	/**
 	 * Get expression from the containment hierarchy of the action
@@ -209,7 +209,7 @@ public class MethodSummary {
 		}
 		
 		for(CtExpression cond : action.getConditions()){
-			List<CtVariableAccess> usedVars = defuse.findUsedVar(cond);
+			List<CtVariableAccess<?>> usedVars = defuse.findUsedVar(cond);
 			for(CtVariableAccess usedVar : usedVars){
 				
 //				if(field != null && field == usedVar.getVariable().getDeclaration()){
@@ -217,7 +217,7 @@ public class MethodSummary {
 //					if(lastDef == null) return true;
 //				}
 				
-				Set<CtVariable> allDep = defuse.getDeepDef(usedVar);
+				Set<CtVariable<?>> allDep = defuse.getDeepDef(usedVar);
 				if(field != null && allDep.contains(field)) return true;
 			}
 		}

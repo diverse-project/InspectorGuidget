@@ -1,17 +1,13 @@
 package inspectorguidget.analyser.cfg;
 
+import inspectorguidget.analyser.processor.SimpleListenerProcessor;
+import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
+
 import java.io.BufferedWriter;
-
-
-
-
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import inspectorguidget.analyser.processor.SimpleListenerProcessor;
-import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
 
 import spoon.compiler.SpoonCompiler;
 import spoon.processing.AbstractProcessor;
@@ -46,7 +42,7 @@ public class ControlFlowGraph {
 	/**
 	 * Source of the control flow graph
 	 */
-	CtExecutable method;
+	CtExecutable<?> method;
 	
 	/**
 	 * Create a control flow graph from this method
@@ -119,7 +115,7 @@ public class ControlFlowGraph {
 	/**
 	 * Get the source of this control flow graph
 	 */
-	public CtExecutable getExecutable(){
+	public CtExecutable<?> getExecutable(){
 		return method;
 	}
 	
@@ -142,14 +138,13 @@ public class ControlFlowGraph {
 		try {
 //			System.out.println("Loading...");
 			
-			final String outFolder = "dot/";
+//			final String outFolder = "dot/";
 			
 			//Locate source files
 			final String sourceFolder = "src/test/";
 			
 			//Setup the factory
 			StandardEnvironment env = new StandardEnvironment();
-			env.useSourceCodeFragments(true);
 			DefaultCoreFactory f = new DefaultCoreFactory();
 	        final Factory factory = new FactoryImpl(f, env);
 	        CfgBuilder.factory = factory;
@@ -172,23 +167,23 @@ public class ControlFlowGraph {
 //				}
 //			}
 			
-			final ArrayList<CtType> allClasses = new ArrayList<CtType>();
-			final ArrayList<CtClass> allClasses2 = new ArrayList<CtClass>();
+			final ArrayList<CtType<?>> allClasses = new ArrayList<>();
+			final ArrayList<CtClass<?>> allClasses2 = new ArrayList<>();
 			
 			env.setInputClassLoader(ClassLoader.getSystemClassLoader());
 			ProcessingManager processorManager = new QueueProcessingManager(factory);
-			processorManager.addProcessor(new AbstractProcessor<CtClass>() {
+			processorManager.addProcessor(new AbstractProcessor<CtClass<?>>() {
 
 				@Override
-				public void process(CtClass clazz) {
+				public void process(CtClass<?> clazz) {
 					allClasses.add(clazz);
 					allClasses2.add(clazz);
 				}
 			});
-			processorManager.addProcessor(new AbstractProcessor<CtMethod>() {
+			processorManager.addProcessor(new AbstractProcessor<CtMethod<?>>() {
 
 				@Override
-				public void process(CtMethod method) {
+				public void process(CtMethod<?> method) {
 ////					SubGraph content = CfgBuilder.process(method);
 //					ControlFlowGraph cfg = new ControlFlowGraph(method);
 //					StringBuffer fileContent = new StringBuffer();
@@ -234,7 +229,7 @@ public class ControlFlowGraph {
 //			VariablesProcessor processor = new VariablesProcessor(new ListenerProcessor(config));
 //			processorManager.addProcessor(processor);
 			processorManager.process();
-			for(CtMethod listener : wrapper.getListeners()){
+			for(CtMethod<?> listener : wrapper.getListeners()){
 				System.out.println(listener.getSimpleName());
 			}
 //			Analyzer engine = new Analyzer(allClasses2);

@@ -28,7 +28,7 @@ public class BlobListener {
 		IdentityHashMap<CtMethod, List<Action>> candidatesBlob = gatherCommandsBySource(cmds);
 		IdentityHashMap<CtMethod,List<Action>> res = new IdentityHashMap<CtMethod, List<Action>>();;
 		
-		int count = 0;
+//		int count = 0;
 		for (Entry<CtMethod, List<Action>> cmds2Listener : candidatesBlob.entrySet()){
 			if (cmds2Listener.getValue().size() > 1){//There is more than one command per listener
 				//if (isBlobListener(cmds2Listener.getKey())){

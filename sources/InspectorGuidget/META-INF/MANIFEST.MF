@@ -11,6 +11,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: lib/spoon-core-4.0-SNAPSHOT-jar-with-dependencies.jar,
+Bundle-ClassPath: lib/spoon-core-4.2.0-jar-with-dependencies.jar,
  .,
  icons/

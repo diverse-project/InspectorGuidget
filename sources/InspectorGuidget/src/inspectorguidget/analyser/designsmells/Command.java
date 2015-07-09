@@ -1,15 +1,5 @@
 package inspectorguidget.analyser.designsmells;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import inspectorguidget.analyser.ComponentsAction;
 import inspectorguidget.analyser.ConditionalListeners;
 import inspectorguidget.analyser.ListenerType;
@@ -17,12 +7,21 @@ import inspectorguidget.analyser.cfg.BasicBlock;
 import inspectorguidget.analyser.cfg.CfgBuilder;
 import inspectorguidget.analyser.cfg.ControlFlowGraph;
 import inspectorguidget.analyser.cfg.SubGraph;
-import inspectorguidget.analyser.processor.ClassesProcessor;
-import inspectorguidget.analyser.processor.StatementProcessor;
+import inspectorguidget.analyser.dataflow.Action;
+import inspectorguidget.analyser.dataflow.DefUse;
+import inspectorguidget.analyser.dataflow.MethodSummary;
 import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
-import spoon.processing.ProcessingManager;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import spoon.reflect.code.CtBinaryOperator;
-import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtConditional;
@@ -33,33 +32,20 @@ import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
-import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtSwitch;
-import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.code.CtWhile;
 import spoon.reflect.code.UnaryOperatorKind;
-import spoon.reflect.cu.SourcePosition;
-import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
-import spoon.reflect.declaration.CtSimpleType;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.reference.CtArrayTypeReference;
-import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtParameterReference;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.reflect.reference.CtVariableReference;
-import spoon.support.QueueProcessingManager;
-import inspectorguidget.analyser.dataflow.Action;
-import inspectorguidget.analyser.dataflow.DefUse;
-import inspectorguidget.analyser.dataflow.MethodSummary;
 
 /*
  * This class analyse listeners with conditional blocks and 
@@ -165,7 +151,7 @@ public class Command {
 	//Looking for conditions that refer to event source and widget type
 	private List<CtExpression> looking4Conditionals(List<CtCodeElement> elements){
 	
-		List<CtExpression> res = new ArrayList<>();
+//		List<CtExpression> res = new ArrayList<>();
 		List<CtExpression> allConditions = gatherContainingCondition(elements, cfg.getExecutable());
 		List<CtExpression> condRefEvents = new ArrayList<>();	
 		
@@ -196,13 +182,13 @@ public class Command {
 	
 	//Verify if a condition refers to listener events of a method 
 	private boolean isConditionEventRef(CtExpression condition){		
-		List<CtParameter> parameters = defuse.getExecutable().getParameters();
+		List<CtParameter<?>> parameters = defuse.getExecutable().getParameters();
 		List<CtTypeReference> typesParam = new ArrayList<>();
 		for (CtParameter parameter : parameters){//get parameters'type of a method
 			typesParam.add(parameter.getType());		
 		}
 		
-		Set<CtVariable> variables = defuse.getDeepDef(condition);//TODO: improve to check firstly type of vars
+		Set<CtVariable<?>> variables = defuse.getDeepDef(condition);//TODO: improve to check firstly type of vars
 		if (!variables.isEmpty()){
 			for (CtVariable var : variables){	
 				CtTypeReference typeVar = var.getType();
@@ -228,7 +214,7 @@ public class Command {
 	private List<CtTypeReference> getDeepDef2(CtExpression condition){
 		List<CtTypeReference> res = new ArrayList<CtTypeReference>();
 		
-		List<CtVariableAccess> vars = defuse.findUsedVar(condition);
+		List<CtVariableAccess<?>> vars = defuse.findUsedVar(condition);
 		for (CtVariableAccess var : vars){	
 //			if (var.getVariable() instanceof CtFieldReference){//conds such as KeyEvent.VK_ESCAPE, where getDeepDef(var) does not found the var declaration
 //				CtFieldReference fieldRef = (CtFieldReference) var.getVariable();//FIXME

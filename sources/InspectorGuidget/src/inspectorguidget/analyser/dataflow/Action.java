@@ -68,17 +68,17 @@ public class Action {
 		return source;
 	}
 	
-	/**
-	 * Return all methods from listeners that change the values of some attributes
-	 * presents in conditions of this action
-	 */
-	private List<CtMethod> getWritingListener(){
-		return null; //TODO
-	}
-	
-	private List<CtMethod> getWritingListener(CtExpression expression){
-		return null; //TODO
-	}
+//	/**
+//	 * Return all methods from listeners that change the values of some attributes
+//	 * presents in conditions of this action
+//	 */
+//	private List<CtMethod> getWritingListener(){
+//		return null; //TODO
+//	}
+//	
+//	private List<CtMethod> getWritingListener(CtExpression expression){
+//		return null; //TODO
+//	}
 	
 	
 	

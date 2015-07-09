@@ -1,10 +1,8 @@
 package inspectorguidget.analyser.cfg;
 
-import java.util.ArrayList;
+import inspectorguidget.analyser.Pair;
 
 import java.util.List;
-
-import inspectorguidget.analyser.Pair;
 
 /**
  * This class store all solutions from a solved expression

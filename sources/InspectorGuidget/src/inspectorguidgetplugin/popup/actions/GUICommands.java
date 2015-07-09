@@ -98,9 +98,9 @@ public class GUICommands extends AbstractAction{
 
 
 	@Override
-	protected List<AbstractProcessor> buildProcessors() {
+	protected List<AbstractProcessor<?>> buildProcessors() {
 		listeners = new ListenersWrapper();
-		List<AbstractProcessor> processors = new ArrayList<AbstractProcessor>();
+		List<AbstractProcessor<?>> processors = new ArrayList<>();
 		processors.add(new SimpleListenerProcessor(listeners));
 		return processors;
 	}
@@ -113,7 +113,7 @@ public class GUICommands extends AbstractAction{
 		
 		Action cmd = infoMapping.get(marker);
 		
-		String method = cmd.getSource().getSimpleName();
+//		String method = cmd.getSource().getSimpleName();
 		
 		CtExpression cond = cmd.getConditions().get(cmd.getConditions().size()-1);
 		int line = cond.getPosition().getLine();

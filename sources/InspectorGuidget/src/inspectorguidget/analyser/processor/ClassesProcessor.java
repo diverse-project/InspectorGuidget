@@ -1,7 +1,6 @@
 package inspectorguidget.analyser.processor;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtClass;

@@ -1,9 +1,10 @@
 package inspectorguidgetplugin.popup.test;
 
+import inspectorguidget.analyser.dataflow.Action;
+import inspectorguidget.analyser.designsmells.Command;
 import inspectorguidgetplugin.popup.actions.GUICommands;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
@@ -13,11 +14,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
-import inspectorguidget.analyser.dataflow.Action;
-import inspectorguidget.analyser.designsmells.Command;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtExpression;
-import spoon.reflect.cu.SourcePosition;
 
 
 public class CommandsNotSelected extends GUICommands{	

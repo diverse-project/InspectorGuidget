@@ -1,16 +1,14 @@
 package inspectorguidget.analyser.processor;
 
 import inspectorguidget.analyser.helper.Helper;
-
+import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
