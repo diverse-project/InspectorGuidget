@@ -1,6 +1,5 @@
 package views;
 
-
 import helper.FileHelper;
 import inspectorguidgetplugin.Activator;
 import inspectorguidgetplugin.popup.actions.BlobListener2;
@@ -27,20 +26,19 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 
-
 public class BlobListener2View extends ViewPart {
-	
-	private static BlobListener2View INSTANCE;
-	
+
+	private static BlobListener2View	INSTANCE;
+
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
-	public static final String ID = "views.BlobListener2View";
-	
-	private List<IMarker> markerList = new ArrayList<>();
+	public static final String			ID			= "views.BlobListener2View";
 
-	private TableViewer viewer;
-	 
+	private List<IMarker>				markerList	= new ArrayList<>();
+
+	private TableViewer					viewer;
+
 	/**
 	 * The constructor.
 	 */
@@ -49,20 +47,20 @@ public class BlobListener2View extends ViewPart {
 	}
 
 	/**
-	 * This is a callback that will allow us
-	 * to create the viewer and initialize it.
+	 * This is a callback that will allow us to create the viewer and initialize
+	 * it.
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
 		viewer = makeTable(parent);
 	}
 
-//	private void showMessage(String message) {
-//		MessageDialog.openInformation(
-//			viewer.getControl().getShell(),
-//			"Info",
-//			message);
-//	}
+	// private void showMessage(String message) {
+	// MessageDialog.openInformation(
+	// viewer.getControl().getShell(),
+	// "Info",
+	// message);
+	// }
 
 	/**
 	 * Passing the focus request to the viewer's control.
@@ -71,93 +69,93 @@ public class BlobListener2View extends ViewPart {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-	
-	private TableViewer makeTable(Composite parent){
-		//CheckboxTableViewer tableViewer = new CheckboxTableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CHECK);
+
+	private TableViewer makeTable(Composite parent) {
+		// CheckboxTableViewer tableViewer = new CheckboxTableViewer(parent,
+		// SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CHECK);
 		CheckboxTableViewer tableViewer;
 		tableViewer = CheckboxTableViewer.newCheckList(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CHECK);
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setInput(markerList);
-		
-		tableViewer.setLabelProvider(new LabelProvider(){
+
+		tableViewer.setLabelProvider(new LabelProvider() {
 
 			@Override
 			public String getText(Object element) {
 				String label = BlobListener2.getMethod((IMarker) element);
-				if(label != null) return label;
-				
+				if (label != null)
+					return label;
+
 				return element.toString();
 			}
 		});
-		
+
 		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			
+
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				StructuredSelection selection = (StructuredSelection) event.getSelection();
 				IMarker marker = (IMarker) selection.getFirstElement();
-				if (marker != null){
+				if (marker != null) {
 					openEditor(marker);
 				}
 			}
 		});
-		
+
 		tableViewer.addCheckStateListener(new ICheckStateListener() {
-			
+
 			@Override
 			public void checkStateChanged(CheckStateChangedEvent event) {
 				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 				String file = store.getString("pathBlobListeners2");
-				
+
 				boolean checked = event.getChecked();
-				
+
 				IMarker marker = (IMarker) event.getElement();
 				String info = BlobListener2.getInfo(marker);
-				
-				FileHelper.appendFile(file, info+";"+checked);
-				
-//				MessageDialog.openInformation(
-//						viewer.getControl().getShell(),
-//						"My new View",
-//						""+event.getChecked());
+
+				FileHelper.appendFile(file, info + ";" + checked);
+
+				// MessageDialog.openInformation(
+				// viewer.getControl().getShell(),
+				// "My new View",
+				// ""+event.getChecked());
 			}
 		});
-		
-		
+
 		return tableViewer;
 	}
-	
-	private void openEditor(IMarker marker){
+
+	private void openEditor(IMarker marker) {
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		
+
 		try {
-			IDE.openEditor(page,marker);
+			IDE.openEditor(page, marker);
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	
-	public static void init(){
-		for(int i = getSingleton().markerList.size() - 1; i >=0; i--)
+
+	public static void init() {
+		for (int i = getSingleton().markerList.size() - 1; i >= 0; i--)
 			getSingleton().markerList.remove(i);
 	}
-	
-	public static BlobListener2View getSingleton(){
-		if(INSTANCE == null){
+
+	public static BlobListener2View getSingleton() {
+		if (INSTANCE == null) {
 			INSTANCE = new BlobListener2View();
 		}
 		return INSTANCE;
 	}
-	
-	public static void addMarker(IMarker marker){
+
+	public static void addMarker(IMarker marker) {
 		getSingleton().markerList.add(marker);
-		
+
 		int size = getSingleton().markerList.size();
 		getSingleton().setPartName(size + " blobListeners2");
-		
+
 		getSingleton().viewer.refresh();
-		
+
 	}
 }

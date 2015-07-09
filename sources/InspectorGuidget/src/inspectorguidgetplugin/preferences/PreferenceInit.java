@@ -5,7 +5,7 @@ import inspectorguidgetplugin.Activator;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-public class PreferenceInit extends AbstractPreferenceInitializer{
+public class PreferenceInit extends AbstractPreferenceInitializer {
 
 	@Override
 	public void initializeDefaultPreferences() {

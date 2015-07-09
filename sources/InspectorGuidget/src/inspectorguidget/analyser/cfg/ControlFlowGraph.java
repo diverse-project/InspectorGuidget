@@ -24,152 +24,151 @@ import spoon.support.StandardEnvironment;
 import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 
 /**
- * Main class that analyze the source code, compute the control flow graph
- * of the listeners and write them in .dot files format.
+ * Main class that analyze the source code, compute the control flow graph of
+ * the listeners and write them in .dot files format.
  */
 public class ControlFlowGraph {
-	
+
 	/**
 	 * All nodes of the control flow graph
 	 */
-	List<BasicBlock> nodes = new ArrayList<>();
-	
+	List<BasicBlock>	nodes	= new ArrayList<>();
+
 	/**
 	 * Internal representation
 	 */
-	SubGraph graph;
-	
+	SubGraph			graph;
+
 	/**
 	 * Source of the control flow graph
 	 */
-	CtExecutable<?> method;
-	
+	CtExecutable<?>		method;
+
 	/**
 	 * Create a control flow graph from this method
 	 */
 	public ControlFlowGraph(CtExecutable<?> method) {
 		this.method = method;
 		nodes = new ArrayList<>();
-		graph = CfgBuilder.build(method,this);
+		graph = CfgBuilder.build(method, this);
 		clean();
 	}
-	
+
 	/**
 	 * Remove unnecessary Connector nodes
 	 */
-	private void clean(){
+	private void clean() {
 		ArrayList<BasicBlock> toBeRemoved = new ArrayList<>();
-		for(BasicBlock node : this.nodes){
-			if(	node instanceof Connector && node.getChildren().size() == 1){
+		for (BasicBlock node : this.nodes) {
+			if (node instanceof Connector && node.getChildren().size() == 1) {
 				BasicBlock child = node.getChildren().get(0);
-				if(node.getCondition(child) == null){
+				if (node.getCondition(child) == null) {
 					toBeRemoved.add(node);
-					for(BasicBlock parent : node.getParents()){
+					for (BasicBlock parent : node.getParents()) {
 						parent.getChildren().remove(node);
 						parent.addChild(child, parent.getCondition(node));
 						parent.conditions.remove(node);
 					}
 				}
-			}
-			else if(node instanceof Connector && node.getParents().size() == 0 && node.getChildren().size() == 0){
+			} else if (node instanceof Connector && node.getParents().size() == 0 && node.getChildren().size() == 0) {
 				toBeRemoved.add(node);
 			}
 		}
 		this.nodes.removeAll(toBeRemoved);
 	}
-	
-	public void removeNode(BasicBlock node){
+
+	public void removeNode(BasicBlock node) {
 		nodes.remove(node);
 	}
-	
-	public void addNode(BasicBlock node){
+
+	public void addNode(BasicBlock node) {
 		nodes.add(node);
 	}
-	
-	public List<BasicBlock> getAllNode(){
+
+	public List<BasicBlock> getAllNode() {
 		return nodes;
 	}
-	
+
 	/**
 	 * Find all possibles execution path
 	 */
-	public List<List<BasicBlock>> getExecutionPaths(){
-		return  ExecutionPath.getPaths(graph);
+	public List<List<BasicBlock>> getExecutionPaths() {
+		return ExecutionPath.getPaths(graph);
 	}
-	
+
 	/**
 	 * Write the cfg in .dot format in the file 'outFolder'/'filename'
 	 */
-	public void writeDotGraph(String outFolder, String fileName){
+	public void writeDotGraph(String outFolder, String fileName) {
 		StringBuffer fileContent = new StringBuffer();
 		fileContent.append("digraph OutputGraph {");
-		for(BasicBlock node : this.nodes){
+		for (BasicBlock node : this.nodes) {
 			fileContent.append(node);
 		}
 		fileContent.append("}");
-		
-		writeFile(outFolder,fileName+".dot",fileContent.toString());
+
+		writeFile(outFolder, fileName + ".dot", fileContent.toString());
 		System.out.println("CFG saved in " + outFolder + "/" + fileName);
 	}
-	
+
 	/**
 	 * Get the source of this control flow graph
 	 */
-	public CtExecutable<?> getExecutable(){
+	public CtExecutable<?> getExecutable() {
 		return method;
 	}
-	
+
 	/**
 	 * Return the top block
 	 */
-	public BasicBlock getEntryBlock(){
+	public BasicBlock getEntryBlock() {
 		return graph.getEntry();
 	}
-	
+
 	/**
 	 * Return the top block
 	 */
-	public BasicBlock getExitBlock(){
+	public BasicBlock getExitBlock() {
 		return graph.getExit();
 	}
 
 	public static void main(String[] args) {
-		
+
 		try {
-//			System.out.println("Loading...");
-			
-//			final String outFolder = "dot/";
-			
-			//Locate source files
+			// System.out.println("Loading...");
+
+			// final String outFolder = "dot/";
+
+			// Locate source files
 			final String sourceFolder = "src/test/";
-			
-			//Setup the factory
+
+			// Setup the factory
 			StandardEnvironment env = new StandardEnvironment();
 			DefaultCoreFactory f = new DefaultCoreFactory();
-	        final Factory factory = new FactoryImpl(f, env);
-	        CfgBuilder.factory = factory;
-			
-	        //Build the model
-	        SpoonCompiler compiler = new JDTBasedSpoonCompiler(factory);
+			final Factory factory = new FactoryImpl(f, env);
+			CfgBuilder.factory = factory;
+
+			// Build the model
+			SpoonCompiler compiler = new JDTBasedSpoonCompiler(factory);
 			compiler.addInputSource(new File(sourceFolder));
 			compiler.build();
 
-//			System.out.println("Loading done.");
-//			
-//			System.out.println("Processing...\n");
-			
-//			List<CtSimpleType<?>> allTypes = factory.Class().getAll();
-//			final List<CtType> allClasses = new ArrayList();
-//			for(CtSimpleType type : allTypes){
-//				if(type instanceof CtType){
-//					allClasses.add((CtType) type);
-//					System.out.println(type);
-//				}
-//			}
-			
+			// System.out.println("Loading done.");
+			//
+			// System.out.println("Processing...\n");
+
+			// List<CtSimpleType<?>> allTypes = factory.Class().getAll();
+			// final List<CtType> allClasses = new ArrayList();
+			// for(CtSimpleType type : allTypes){
+			// if(type instanceof CtType){
+			// allClasses.add((CtType) type);
+			// System.out.println(type);
+			// }
+			// }
+
 			final ArrayList<CtType<?>> allClasses = new ArrayList<>();
 			final ArrayList<CtClass<?>> allClasses2 = new ArrayList<>();
-			
+
 			env.setInputClassLoader(ClassLoader.getSystemClassLoader());
 			ProcessingManager processorManager = new QueueProcessingManager(factory);
 			processorManager.addProcessor(new AbstractProcessor<CtClass<?>>() {
@@ -184,60 +183,62 @@ public class ControlFlowGraph {
 
 				@Override
 				public void process(CtMethod<?> method) {
-////					SubGraph content = CfgBuilder.process(method);
-//					ControlFlowGraph cfg = new ControlFlowGraph(method);
-//					StringBuffer fileContent = new StringBuffer();
-//					fileContent.append("digraph OutputGraph {");
-//					for(BasicBlock node : cfg.getAllNode()){
-//						fileContent.append(node.toString());
-//					}
-//					fileContent.append("}");
-//					
-//					writeFile(outFolder,method.getSimpleName()+".dot",fileContent.toString());
-//					
-//					List exec = cfg.getExecutionPaths();
-//					System.out.println("Execution paths = " + exec.size());
-//					
-//					CallGraph cg = new CallGraph(method,allClasses);
-					
-//					DefUse defuse = new DefUse(cfg);
-//					System.out.println(defuse);
-//					for(BasicBlock bloc : cfg.getAllNode()){
-//						System.out.println(defuse.getDeepDef(bloc));
-//					}
+					// // SubGraph content = CfgBuilder.process(method);
+					// ControlFlowGraph cfg = new ControlFlowGraph(method);
+					// StringBuffer fileContent = new StringBuffer();
+					// fileContent.append("digraph OutputGraph {");
+					// for(BasicBlock node : cfg.getAllNode()){
+					// fileContent.append(node.toString());
+					// }
+					// fileContent.append("}");
+					//
+					// writeFile(outFolder,method.getSimpleName()+".dot",fileContent.toString());
+					//
+					// List exec = cfg.getExecutionPaths();
+					// System.out.println("Execution paths = " + exec.size());
+					//
+					// CallGraph cg = new CallGraph(method,allClasses);
 
-//					MyPrinter printer = new MyPrinter(getEnvironment(),cfg);
-//					printer.scan(method);
-//					System.out.println(method.getSimpleName()+" "+printer.getStartLine(method)+":"+printer.getEndLine(method));
-//					System.out.println(printer.toString());
-					
+					// DefUse defuse = new DefUse(cfg);
+					// System.out.println(defuse);
+					// for(BasicBlock bloc : cfg.getAllNode()){
+					// System.out.println(defuse.getDeepDef(bloc));
+					// }
+
+					// MyPrinter printer = new MyPrinter(getEnvironment(),cfg);
+					// printer.scan(method);
+					// System.out.println(method.getSimpleName()+" "+printer.getStartLine(method)+":"+printer.getEndLine(method));
+					// System.out.println(printer.toString());
+
 				}
 			});
-//			processorManager.addProcessor(new AbstractProcessor<CtAssignment>() {
-//
-//				@Override
-//				public void process(CtAssignment arg0) {
-//					System.out.println(arg0);
-//					
-//				}
-//				
-//			});
-//			processorManager.addProcessor(new ComplexityProcessor());
+			// processorManager.addProcessor(new
+			// AbstractProcessor<CtAssignment>() {
+			//
+			// @Override
+			// public void process(CtAssignment arg0) {
+			// System.out.println(arg0);
+			//
+			// }
+			//
+			// });
+			// processorManager.addProcessor(new ComplexityProcessor());
 			ListenersWrapper wrapper = new ListenersWrapper();
 			processorManager.addProcessor(new SimpleListenerProcessor(wrapper));
-//			Configuration config = new Configuration(new File("src/test/test.config"));
-//			VariablesProcessor processor = new VariablesProcessor(new ListenerProcessor(config));
-//			processorManager.addProcessor(processor);
+			// Configuration config = new Configuration(new
+			// File("src/test/test.config"));
+			// VariablesProcessor processor = new VariablesProcessor(new
+			// ListenerProcessor(config));
+			// processorManager.addProcessor(processor);
 			processorManager.process();
-			for(CtMethod<?> listener : wrapper.getListeners()){
+			for (CtMethod<?> listener : wrapper.getListeners()) {
 				System.out.println(listener.getSimpleName());
 			}
-//			Analyzer engine = new Analyzer(allClasses2);
-//			writeFile("callgraphDOT","variableType.dot",engine.toString());
-			
+			// Analyzer engine = new Analyzer(allClasses2);
+			// writeFile("callgraphDOT","variableType.dot",engine.toString());
+
 			System.out.println("\nProcessing done.");
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -245,19 +246,17 @@ public class ControlFlowGraph {
 	}
 
 	/**
-	 * Write 'content' in 'dir'/'file' 
+	 * Write 'content' in 'dir'/'file'
 	 */
-	public static void writeFile(String dir, String file, String content){
+	public static void writeFile(String dir, String file, String content) {
 		File newDir = new File(dir);
 		newDir.mkdirs();
-		
-		try(FileWriter fw = new FileWriter(dir+"/"+file, false);
-			BufferedWriter output = new BufferedWriter(fw);) {
+
+		try (FileWriter fw = new FileWriter(dir + "/" + file, false); BufferedWriter output = new BufferedWriter(fw);) {
 			output.write(content);
 			output.flush();
 			output.close();
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			System.out.println(e);
 		}
 	}

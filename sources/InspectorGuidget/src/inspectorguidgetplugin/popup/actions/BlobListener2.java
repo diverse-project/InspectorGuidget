@@ -25,46 +25,50 @@ import views.BlobListener2View;
  * and also selecting them if they are not found in the listener registration
  *  marking them in the plugin
  */
-public class BlobListener2 extends GUICommands{
+public class BlobListener2 extends GUICommands {
 
 	/**
 	 * Link Markers to their methods
 	 */
-	static Map<IMarker,CtMethod<?>> infoMapping;
-	
-	public BlobListener2(){		
+	static Map<IMarker, CtMethod<?>>	infoMapping;
+
+	public BlobListener2() {
 		super();
 	}
-	
+
 	@Override
 	protected void addMarkers(IProject project) {
 
 		infoMapping = new HashMap<>();
-		
+
 		String projectName = project.getName();
-//		IJavaProject jProject = JavaCore.create(project);
-		actions = new Command(listeners,factory);
+		// IJavaProject jProject = JavaCore.create(project);
+		actions = new Command(listeners, factory);
 		List<Action> mergedComands = actions.getMergedCommands();
 		BlobListener blob = new BlobListener(mergedComands);
 		Map<CtMethod<?>, List<Action>> blobListeners = blob.getBlobListeners();
-		if (blobListeners != null){
+		if (blobListeners != null) {
 			try {
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("views.BlobListener2View");
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+						.showView("views.BlobListener2View");
 			} catch (PartInitException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-		
-			for (Entry<CtMethod<?>, List<Action>> entry : blobListeners.entrySet()){
+
+			for (Entry<CtMethod<?>, List<Action>> entry : blobListeners.entrySet()) {
 				CtMethod<?> blobListener = entry.getKey();
 				List<Action> commands = entry.getValue();
 				File source = blobListener.getPosition().getFile();
-	
+
 				String absPath = source.getAbsolutePath();
-				int begin = absPath.indexOf(projectName) + projectName.length() + 1; //+1 to remove the '/'
+				int begin = absPath.indexOf(projectName) + projectName.length() + 1; // +1
+																						// to
+																						// remove
+																						// the
+																						// '/'
 				String path = absPath.substring(begin);
-				
+
 				IResource r = project.findMember(path);
 				IMarker m;
 				try {
@@ -72,10 +76,10 @@ public class BlobListener2 extends GUICommands{
 					m.setAttribute(IMarker.MESSAGE, "BlobListener detected here with " + commands.size() + " commands");
 					m.setAttribute(IMarker.LINE_NUMBER, blobListener.getPosition().getLine());
 					m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-					
-					infoMapping.put(m, blobListener); //store mapping
-					
-					BlobListener2View.addMarker(m); //update the view
+
+					infoMapping.put(m, blobListener); // store mapping
+
+					BlobListener2View.addMarker(m); // update the view
 				} catch (CoreException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -83,26 +87,26 @@ public class BlobListener2 extends GUICommands{
 			}
 		}
 	}
-	
+
 	/**
 	 * Convert the marker to String "methodName;sourceFile;line"
 	 */
-	public static String getInfo(IMarker marker){	
+	public static String getInfo(IMarker marker) {
 		String res = "";
-		
+
 		CtMethod<?> method = infoMapping.get(marker);
-		if(method != null){
+		if (method != null) {
 			String sourceFile = method.getPosition().getFile().getName();
 			int line = method.getPosition().getLine();
-			String name = method.getDeclaringType().getQualifiedName() + "." + method.getSimpleName(); 
-			res = name + ";" + sourceFile + ";" + line; 
+			String name = method.getDeclaringType().getQualifiedName() + "." + method.getSimpleName();
+			res = name + ";" + sourceFile + ";" + line;
 		}
-		
+
 		return res;
 	}
-	
-	public static String getMethod(IMarker marker){
+
+	public static String getMethod(IMarker marker) {
 		return infoMapping.get(marker).getSimpleName();
 	}
-	
+
 }

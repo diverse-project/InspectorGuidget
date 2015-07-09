@@ -14,44 +14,47 @@ import org.eclipse.ui.PlatformUI;
 import spoon.reflect.declaration.CtMethod;
 import views.CondListenerView;
 
-public class CondListeners extends GUIListeners{
-	
+public class CondListeners extends GUIListeners {
+
 	/**
 	 * Link Markers to their methods
 	 */
-	static Map<IMarker,CtMethod<?>> infoMapping;
-	
+	static Map<IMarker, CtMethod<?>>	infoMapping;
+
 	public CondListeners() {
 		super();
 	}
-	
+
 	/**
 	 * Attach a warning marker for each listeners
 	 */
 	@Override
-	protected void addMarkers(IProject project){
-		
+	protected void addMarkers(IProject project) {
+
 		infoMapping = new HashMap<>();
-		
+
 		String projectName = project.getName();
-//		IJavaProject jProject = JavaCore.create(project);
-		
+		// IJavaProject jProject = JavaCore.create(project);
+
 		try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("views.CondListenerView");
 		} catch (PartInitException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 		for (CtMethod<?> method : listeners.getConditionalListeners()) {
 			File source = method.getPosition().getFile();
-			
-			//FIXME: little hack here
+
+			// FIXME: little hack here
 			String absPath = source.getAbsolutePath();
-			int begin = absPath.indexOf(projectName) + projectName.length() + 1; //+1 to remove the '/'
+			int begin = absPath.indexOf(projectName) + projectName.length() + 1; // +1
+																					// to
+																					// remove
+																					// the
+																					// '/'
 			String path = absPath.substring(begin);
-			
-			
+
 			IResource r = project.findMember(path);
 			IMarker m;
 			try {
@@ -60,9 +63,9 @@ public class CondListeners extends GUIListeners{
 				m.setAttribute(IMarker.LINE_NUMBER, method.getPosition().getLine());
 				m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 
-				infoMapping.put(m, method); //store mapping
-				
-				CondListenerView.addMarker(m); //update the view
+				infoMapping.put(m, method); // store mapping
+
+				CondListenerView.addMarker(m); // update the view
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -73,21 +76,21 @@ public class CondListeners extends GUIListeners{
 	/**
 	 * Convert the marker to String "methodName;sourceFile;line"
 	 */
-	public static String getInfo(IMarker marker){	
+	public static String getInfo(IMarker marker) {
 		String res = "";
-		
+
 		CtMethod<?> method = infoMapping.get(marker);
-		if(method != null){
+		if (method != null) {
 			String sourceFile = method.getPosition().getFile().getName();
 			int line = method.getPosition().getLine();
-			String name = method.getDeclaringType().getQualifiedName() + "." + method.getSimpleName(); 
-			res = name + ";" + sourceFile + ";" + line; 
+			String name = method.getDeclaringType().getQualifiedName() + "." + method.getSimpleName();
+			res = name + ";" + sourceFile + ";" + line;
 		}
-		
+
 		return res;
 	}
-	
-	public static String getMethod(IMarker marker){
+
+	public static String getMethod(IMarker marker) {
 		return infoMapping.get(marker).getSimpleName();
 	}
 

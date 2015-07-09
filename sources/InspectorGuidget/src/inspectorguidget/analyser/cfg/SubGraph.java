@@ -5,14 +5,14 @@ import java.util.List;
 import spoon.reflect.code.CtCodeElement;
 
 /**
- * Represent a part of the control flow graph
- * with an entry node end an exit node
+ * Represent a part of the control flow graph with an entry node end an exit
+ * node
  */
-public class SubGraph{
+public class SubGraph {
 
-	BasicBlock entry;
-	BasicBlock exit;
-	
+	BasicBlock	entry;
+	BasicBlock	exit;
+
 	/**
 	 * Creates disconnected entry and exit node
 	 */
@@ -20,33 +20,32 @@ public class SubGraph{
 		entry = new Connector(cfg);
 		exit = new Connector(cfg);
 	}
-	
+
 	/**
-	 * Create a basic block.
-	 * It is both entry and exit nodes of this SubGraph.
+	 * Create a basic block. It is both entry and exit nodes of this SubGraph.
 	 */
-	public SubGraph(List<CtCodeElement> block, ControlFlowGraph cfg){
-		BasicBlock node = new BasicBlock(block,cfg);
+	public SubGraph(List<CtCodeElement> block, ControlFlowGraph cfg) {
+		BasicBlock node = new BasicBlock(block, cfg);
 		entry = node;
 		exit = node;
 	}
-	
-	public BasicBlock getEntry(){
+
+	public BasicBlock getEntry() {
 		return entry;
 	}
-	
-	public BasicBlock getExit(){
+
+	public BasicBlock getExit() {
 		return exit;
 	}
-	
-	public void setEntry(BasicBlock node){
-//		BasicBlock.graph.remove(entry); TODO:remove this
+
+	public void setEntry(BasicBlock node) {
+		// BasicBlock.graph.remove(entry); TODO:remove this
 		entry = node;
 	}
-	
-	public void setExit(BasicBlock node){
-//		BasicBlock.graph.remove(exit); TODO:remove this
+
+	public void setExit(BasicBlock node) {
+		// BasicBlock.graph.remove(exit); TODO:remove this
 		exit = node;
 	}
-	
+
 }

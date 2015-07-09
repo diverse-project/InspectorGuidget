@@ -6,14 +6,13 @@ import java.io.PrintWriter;
 
 public class FileHelper {
 	/**
-	 * Append 'content' in 'dir'/'file' 
+	 * Append 'content' in 'dir'/'file'
 	 */
-	public static void appendFile(String file, String content){
-		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))){
-		    out.println(content);
-		    out.close();
-		}
-		catch(Exception e){
+	public static void appendFile(String file, String content) {
+		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+			out.println(content);
+			out.close();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

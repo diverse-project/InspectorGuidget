@@ -24,136 +24,146 @@ import views.BlobListenerView;
  * Responsible for recovering the BlobListeners (listeners that have more than one command)
  * and marking them in the plugin
  */
-public class BlobListeners extends GUICommands{
+public class BlobListeners extends GUICommands {
 
 	/**
 	 * Link Markers to their methods
 	 */
-	static Map<IMarker,CtMethod<?>> infoMapping;
-	
-	public BlobListeners(){		
+	static Map<IMarker, CtMethod<?>>	infoMapping;
+
+	public BlobListeners() {
 		super();
 	}
-	
+
 	@Override
 	protected void addMarkers(IProject project) {
 		infoMapping = new HashMap<>();
-		
+
 		String projectName = project.getName();
-//		IJavaProject jProject = JavaCore.create(project);
-		actions = new Command(listeners,factory);
+		// IJavaProject jProject = JavaCore.create(project);
+		actions = new Command(listeners, factory);
 		Map<CtMethod<?>, List<Action>> candidatesBlob = gatherCommandsBySource(actions.getMergedCommands());
-		
+
 		try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("views.BlobListenerView");
 		} catch (PartInitException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-//		int totalOfLines = 0;
-		for (CtMethod<?> listener : listeners.getListeners()){
+
+		// int totalOfLines = 0;
+		for (CtMethod<?> listener : listeners.getListeners()) {
 			List<Action> cmds = candidatesBlob.get(listener);
-			
-			//Recovery blobListeners by checking if there is more than one command per listener
-			if (cmds != null && cmds.size() > 1){				
+
+			// Recovery blobListeners by checking if there is more than one
+			// command per listener
+			if (cmds != null && cmds.size() > 1) {
 				File source = listener.getPosition().getFile();
-				//Get the number of lines of code for a blob listener
-				//int loc = getLOCListeners(listener);
-				//Calculate the total number of lines of blobListeners
-				//totalOfLines += loc;
+				// Get the number of lines of code for a blob listener
+				// int loc = getLOCListeners(listener);
+				// Calculate the total number of lines of blobListeners
+				// totalOfLines += loc;
 				String absPath = source.getAbsolutePath();
-				int begin = absPath.indexOf(projectName) + projectName.length() + 1; //+1 to remove the '/'
+				int begin = absPath.indexOf(projectName) + projectName.length() + 1; // +1
+																						// to
+																						// remove
+																						// the
+																						// '/'
 				String path = absPath.substring(begin);
-				
+
 				IResource r = project.findMember(path);
 				IMarker m;
 				try {
 					m = r.createMarker(IMarker.PROBLEM);
-					m.setAttribute(IMarker.MESSAGE, "BlobListener detected here with " + cmds.size() + " commands"); //+ " and " + loc + " LOC");
+					m.setAttribute(IMarker.MESSAGE, "BlobListener detected here with " + cmds.size() + " commands"); // +
+																														// " and "
+																														// +
+																														// loc
+																														// +
+																														// " LOC");
 					m.setAttribute(IMarker.LINE_NUMBER, listener.getPosition().getLine());
 					m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-					
-					infoMapping.put(m, listener); //store mapping
-					
-					BlobListenerView.addMarker(m); //update the view
+
+					infoMapping.put(m, listener); // store mapping
+
+					BlobListenerView.addMarker(m); // update the view
 				} catch (CoreException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
-		//System.out.println("Total of lines code " + totalOfLines);
+		// System.out.println("Total of lines code " + totalOfLines);
 	}
-	
+
 	/*
 	 * Gather commands that are detected in the same method
 	 */
-	public Map<CtMethod<?>,List<Action>> gatherCommandsBySource(List<Action> commands){		
-		Map<CtMethod<?>, List<Action>> res = new IdentityHashMap<>();	
-		
-		for (Action cmd : commands){
+	public Map<CtMethod<?>, List<Action>> gatherCommandsBySource(List<Action> commands) {
+		Map<CtMethod<?>, List<Action>> res = new IdentityHashMap<>();
+
+		for (Action cmd : commands) {
 			List<Action> cmds = res.get(cmd.getSource());
-			if (cmds == null ){
+			if (cmds == null) {
 				cmds = new ArrayList<>();
 				cmds.add(cmd);
 				res.put(cmd.getSource(), cmds);
-			}
-			else{
+			} else {
 				cmds.add(cmd);
 			}
 		}
-		return res;	
+		return res;
 	}
+
 	/*
 	 * Calculate the number of physical lines of code for each blob listener
 	 */
-//	public  int getLOCListeners(CtMethod  method){	
-//			String[] lines = method.toString().split("\n");
-//			int loc = 0;
-//			int comments = 0;
-//			for (String line : lines){
-//				if(line.trim().startsWith("/") || line.trim().startsWith("*")){
-//					comments++;
-//				}
-//				else{
-//					loc++; 
-//				}
-//			}
-//		return loc;
-//		
-//	}
-	
+	// public int getLOCListeners(CtMethod method){
+	// String[] lines = method.toString().split("\n");
+	// int loc = 0;
+	// int comments = 0;
+	// for (String line : lines){
+	// if(line.trim().startsWith("/") || line.trim().startsWith("*")){
+	// comments++;
+	// }
+	// else{
+	// loc++;
+	// }
+	// }
+	// return loc;
+	//
+	// }
+
 	/*
 	 * Calculate the total of lines of code for all blob listeners
 	 */
-//	public int getTotalLoc(Map<CtMethod,Integer> size){
-//		int totalLoc = 0;
-//		for (Entry<CtMethod, Integer> entry : size.entrySet()){
-//			totalLoc += entry.getValue();
-//		}
-//		return totalLoc;	
-//	}
-	
+	// public int getTotalLoc(Map<CtMethod,Integer> size){
+	// int totalLoc = 0;
+	// for (Entry<CtMethod, Integer> entry : size.entrySet()){
+	// totalLoc += entry.getValue();
+	// }
+	// return totalLoc;
+	// }
+
 	/**
 	 * Convert the marker to String "methodName;sourceFile;line"
 	 */
-	public static String getInfo(IMarker marker){	
+	public static String getInfo(IMarker marker) {
 		String res = "";
-		
+
 		CtMethod<?> method = infoMapping.get(marker);
-		if(method != null){
+		if (method != null) {
 			String sourceFile = method.getPosition().getFile().getName();
 			int line = method.getPosition().getLine();
-			String name = method.getDeclaringType().getQualifiedName() + "." + method.getSimpleName(); 
-			res = name + ";" + sourceFile + ";" + line; 
+			String name = method.getDeclaringType().getQualifiedName() + "." + method.getSimpleName();
+			res = name + ";" + sourceFile + ";" + line;
 		}
-		
+
 		return res;
 	}
-	
-	public static String getMethod(IMarker marker){
+
+	public static String getMethod(IMarker marker) {
 		return infoMapping.get(marker).getSimpleName();
 	}
-	
+
 }
