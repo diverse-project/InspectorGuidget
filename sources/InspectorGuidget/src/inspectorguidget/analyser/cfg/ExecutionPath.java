@@ -29,7 +29,7 @@ public class ExecutionPath {
 	 * Get all possibles paths from this node
 	 */
 	private static List<List<BasicBlock>> getPaths(BasicBlock node, Set<BasicBlock> visited){
-		ArrayList<List<BasicBlock>> res = new ArrayList<List<BasicBlock>>();
+		ArrayList<List<BasicBlock>> res = new ArrayList<>();
 		
 		List<BasicBlock> children = node.getChildren();
 		for(BasicBlock child : children){
@@ -45,7 +45,7 @@ public class ExecutionPath {
 		}
 		
 		if(children.size() == 0){
-			List<BasicBlock> leaf = new ArrayList<BasicBlock>();
+			List<BasicBlock> leaf = new ArrayList<>();
 			leaf.add(node);
 			res.add(leaf);
 		}

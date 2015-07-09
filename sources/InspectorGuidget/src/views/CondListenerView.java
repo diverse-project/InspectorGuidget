@@ -38,7 +38,7 @@ public class CondListenerView extends ViewPart {
 	 */
 	public static final String ID = "views.CondListenerView";
 	
-	private List<IMarker> markerList = new ArrayList<IMarker>();
+	private List<IMarker> markerList = new ArrayList<>();
 
 	private TableViewer viewer;
 	 
@@ -53,6 +53,7 @@ public class CondListenerView extends ViewPart {
 	 * This is a callback that will allow us
 	 * to create the viewer and initialize it.
 	 */
+	@Override
 	public void createPartControl(Composite parent) {
 		viewer = makeTable(parent);
 	}
@@ -67,6 +68,7 @@ public class CondListenerView extends ViewPart {
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
+	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}

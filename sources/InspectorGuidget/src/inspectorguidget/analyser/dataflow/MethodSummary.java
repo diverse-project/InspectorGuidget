@@ -38,18 +38,18 @@ public class MethodSummary {
 	ControlFlowGraph cfg;
 	DefUse defuse;
 
-	public MethodSummary(CtMethod method){
+	public MethodSummary(CtMethod<?> method){
 		
 		cfg = new ControlFlowGraph(method);
 		defuse = new DefUse(cfg);
 		
-		fieldAssignements = new ArrayList<Action>();
+		fieldAssignements = new ArrayList<>();
 		for(CtCodeElement actionStmt : findFieldSetters()){
 			Action action = new Action(actionStmt, gatherContainingCondition(actionStmt, method), method);
 			fieldAssignements.add(action);
 		}
 		
-		actions = new ArrayList<Action>();
+		actions = new ArrayList<>();
 		for(CtCodeElement actionStmt : findActions()){
 			Action action = new Action(actionStmt, gatherContainingCondition(actionStmt, method), method);
 			actions.add(action); 
@@ -110,9 +110,9 @@ public class MethodSummary {
 	 * Get expression from the containment hierarchy of the action
 	 * (while,for,switch,conditional) 
 	 */
-	private List<CtExpression> gatherContainingCondition(CtCodeElement action, CtMethod method){
+	private List<CtExpression<?>> gatherContainingCondition(CtCodeElement action, CtMethod<?> method){
 		
-		List<CtExpression> res = new ArrayList<CtExpression>();
+		List<CtExpression<?>> res = new ArrayList<>();
 		
 		CtElement parent = action;
 		try{
@@ -133,11 +133,11 @@ public class MethodSummary {
 					res.add(for_.getExpression());
 				}
 				else if(parent instanceof CtCase){
-					CtCase case_ = (CtCase) parent;
+					CtCase<?> case_ = (CtCase<?>) parent;
 					res.add(case_.getCaseExpression());
 				}
 				else if(parent instanceof CtConditional){//TODO: get the negation too
-					CtConditional cond = (CtConditional) parent;
+					CtConditional<?> cond = (CtConditional<?>) parent;
 					res.add(cond.getCondition());
 				}
 				else if(parent instanceof CtDo){
@@ -155,30 +155,30 @@ public class MethodSummary {
 		return res;
 	}
 	
-	/**
-	 * Return the block that contains action
-	 * Return null if it isn't the path
-	 */
-	private BasicBlock getContainingBlock(CtCodeElement action, List<BasicBlock> path){
-		
-		for(BasicBlock block : path){
-			if(block.getElements().contains(action)) return block;
-		}
-		
-		return null;
-	}
+//	/**
+//	 * Return the block that contains action
+//	 * Return null if it isn't the path
+//	 */
+//	private BasicBlock getContainingBlock(CtCodeElement action, List<BasicBlock> path){
+//		
+//		for(BasicBlock block : path){
+//			if(block.getElements().contains(action)) return block;
+//		}
+//		
+//		return null;
+//	}
 	
 	/**
 	 * Find field assignment statements
 	 */
 	private Set<CtCodeElement> findFieldSetters(){ //TODO: refactor with Defuse.getAssignedField()
 		
-		Set<CtCodeElement> res = new HashSet<CtCodeElement>();
+		Set<CtCodeElement> res = new HashSet<>();
 		
 		for(BasicBlock block : cfg.getAllNode()){
 			for(CtCodeElement line : block.getElements()){
 				if(line instanceof CtAssignment){
-					CtAssignment assignment = (CtAssignment) line;
+					CtAssignment<?,?> assignment = (CtAssignment<?,?>) line;
 					if(assignment.getAssigned() instanceof CtFieldAccess){
 						res.add(line);
 					}
@@ -200,17 +200,17 @@ public class MethodSummary {
 	/**
 	 * Must return true if the field is used in @action's conditionals and not defined in the @action's method
 	 */
-	public boolean isControlledBy(Action action, CtAssignment fieldAssignment){//TODO: move to Action
+	public boolean isControlledBy(Action action, CtAssignment<?,?> fieldAssignment){//TODO: move to Action
 		
-		CtField field = null;
-		CtExpression leftPart = fieldAssignment.getAssigned();
+		CtField<?> field = null;
+		CtExpression<?> leftPart = fieldAssignment.getAssigned();
 		if(leftPart instanceof CtFieldAccess){
-			field = ((CtFieldAccess) leftPart).getVariable().getDeclaration();
+			field = ((CtFieldAccess<?>) leftPart).getVariable().getDeclaration();
 		}
 		
-		for(CtExpression cond : action.getConditions()){
+		for(CtExpression<?> cond : action.getConditions()){
 			List<CtVariableAccess<?>> usedVars = defuse.findUsedVar(cond);
-			for(CtVariableAccess usedVar : usedVars){
+			for(CtVariableAccess<?> usedVar : usedVars){
 				
 //				if(field != null && field == usedVar.getVariable().getDeclaration()){
 //					Set<CtCodeElement> lastDef = defuse.getReachingDef(usedVar);
@@ -228,11 +228,11 @@ public class MethodSummary {
 	/**
 	 * Return conditions that use @field
 	 */
-	public List<CtExpression> getControllers(Action action, CtField field){//TODO: move to Action
+	public List<CtExpression<?>> getControllers(Action action, CtField<?> field){//TODO: move to Action
 		
-		List<CtExpression> res = new ArrayList<CtExpression>();
+		List<CtExpression<?>> res = new ArrayList<>();
 		
-		for(CtExpression cond : action.getConditions()){
+		for(CtExpression<?> cond : action.getConditions()){
 			if(defuse.getDeepDef(cond).contains(field)) res.add(cond);
 		}
 		

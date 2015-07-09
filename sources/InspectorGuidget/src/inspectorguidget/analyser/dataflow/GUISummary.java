@@ -19,10 +19,10 @@ public class GUISummary {
 	//Actions that are in an edge
 	Set<Action> toBeDisplayed;
 
-	public GUISummary(List<CtMethod> listeners) {
-		toBeDisplayed = new HashSet<Action>();
-		summaries = new ArrayList<MethodSummary>();
-		for(CtMethod method : listeners){
+	public GUISummary(List<CtMethod<?>> listeners) {
+		toBeDisplayed = new HashSet<>();
+		summaries = new ArrayList<>();
+		for(CtMethod<?> method : listeners){
 			summaries.add(new MethodSummary(method));
 		}
 	}
@@ -50,11 +50,11 @@ public class GUISummary {
 			for(Action action : summary.getActions()){
 				if(toBeDisplayed.contains(action)){
 					
-					CtMethod source = action.getSource();
-					CtClass clazz = (CtClass) source.getParent();
+					CtMethod<?> source = action.getSource();
+					CtClass<?> clazz = (CtClass<?>) source.getParent();
 					
 					StringBuffer conditions = new StringBuffer();
-					for(CtExpression cond : action.getConditions()){
+					for(CtExpression<?> cond : action.getConditions()){
 						conditions.append("<TR><TD PORT=\""+ clean2("P"+cond.hashCode()) +"\">"+ clean(cond.toString()) +"</TD></TR>\n");
 					}
 
@@ -73,11 +73,11 @@ public class GUISummary {
 			for(Action fieldAction : summary.getFieldAssignements()){
 				if(toBeDisplayed.contains(fieldAction)){
 					
-					CtMethod source = fieldAction.getSource();
-					CtClass clazz = (CtClass) source.getParent();
+					CtMethod<?> source = fieldAction.getSource();
+					CtClass<?> clazz = (CtClass<?>) source.getParent();
 					
 					StringBuffer conditions = new StringBuffer();
-					for(CtExpression cond : fieldAction.getConditions()){
+					for(CtExpression<?> cond : fieldAction.getConditions()){
 						conditions.append("<TR><TD PORT=\""+  clean2("P"+cond.hashCode()) +"\">"+ clean(cond.toString()) +"</TD></TR>\n");
 					}
 
@@ -125,11 +125,11 @@ public class GUISummary {
 		
 		StringBuffer res = new StringBuffer(); 
 		
-		CtField field = null;
-		CtAssignment assignment = (CtAssignment) fieldAction.getStatement();
-		CtExpression leftPart = assignment.getAssigned();
+		CtField<?> field = null;
+		CtAssignment<?,?> assignment = (CtAssignment<?,?>) fieldAction.getStatement();
+		CtExpression<?> leftPart = assignment.getAssigned();
 		if(leftPart instanceof CtFieldAccess){
-			field = ((CtFieldAccess) leftPart).getVariable().getDeclaration();
+			field = ((CtFieldAccess<?>) leftPart).getVariable().getDeclaration();
 		}
 		
 		for(MethodSummary summary : summaries){
@@ -140,9 +140,9 @@ public class GUISummary {
 					toBeDisplayed.add(fieldAction);
 					toBeDisplayed.add(action);
 					
-					List<CtExpression> conditions = summary.getControllers(action,field);
+					List<CtExpression<?>> conditions = summary.getControllers(action,field);
 					
-					for(CtExpression cond : conditions){
+					for(CtExpression<?> cond : conditions){
 						//Draw the edge fieldAction:0 -> action:condID		
 						String edge = "\""+fieldAction.hashCode()+"\":stmt -> \"" + action.hashCode()+"\":\""+ clean2("P"+cond.hashCode())+"\"\n";
 						res.append(edge);
@@ -156,9 +156,9 @@ public class GUISummary {
 					toBeDisplayed.add(fieldAction);
 					toBeDisplayed.add(actionField);
 					
-					List<CtExpression> conditions = summary.getControllers(actionField,field);
+					List<CtExpression<?>> conditions = summary.getControllers(actionField,field);
 					
-					for(CtExpression cond : conditions){
+					for(CtExpression<?> cond : conditions){
 						String edge = "\""+fieldAction.hashCode()+"\":stmt -> \"" + actionField.hashCode()+"\":\""+ clean2("P"+cond.hashCode())+"\"\n";
 						res.append(edge);
 					}

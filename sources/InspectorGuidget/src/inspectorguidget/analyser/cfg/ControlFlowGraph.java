@@ -32,7 +32,7 @@ public class ControlFlowGraph {
 	/**
 	 * All nodes of the control flow graph
 	 */
-	List<BasicBlock> nodes = new ArrayList<BasicBlock>();
+	List<BasicBlock> nodes = new ArrayList<>();
 	
 	/**
 	 * Internal representation
@@ -49,7 +49,7 @@ public class ControlFlowGraph {
 	 */
 	public ControlFlowGraph(CtExecutable<?> method) {
 		this.method = method;
-		nodes = new ArrayList<BasicBlock>();
+		nodes = new ArrayList<>();
 		graph = CfgBuilder.build(method,this);
 		clean();
 	}
@@ -58,7 +58,7 @@ public class ControlFlowGraph {
 	 * Remove unnecessary Connector nodes
 	 */
 	private void clean(){
-		ArrayList<BasicBlock> toBeRemoved = new ArrayList<BasicBlock>();
+		ArrayList<BasicBlock> toBeRemoved = new ArrayList<>();
 		for(BasicBlock node : this.nodes){
 			if(	node instanceof Connector && node.getChildren().size() == 1){
 				BasicBlock child = node.getChildren().get(0);
@@ -248,12 +248,11 @@ public class ControlFlowGraph {
 	 * Write 'content' in 'dir'/'file' 
 	 */
 	public static void writeFile(String dir, String file, String content){
-		try{
-			File newDir = new File(dir);
-			newDir.mkdirs();
-			
-			FileWriter fw = new FileWriter(dir+"/"+file, false);
-			BufferedWriter output = new BufferedWriter(fw);
+		File newDir = new File(dir);
+		newDir.mkdirs();
+		
+		try(FileWriter fw = new FileWriter(dir+"/"+file, false);
+			BufferedWriter output = new BufferedWriter(fw);) {
 			output.write(content);
 			output.flush();
 			output.close();

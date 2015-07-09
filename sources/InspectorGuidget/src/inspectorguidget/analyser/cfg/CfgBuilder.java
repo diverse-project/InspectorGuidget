@@ -59,7 +59,7 @@ public class CfgBuilder {
 	 */
 	private CfgBuilder(ControlFlowGraph cfg) {
 		this.cfg = cfg;
-		returnStatements = new ArrayList<SubGraph>();
+		returnStatements = new ArrayList<>();
 	}
 	
 	/**
@@ -73,7 +73,7 @@ public class CfgBuilder {
 		SubGraph res = new SubGraph(cfg);
 		
 		SubGraph previous = null;
-		List<CtCodeElement> current = new ArrayList<CtCodeElement>();
+		List<CtCodeElement> current = new ArrayList<>();
 		for(CtStatement stmt : statements){
 			
 			if(	stmt instanceof CtConditional 	||
@@ -91,7 +91,7 @@ public class CfgBuilder {
 					SubGraph block = new SubGraph(current,cfg);
 					connect(res,previous, block);
 					
-					current = new ArrayList<CtCodeElement>();
+					current = new ArrayList<>();
 					previous = block;
 				}
 				
@@ -109,7 +109,7 @@ public class CfgBuilder {
 					SubGraph block = new SubGraph(current,cfg);
 					connect(res,previous, block);
 					
-					current = new ArrayList<CtCodeElement>();
+					current = new ArrayList<>();
 					previous = block;
 //				}
 				
@@ -209,7 +209,7 @@ public class CfgBuilder {
 		ConditionalSolution continueSolutions = Solver.solve(condition.toString());
 		ConditionalSolution breakSolutions = Solver.solve("!("+condition.toString()+")");
 		SubGraph initBlock = process(init);
-		List<CtStatement> bodyUpdater = new ArrayList<CtStatement>();
+		List<CtStatement> bodyUpdater = new ArrayList<>();
 		bodyUpdater.add(body);
 		bodyUpdater.addAll(update);
 		SubGraph loopBody = process(bodyUpdater);
@@ -231,23 +231,23 @@ public class CfgBuilder {
 		CtStatement body = forEachLoop.getBody();
 		
 		//iterator i = 0
-		CtLiteral zero = factory.Core().createLiteral(); 
+		CtLiteral<Object> zero = factory.Core().createLiteral(); 
 		zero.setValue(0);
-		CtLocalVariable i = factory.Core().createLocalVariable();
+		CtLocalVariable<Object> i = factory.Core().createLocalVariable();
 		i.setSimpleName("i"); //TODO find better name to avoid collision
 		i.setDefaultExpression(zero);
 		
 		//condition
-		CtVariableAccess iRef = factory.Core().createVariableAccess();
+		CtVariableAccess<Object> iRef = factory.Core().createVariableAccess();
 		iRef.setVariable(i.getReference());
-		CtBinaryOperator condition = factory.Core().createBinaryOperator();
+		CtBinaryOperator<Boolean> condition = factory.Core().createBinaryOperator();
 		condition.setKind(BinaryOperatorKind.LT);
 		condition.setLeftHandOperand(iRef);
 		
-		 CtTypeReference iterableType = iterable.getType();
+		 CtTypeReference<?> iterableType = iterable.getType();
 		 if(iterableType instanceof CtArrayTypeReference){
 			 //variable = array[i]
-			 CtVariableAccess iRef0 = factory.Core().createVariableAccess();
+			 CtVariableAccess<Object> iRef0 = factory.Core().createVariableAccess();
 			 iRef0.setVariable(i.getReference());
 			 CtArrayAccess arrayElem = factory.Core().createArrayAccess();
 			 arrayElem.setTarget(iterable);
@@ -255,9 +255,9 @@ public class CfgBuilder {
 			 variable.setDefaultExpression(arrayElem);
 			 
 			 //condition i < array.length
-			 CtFieldReference length = factory.Core().createFieldReference();
+			 CtFieldReference<Object> length = factory.Core().createFieldReference();
 			 length.setSimpleName("length");
-			 CtFieldAccess getSize = factory.Core().createFieldAccess();
+			 CtFieldAccess<Object> getSize = factory.Core().createFieldAccess();
 			 getSize.setTarget(iterable);
 			 getSize.setVariable(length);
 			 condition.setRightHandOperand(getSize);
@@ -266,29 +266,29 @@ public class CfgBuilder {
 			 //variable = iterable.get(i)
 			 CtInvocation get = factory.Core().createInvocation();
 			 get.setTarget(iterable);
-			 CtExecutableReference method = factory.Core().createExecutableReference();
+			 CtExecutableReference<Object> method = factory.Core().createExecutableReference();
 			 method.setSimpleName("get");
 			 get.setExecutable(method);
-			 CtVariableAccess iRef0 = factory.Core().createVariableAccess();
+			 CtVariableAccess<Object> iRef0 = factory.Core().createVariableAccess();
 			 iRef0.setVariable(i.getReference());
-			 List<CtExpression> args = new ArrayList<CtExpression>();
+			 List<CtExpression<?>> args = new ArrayList<>();
 			 args.add(iRef0);
 			 get.setArguments(args);
 			 variable.setDefaultExpression(get);
 			
 			 //condition i < iterable.size()
-			 CtInvocation size = factory.Core().createInvocation();
+			 CtInvocation<Object> size = factory.Core().createInvocation();
 			 size.setTarget(iterable);
-			 CtExecutableReference methodSize = factory.Core().createExecutableReference();
+			 CtExecutableReference<Object> methodSize = factory.Core().createExecutableReference();
 			 methodSize.setSimpleName("size");
 			 size.setExecutable(methodSize);
 			 condition.setRightHandOperand(size);
 		 }
 		 
 		//iterator i++
-		CtUnaryOperator iPlusPlus = factory.Core().createUnaryOperator();
+		CtUnaryOperator<Object> iPlusPlus = factory.Core().createUnaryOperator();
 		iPlusPlus.setKind(UnaryOperatorKind.POSTINC);
-		CtVariableAccess iRef2 = factory.Core().createVariableAccess();
+		CtVariableAccess<Object> iRef2 = factory.Core().createVariableAccess();
 		iRef2.setVariable(i.getReference());
 		iPlusPlus.setOperand(iRef2);
 		 
@@ -297,11 +297,11 @@ public class CfgBuilder {
 		negCondition.setKind(UnaryOperatorKind.NOT);
 		
 		//////////////////////////////////////////
-		List<CtStatement> init = new ArrayList<CtStatement>();
+		List<CtStatement> init = new ArrayList<>();
 		init.add(i);
 		SubGraph initBlock = process(init);
 		
-		List<CtStatement> bodyUpdater = new ArrayList<CtStatement>();
+		List<CtStatement> bodyUpdater = new ArrayList<>();
 		bodyUpdater.add(variable);
 		bodyUpdater.add(body);
 		bodyUpdater.add(iPlusPlus);
@@ -329,7 +329,7 @@ public class CfgBuilder {
 		negCondition.setKind(UnaryOperatorKind.NOT);
 		//negCondition.setParent(condition);
 		CtExpression<?> thenExp = conditional.getThenExpression();
-		CtExpression<?> elseExp = conditional.getElseExpression();
+//		CtExpression<?> elseExp = conditional.getElseExpression();
 		
 		//Build the sub-graph
 		SubGraph thenBlock = process(thenExp);
@@ -386,8 +386,8 @@ public class CfgBuilder {
 	 */
 	private SubGraph process(CtSwitch switchStatement){
 		//Get data
-		CtExpression<?> selector = switchStatement.getSelector();
-		List<CtCase> cases = switchStatement.getCases();
+//		CtExpression<?> selector = switchStatement.getSelector();
+		List<CtCase<?>> cases = switchStatement.getCases();
 		
 		SubGraph res = new SubGraph(cfg);
 		//Build the sub-graph
@@ -420,7 +420,7 @@ public class CfgBuilder {
 		CtBlock<?> finalizer = tryStatement.getFinalizer();
 		
 		//Build the sub-graph
-		List<CtStatement> block = new ArrayList<CtStatement>();
+		List<CtStatement> block = new ArrayList<>();
 		block.addAll(body.getStatements());
 		
 		if(finalizer != null)block.addAll(finalizer.getStatements());
@@ -458,7 +458,7 @@ public class CfgBuilder {
 	 * Build a control flow graph for an expression
 	 */
 	private SubGraph process(CtExpression<?> expression){
-		List<CtCodeElement> current = new ArrayList<CtCodeElement>();
+		List<CtCodeElement> current = new ArrayList<>();
 		current.add(expression);
 		SubGraph res = new SubGraph(current,cfg);
 		
@@ -498,7 +498,7 @@ public class CfgBuilder {
 			return process((CtBlock<?>)statement);
 		}
 		else if(statement instanceof CtReturn){
-			ArrayList<CtCodeElement> ret = new ArrayList<CtCodeElement>();
+			ArrayList<CtCodeElement> ret = new ArrayList<>();
 			ret.add(statement);
 			SubGraph res = new SubGraph(ret,cfg);
 			res.setEntry(res.getExit());
@@ -507,7 +507,7 @@ public class CfgBuilder {
 		}
 
 		//Default case : build a basic block
-		List<CtCodeElement> current = new ArrayList<CtCodeElement>();
+		List<CtCodeElement> current = new ArrayList<>();
 		current.add(statement);
 		SubGraph res = new SubGraph(current,cfg);
 		

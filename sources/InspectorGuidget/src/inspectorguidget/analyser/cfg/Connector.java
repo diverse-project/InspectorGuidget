@@ -15,6 +15,7 @@ public class Connector extends BasicBlock{
 	 * Print empty circle node in dot format
 	 * and its outgoing edges
 	 */
+	@Override
 	public String toString(){
 		StringBuilder res = new StringBuilder();
 		
@@ -24,7 +25,7 @@ public class Connector extends BasicBlock{
 		
 		for(BasicBlock child : children){
 			res.append(this.hashCode()+"->"+child.hashCode());
-			 CtExpression cond = this.getCondition(child);
+			 CtExpression<?> cond = this.getCondition(child);
 			if(cond != null){
 				res.append("[label=\""+ cond.toString().replaceAll("\\u0022", "\\\\\"").replaceAll("\n", "\\\\l") +"\"]\n");
 			}

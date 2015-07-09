@@ -96,7 +96,7 @@ public class DefUse {
 					storeUseDef(rhs, definitions);
 				}
 				//def
-				Set<CtCodeElement> localdef = new HashSet<CtCodeElement>();
+				Set<CtCodeElement> localdef = new HashSet<>();
 				localdef.add(def);
 				definitions.put(def, localdef);
 			}
@@ -109,7 +109,7 @@ public class DefUse {
 				CtExpression<?> assigned = assignment.getAssigned();
 				if(assigned instanceof CtVariableAccess){
 					CtVariable<?> lhs = ((CtVariableAccess<?>)assigned).getVariable().getDeclaration();
-					Set<CtCodeElement> redef = new HashSet<CtCodeElement>();
+					Set<CtCodeElement> redef = new HashSet<>();
 					redef.add(line);
 					definitions.put(lhs, redef);
 				}
@@ -172,7 +172,7 @@ public class DefUse {
 	 * Breadth first exploration of the blocks of the cfg
 	 */
 	private void process(BasicBlock block){
-		List<BasicBlock> toBeProcessed = new ArrayList<BasicBlock>();
+		List<BasicBlock> toBeProcessed = new ArrayList<>();
 		toBeProcessed.add(block);
 		
 		while(!toBeProcessed.isEmpty()){
@@ -228,7 +228,7 @@ public class DefUse {
 			for(Entry<CtVariable<?>, Set<CtCodeElement>> entry : definition.entrySet()){
 				Set<CtCodeElement> defs = res.get(entry.getKey());
 				if(defs == null){
-					defs = new HashSet<CtCodeElement>();
+					defs = new HashSet<>();
 					res.put(entry.getKey(), defs);
 				}
 				defs.addAll(entry.getValue());
@@ -507,9 +507,9 @@ public class DefUse {
 	public Set<CtVariable<?>> getDeepDef(BasicBlock block){
 		Set<CtVariable<?>> res = new HashSet<>();
 		
-		List<BasicBlock> toBeProcessed = new ArrayList<BasicBlock>();
+		List<BasicBlock> toBeProcessed = new ArrayList<>();
 		toBeProcessed.add(block);
-		List<BasicBlock> yetProcessed = new ArrayList<BasicBlock>();
+		List<BasicBlock> yetProcessed = new ArrayList<>();
 		
 		
 		while(!toBeProcessed.isEmpty()){
@@ -683,6 +683,7 @@ public class DefUse {
 		return cfg.getExecutable();
 	}
 	
+	@Override
 	public String toString(){
 		StringBuffer res  = new StringBuffer();
 		

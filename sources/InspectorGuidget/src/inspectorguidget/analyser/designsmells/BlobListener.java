@@ -1,22 +1,24 @@
 package inspectorguidget.analyser.designsmells;
 
+import inspectorguidget.analyser.dataflow.Action;
+
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import spoon.reflect.code.CtNewClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
-import inspectorguidget.analyser.dataflow.Action;
 
 public class BlobListener {
 	
-	IdentityHashMap<CtMethod, List<Action>> blobListeners;
+	Map<CtMethod<?>, List<Action>> blobListeners;
 	//ListenerRegistrationsWrapper regWrapper;
 	
 	public BlobListener(List<Action> commands){
-		blobListeners = new IdentityHashMap<CtMethod, List<Action>>();
+		blobListeners = new IdentityHashMap<>();
 		//blobListeners.putAll(findBlobListeners(commands));
 		blobListeners = findBlobListeners(commands);
 		System.out.println("#BlobListeners " + blobListeners.size());
@@ -24,12 +26,12 @@ public class BlobListener {
 	
 	
 	//Look at TerPaint: it is not a good strategy
-	public IdentityHashMap<CtMethod, List<Action>> findBlobListeners(List<Action> cmds){
-		IdentityHashMap<CtMethod, List<Action>> candidatesBlob = gatherCommandsBySource(cmds);
-		IdentityHashMap<CtMethod,List<Action>> res = new IdentityHashMap<CtMethod, List<Action>>();;
+	public Map<CtMethod<?>, List<Action>> findBlobListeners(List<Action> cmds){
+		Map<CtMethod<?>, List<Action>> candidatesBlob = gatherCommandsBySource(cmds);
+		Map<CtMethod<?>,List<Action>> res = new IdentityHashMap<>();
 		
 //		int count = 0;
-		for (Entry<CtMethod, List<Action>> cmds2Listener : candidatesBlob.entrySet()){
+		for (Entry<CtMethod<?>, List<Action>> cmds2Listener : candidatesBlob.entrySet()){
 			if (cmds2Listener.getValue().size() > 1){//There is more than one command per listener
 				//if (isBlobListener(cmds2Listener.getKey())){
 					res.put(cmds2Listener.getKey(), cmds2Listener.getValue());
@@ -44,13 +46,13 @@ public class BlobListener {
 	/*
 	 * Gather commands that are detected in the same method
 	 */
-	private IdentityHashMap<CtMethod,List<Action>> gatherCommandsBySource(List<Action> commands){		
-		IdentityHashMap<CtMethod, List<Action>> res = new IdentityHashMap<CtMethod, List<Action>>();	
+	private Map<CtMethod<?>,List<Action>> gatherCommandsBySource(List<Action> commands){		
+		Map<CtMethod<?>, List<Action>> res = new IdentityHashMap<>();	
 		
 		for (Action cmd : commands){
 			List<Action> cmds = res.get(cmd.getSource());
 			if (cmds == null ){
-				cmds = new ArrayList<Action>();
+				cmds = new ArrayList<>();
 				cmds.add(cmd);
 				res.put(cmd.getSource(), cmds);
 			}
@@ -62,7 +64,7 @@ public class BlobListener {
 	}
 	
 	//Look at TerPaint: it is not a good strategy
-	public boolean isBlobListener(CtMethod source){
+	public boolean isBlobListener(CtMethod<?> source){
 		CtElement parent = source.getDeclaringType().getParent();
 		if (parent instanceof CtNewClass){
 			return false;
@@ -70,7 +72,7 @@ public class BlobListener {
 		return true;
 	}	
 	
-	public IdentityHashMap<CtMethod,List<Action>> getBlobListeners(){
+	public Map<CtMethod<?>,List<Action>> getBlobListeners(){
 		return blobListeners;
 	}
 }

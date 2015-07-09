@@ -26,7 +26,7 @@ public class BasicBlock{
 	/**
 	 * Conditionals edges
 	 */
-	Map<BasicBlock,CtExpression> conditions;
+	Map<BasicBlock,CtExpression<?>> conditions;
 	List<BasicBlock> children;
 	List<BasicBlock> parents;
 	
@@ -34,10 +34,10 @@ public class BasicBlock{
 	 * Create a BasicBlock in this cfg
 	 */
 	public BasicBlock(ControlFlowGraph cfg) {
-		statements = new ArrayList<CtCodeElement>();
-		children = new ArrayList<BasicBlock>();
-		parents = new ArrayList<BasicBlock>();
-		conditions = new HashMap<BasicBlock,CtExpression>();
+		statements = new ArrayList<>();
+		children = new ArrayList<>();
+		parents = new ArrayList<>();
+		conditions = new HashMap<>();
 		this.cfg = cfg;
 		cfg.addNode(this);
 	}
@@ -47,9 +47,9 @@ public class BasicBlock{
 	 */
 	public BasicBlock(List<CtCodeElement> body, ControlFlowGraph cfg) {
 		statements = body;
-		children = new ArrayList<BasicBlock>();
-		parents = new ArrayList<BasicBlock>();
-		conditions = new HashMap<BasicBlock,CtExpression>();
+		children = new ArrayList<>();
+		parents = new ArrayList<>();
+		conditions = new HashMap<>();
 		this.cfg = cfg;
 		cfg.addNode(this);
 	}
@@ -58,7 +58,7 @@ public class BasicBlock{
 		return statements;
 	}
 	
-	public void addChild(BasicBlock node, CtExpression cond){
+	public void addChild(BasicBlock node, CtExpression<?> cond){
 		children.add(node);
 		conditions.put(node, cond);
 		node.getParents().add(this);
@@ -79,7 +79,7 @@ public class BasicBlock{
 			child.parents.remove(this);
 			conditions.remove(child);
 		}
-		this.children = new ArrayList<BasicBlock>();
+		this.children = new ArrayList<>();
 		this.addChild(returnNode, null); //"return"
 	}
 	
@@ -98,7 +98,7 @@ public class BasicBlock{
 		return parents;
 	}
 	
-	public CtExpression getCondition(BasicBlock child){
+	public CtExpression<?> getCondition(BasicBlock child){
 		//TODO: check child is a node's child
 		return conditions.get(child);
 	}
@@ -108,7 +108,7 @@ public class BasicBlock{
 		//TODO:node should be a child
 		 this.removeChild(node);
 		 
-		 List<BasicBlock> toRemove = new ArrayList<BasicBlock>();
+		 List<BasicBlock> toRemove = new ArrayList<>();
 		 for(BasicBlock parent : node.getParents()){
 			 parent.addChild(this, parent.getCondition(node));
 			 toRemove.add(parent);
@@ -117,7 +117,7 @@ public class BasicBlock{
 			 node.removeParent(parent);
 		 }
 		 
-		 toRemove = new ArrayList<BasicBlock>();
+		 toRemove = new ArrayList<>();
 		 for(BasicBlock child : node.getChildren()){
 			 this.addChild(child, node.getCondition(child));
 			 toRemove.add(child);
@@ -126,6 +126,7 @@ public class BasicBlock{
 		 cfg.removeNode(node);
 	}
 	
+	@Override
 	public String toString(){
 		StringBuilder res = new StringBuilder();
 		
@@ -138,7 +139,7 @@ public class BasicBlock{
 
 		for(BasicBlock child : children){
 			res.append(this.hashCode()+"->"+child.hashCode());
-			CtExpression cond = this.getCondition(child);
+			CtExpression<?> cond = this.getCondition(child);
 			if(cond != null){
 				res.append("[label=\""+ cond.toString().replaceAll("\\u0022", "X").replaceAll("\n", "\\\\l") +"\"]\n");
 			}

@@ -19,19 +19,19 @@ import spoon.reflect.reference.CtTypeReference;
 /**
  * This processor find listener methods in the source code
  */
-public final class SimpleListenerProcessor extends AbstractProcessor<CtClass>{
+public final class SimpleListenerProcessor extends AbstractProcessor<CtClass<?>>{
 	
 	//Listener interfaces targeted
-	List<CtTypeReference> 	swingListenersRef;
-	List<CtTypeReference> 	awtListenersRef;
-	CtTypeReference 		eventListenerRef;
+	List<CtTypeReference<?>> 	swingListenersRef;
+	List<CtTypeReference<?>> 	awtListenersRef;
+	CtTypeReference<?> 		eventListenerRef;
 	
 	//Event interface
-	CtTypeReference eventRef;
+	CtTypeReference<?> eventRef;
 	
-	Set<CtTypeReference> events;
+	Set<CtTypeReference<?>> events;
 	
-	List<CtMethod> allListernerMethods;
+	List<CtMethod<?>> allListernerMethods;
 	
 	ListenersWrapper wrapper;
 
@@ -46,12 +46,12 @@ public final class SimpleListenerProcessor extends AbstractProcessor<CtClass>{
 	 * Store each listener-related methods from @clazz
 	 */
 	@Override
-	public void process(CtClass clazz) {
+	public void process(CtClass<?> clazz) {
 		
 		boolean isAdded = false;
 		
 		//Case SWING
-		for(CtTypeReference ref : swingListenersRef){
+		for(CtTypeReference<?> ref : swingListenersRef){
 			if(clazz.isSubtypeOf(ref)){
 				isAdded = true;
 				processMethods(clazz,ref);
@@ -59,7 +59,7 @@ public final class SimpleListenerProcessor extends AbstractProcessor<CtClass>{
 		}
 		
 		//Case AWT
-		for(CtTypeReference ref : awtListenersRef){
+		for(CtTypeReference<?> ref : awtListenersRef){
 			if(clazz.isSubtypeOf(ref)){
 				isAdded = true;
 				processMethods(clazz,ref);
@@ -131,8 +131,8 @@ public final class SimpleListenerProcessor extends AbstractProcessor<CtClass>{
 		eventRef = getFactory().Type().createReference(java.util.EventObject.class);
 		
 		//The results
-		allListernerMethods = new ArrayList<CtMethod>();
-		events = new HashSet();
+		allListernerMethods = new ArrayList<>();
+		events = new HashSet<>();
 	}
 	
 	/**
@@ -144,7 +144,7 @@ public final class SimpleListenerProcessor extends AbstractProcessor<CtClass>{
 	}
 	
 	@Override
-	public boolean isToBeProcessed(CtClass candidate) {
+	public boolean isToBeProcessed(CtClass<?> candidate) {
 		try{
 			if(candidate.isSubtypeOf(eventListenerRef))
 				return true;
@@ -158,10 +158,10 @@ public final class SimpleListenerProcessor extends AbstractProcessor<CtClass>{
 	/**
 	 * Store each method from @class_ that implements @interface_
 	 */
-	private void processMethods(CtClass class_, CtTypeReference interface_){
+	private void processMethods(CtClass<?> class_, CtTypeReference<?> interface_){
 		for(Method m : interface_.getActualClass().getMethods()){
-			List<CtMethod> methods = class_.getMethodsByName(m.getName());
-			for(CtMethod method : methods){
+			List<CtMethod<?>> methods = class_.getMethodsByName(m.getName());
+			for(CtMethod<?> method : methods){
 				if(!Helper.identityContains(method,allListernerMethods)){ //TODO: find an alternative
 					allListernerMethods.add(method);
 				}
@@ -170,10 +170,10 @@ public final class SimpleListenerProcessor extends AbstractProcessor<CtClass>{
 		}
 	}
 	
-	private void registerEvent(CtMethod method){
-		List<CtParameter> params = method.getParameters();
-		for(CtParameter param : params){
-			CtTypeReference type = param.getType();
+	private void registerEvent(CtMethod<?> method){
+		List<CtParameter<?>> params = method.getParameters();
+		for(CtParameter<?> param : params){
+			CtTypeReference<?> type = param.getType();
 			if(type.isSubtypeOf(eventRef)) events.add(type);
 		}
 	}

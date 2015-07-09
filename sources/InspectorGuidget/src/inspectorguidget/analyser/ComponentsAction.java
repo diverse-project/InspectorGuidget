@@ -15,8 +15,8 @@ public class ComponentsAction {
 	public ComponentsAction(){
 		
 		//instantiation of swing components
-		getActions = new ArrayList<String>();
-		setActions = new ArrayList<String>();
+		getActions = new ArrayList<>();
+		setActions = new ArrayList<>();
 	
 		
 		//For all components

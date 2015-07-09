@@ -10,12 +10,11 @@ public class Helper {
 	 * Write 'content' in 'dir'/'file' 
 	 */
 	public static void writeFile(String dir, String file, String content){
-		try{
-			File newDir = new File(dir);
-			newDir.mkdirs();
+		File newDir = new File(dir);
+		newDir.mkdirs();
 			
-			FileWriter fw = new FileWriter(dir+"/"+file, false);
-			BufferedWriter output = new BufferedWriter(fw);
+		try(FileWriter fw = new FileWriter(dir+"/"+file, false);
+				BufferedWriter output = new BufferedWriter(fw);){
 			output.write(content);
 			output.flush();
 			output.close();
@@ -28,7 +27,7 @@ public class Helper {
 	/**
 	 * Check if o is in list with == operator
 	 */
-	public static boolean identityContains(Object o, List list){
+	public static boolean identityContains(Object o, List<?> list){
 		for(Object l : list){
 			if(o == l) return true;
 		}

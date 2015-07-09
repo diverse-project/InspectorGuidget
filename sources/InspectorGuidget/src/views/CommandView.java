@@ -40,7 +40,7 @@ public class CommandView extends ViewPart {
 	 */
 	public static final String ID = "views.CommandView";
 	
-	private List<IMarker> markerList = new ArrayList<IMarker>();
+	private List<IMarker> markerList = new ArrayList<>();
 
 	private TableViewer viewer;
 	 
@@ -55,6 +55,7 @@ public class CommandView extends ViewPart {
 	 * This is a callback that will allow us
 	 * to create the viewer and initialize it.
 	 */
+	@Override
 	public void createPartControl(Composite parent) {
 		viewer = makeTable(parent);
 	}
@@ -69,6 +70,7 @@ public class CommandView extends ViewPart {
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
+	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}

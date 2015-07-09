@@ -26,9 +26,9 @@ import spoon.reflect.declaration.CtMethod;
  */
 public class ConditionalListeners {
 
-	List<CtMethod> allCondListeners;
+	List<CtMethod<?>> allCondListeners;
 	
-	public ConditionalListeners(List<CtMethod> listeners) {
+	public ConditionalListeners(List<CtMethod<?>> listeners) {
 		this.allCondListeners = new ArrayList<>();
 		allCondListeners.addAll(look4ConditionalMethods(listeners));	
 	}
@@ -38,12 +38,12 @@ public class ConditionalListeners {
 	}
 	
 	//Looking for methods of listeners that contain a condition block such as if, while, for, switch, etc.
-	private List<CtMethod> look4ConditionalMethods(List<CtMethod> methods){	
-		List<CtMethod> condMethods = new ArrayList<CtMethod>();
-		for(CtMethod method : methods){
-			CtBlock block = method.getBody();	
+	private List<CtMethod<?>> look4ConditionalMethods(List<CtMethod<?>> methods){	
+		List<CtMethod<?>> condMethods = new ArrayList<>();
+		for(CtMethod<?> method : methods){
+			CtBlock<?> block = method.getBody();	
 			if (block!=null){//Listeners can have empty bodies
-				List<CtCodeElement> elements = new ArrayList<CtCodeElement>();
+				List<CtCodeElement> elements = new ArrayList<>();
 				elements.addAll(block.getStatements());
 				if (isConditionalListener(elements)){
 					condMethods.add(method);
@@ -59,12 +59,10 @@ public class ConditionalListeners {
 			if (isCondStatement(elem)){				
 				return true;
 			}
-			else{
-				List<CtCodeElement> listElements = processConditionalStmts(elem);
-				if (!listElements.isEmpty()){
-					if(isConditionalListener(listElements)){
-						return true;
-					}
+			List<CtCodeElement> listElements = processConditionalStmts(elem);
+			if (!listElements.isEmpty()){
+				if(isConditionalListener(listElements)){
+					return true;
 				}
 			}
 		}
@@ -73,7 +71,7 @@ public class ConditionalListeners {
 	
 	//Get statements in conditionals
 	public List<CtCodeElement> processConditionalStmts(CtCodeElement line) {
-		List<CtCodeElement> res = new ArrayList<CtCodeElement>();
+		List<CtCodeElement> res = new ArrayList<>();
 		
 		if(line instanceof CtIf){			
 			CtStatement thenStatement = ((CtIf) line).getThenStatement();
@@ -84,7 +82,7 @@ public class ConditionalListeners {
 			}
 		}
 		else if (line instanceof CtConditional){//Need to fix it! It cannot be cast 
-			CtConditional conditional = (CtConditional) line;
+			CtConditional<?> conditional = (CtConditional<?>) line;
 			res.add(conditional.getThenExpression());
 			if (conditional.getElseExpression() != null){
 				res.add(conditional.getElseExpression());
@@ -106,7 +104,7 @@ public class ConditionalListeners {
 		}
 		else if (line instanceof CtSwitch){			
 			CtSwitch switch_ = (CtSwitch) line;
-			List<CtCase> cases = switch_.getCases();
+			List<CtCase<?>> cases = switch_.getCases();
 			for (CtCase<?> case_ : cases){				
 				if (case_ != null){res.addAll(case_.getStatements());}
 			}	
@@ -122,7 +120,7 @@ public class ConditionalListeners {
 			
 		}
 		else if (line instanceof CtBlock){
-			CtBlock block = (CtBlock) line;
+			CtBlock<?> block = (CtBlock<?>) line;
 			res.addAll(block.getStatements());
 		}
 		else if (line instanceof CtSynchronized){
@@ -163,13 +161,13 @@ public class ConditionalListeners {
 		return false;		
 	}
 	
-	public List<CtMethod> getCondListeners(){
+	public List<CtMethod<?>> getCondListeners(){
 		return allCondListeners;
 	}
 	
 	//Get statements in conditionals
 	public List<CtStatement> processCondStatements(CtCodeElement line) {//Can be removed but firstly: refactor in  VariablesProcessor
-		List<CtStatement> res = new ArrayList<CtStatement>();
+		List<CtStatement> res = new ArrayList<>();
 		
 		if(line instanceof CtIf){
 
@@ -184,8 +182,8 @@ public class ConditionalListeners {
 			}
 		}
 		else if (line instanceof CtConditional){//Need to fix it! It cannot be cast 
-			CtConditional conditional = (CtConditional) line;
-			CtExpression thenExpr = conditional.getThenExpression();
+			CtConditional<?> conditional = (CtConditional<?>) line;
+			CtExpression<?> thenExpr = conditional.getThenExpression();
 			res.add((CtStatement) thenExpr);
 			res.add((CtStatement) conditional.getElseExpression());
 			System.out.println("Conditional "+ conditional);
@@ -202,7 +200,7 @@ public class ConditionalListeners {
 		}
 		else if (line instanceof CtSwitch){			
 			CtSwitch switch_ = (CtSwitch) line;
-			List<CtCase> cases = switch_.getCases();
+			List<CtCase<?>> cases = switch_.getCases();
 			for (CtCase<?> case_ : cases){				
 				res.addAll(case_.getStatements());
 			}
@@ -219,7 +217,7 @@ public class ConditionalListeners {
 			
 		}
 		else if (line instanceof CtBlock){
-			CtBlock block = (CtBlock) line;
+			CtBlock<?> block = (CtBlock<?>) line;
 			res.addAll(block.getStatements());
 		}
 		else if (line instanceof CtSynchronized){

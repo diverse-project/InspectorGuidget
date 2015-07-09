@@ -13,9 +13,9 @@ public class Solver {
 	 */
 	public static ConditionalSolution solve(String expression){
 		//TODO: use an external library
-		List<List<Pair<String,Boolean>>> solutions = new ArrayList<List<Pair<String,Boolean>>>();
-		List<Pair<String,Boolean>> dummySolution = new ArrayList<Pair<String,Boolean>>();
-		dummySolution.add(new Pair<String, Boolean>(expression, true));
+		List<List<Pair<String,Boolean>>> solutions = new ArrayList<>();
+		List<Pair<String,Boolean>> dummySolution = new ArrayList<>();
+		dummySolution.add(new Pair<>(expression, true));
 		ConditionalSolution res = new ConditionalSolution(expression,solutions);
 		return res;
 	}

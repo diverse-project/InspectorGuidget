@@ -1,21 +1,21 @@
 package inspectorguidgetplugin.popup.actions;
 
+import inspectorguidget.analyser.processor.SimpleListenerProcessor;
+import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import inspectorguidget.analyser.processor.SimpleListenerProcessor;
-import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtMethod;
 import views.ListenerView;
@@ -25,7 +25,7 @@ public class GUIListeners extends AbstractAction {
 	/**
 	 * Link Markers to their methods
 	 */
-	static HashMap<IMarker,CtMethod> infoMapping;
+	static Map<IMarker,CtMethod<?>> infoMapping;
 	
 	ListenersWrapper listeners;
 
@@ -40,9 +40,10 @@ public class GUIListeners extends AbstractAction {
 	/**
 	 * Attach a warning marker for each listeners
 	 */
+	@Override
 	protected void addMarkers(IProject project){
 		
-		infoMapping = new HashMap<IMarker, CtMethod>();
+		infoMapping = new HashMap<>();
 		
 		String projectName = project.getName();
 //		IJavaProject jProject = JavaCore.create(project);
@@ -54,7 +55,7 @@ public class GUIListeners extends AbstractAction {
 			e1.printStackTrace();
 		}
 		
-		for (CtMethod method : listeners.getListeners()) {
+		for (CtMethod<?> method : listeners.getListeners()) {
 			File source = method.getPosition().getFile();
 			
 			//FIXME: little hack here
@@ -96,7 +97,7 @@ public class GUIListeners extends AbstractAction {
 	public static String getInfo(IMarker marker){	
 		String res = "";
 		
-		CtMethod method = infoMapping.get(marker);
+		CtMethod<?> method = infoMapping.get(marker);
 		if(method != null){
 			String sourceFile = method.getPosition().getFile().getName();
 			int line = method.getPosition().getLine();

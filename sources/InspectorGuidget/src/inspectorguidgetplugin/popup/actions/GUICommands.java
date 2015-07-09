@@ -1,5 +1,10 @@
 package inspectorguidgetplugin.popup.actions;
 
+import inspectorguidget.analyser.dataflow.Action;
+import inspectorguidget.analyser.designsmells.Command;
+import inspectorguidget.analyser.processor.SimpleListenerProcessor;
+import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,18 +14,12 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import inspectorguidget.analyser.processor.SimpleListenerProcessor;
-import inspectorguidget.analyser.processor.wrapper.ListenersWrapper;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtExpression;
 import views.CommandView;
-import inspectorguidget.analyser.dataflow.Action;
-import inspectorguidget.analyser.designsmells.Command;
 
 
 public class GUICommands extends AbstractAction{
@@ -45,12 +44,13 @@ public class GUICommands extends AbstractAction{
 	/**
 	 * Attach a warning marker for each command
 	 */
+	@Override
 	protected void addMarkers(IProject project){
 		
-		infoMapping = new HashMap<IMarker, Action>();
+		infoMapping = new HashMap<>();
 		
 		String projectName = project.getName();
-		IJavaProject jProject = JavaCore.create(project);
+//		IJavaProject jProject = JavaCore.create(project);
 		actions = new Command(listeners,factory);
 		
 		try {
@@ -62,8 +62,8 @@ public class GUICommands extends AbstractAction{
 		
 		for (Action cmd : actions.getMergedCommands()){
 			File source = cmd.getSource().getPosition().getFile();
-			List<CtExpression> conditions = cmd.getConditions();
-			CtExpression lastCond = conditions.get((conditions.size()-1));
+			List<CtExpression<?>> conditions = cmd.getConditions();
+			CtExpression<?> lastCond = conditions.get((conditions.size()-1));
 			
 			int position;
 			if (lastCond.getPosition() != null){
@@ -88,7 +88,7 @@ public class GUICommands extends AbstractAction{
 				
 				infoMapping.put(m, cmd); //store mapping
 				
-				CommandView.getSingleton().addMarker(m); //update the view
+				CommandView.addMarker(m); //update the view
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -115,7 +115,7 @@ public class GUICommands extends AbstractAction{
 		
 //		String method = cmd.getSource().getSimpleName();
 		
-		CtExpression cond = cmd.getConditions().get(cmd.getConditions().size()-1);
+		CtExpression<?> cond = cmd.getConditions().get(cmd.getConditions().size()-1);
 		int line = cond.getPosition().getLine();
 		
 		String sourceFile = cmd.getSource().getPosition().getFile().getName();
@@ -130,13 +130,11 @@ public class GUICommands extends AbstractAction{
 	public static String getLabel(IMarker marker){
 		Action cmd = infoMapping.get(marker);
 		
-		CtExpression cond = cmd.getConditions().get(cmd.getConditions().size()-1);
+		CtExpression<?> cond = cmd.getConditions().get(cmd.getConditions().size()-1);
 		if (cond.getPosition() != null){
 			return cond.toString();
 		}
-		else {
-			//return cmd.getStatements().get(0).toString();
-			return cmd.getConditions().get(0).toString();
-		}
+		//return cmd.getStatements().get(0).toString();
+		return cmd.getConditions().get(0).toString();
 	}
 }

@@ -16,7 +16,7 @@ public class Action {
 	/**
 	 * Where the action is located
 	 */
-	CtMethod source;
+	CtMethod<?> source;
 	
 	/**
 	 * The action
@@ -28,16 +28,16 @@ public class Action {
 	 * All conditions of the control flow from the beginning of the
 	 * source method to the action statement
 	 */
-	List<CtExpression> conditions;
+	List<CtExpression<?>> conditions;
 	
-	public Action(CtCodeElement action, List<CtExpression> conditions, CtMethod method) {
+	public Action(CtCodeElement action, List<CtExpression<?>> conditions, CtMethod<?> method) {
 		this.actionStatement = action;
 		this.conditions = conditions;
 		this.source = method;
 	}
 	
 	//Multiple actions
-	public Action(List<CtCodeElement> actions, List<CtExpression> conditions, CtMethod method) {
+	public Action(List<CtCodeElement> actions, List<CtExpression<?>> conditions, CtMethod<?> method) {
 		this.actionStatements = actions;
 		this.conditions = conditions;
 		this.source = method;
@@ -57,14 +57,14 @@ public class Action {
 	/**
 	 * Conditions that must be true to execute this action
 	 */
-	public List<CtExpression> getConditions(){
+	public List<CtExpression<?>> getConditions(){
 		return conditions;
 	}
 	
 	/**
 	 * The containing method of the statement 
 	 */
-	public CtMethod getSource(){
+	public CtMethod<?> getSource(){
 		return source;
 	}
 	
@@ -86,7 +86,7 @@ public class Action {
 	public String toString() {
 		StringBuffer res = new StringBuffer();
 		
-		CtClass clazz = (CtClass) source.getParent();
+		CtClass<?> clazz = (CtClass<?>) source.getParent();
 		
 		res.append("[" + clazz.getQualifiedName() + "."+ source.getSimpleName() + "]\n");
 		if (actionStatement != null) {
@@ -95,7 +95,7 @@ public class Action {
 			res.append(actionStatements.toString()+"\n");
 		}
 		
-		for(CtExpression cond : conditions){
+		for(CtExpression<?> cond : conditions){
 				res.append("\t"+ cond +"\n");
 		}
 		return res.toString();

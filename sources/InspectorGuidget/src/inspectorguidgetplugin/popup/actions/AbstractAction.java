@@ -54,6 +54,7 @@ public abstract class AbstractAction implements IObjectActionDelegate{
 	/**
 	 * @see IActionDelegate#run(IAction)
 	 */
+	@Override
 	public void run(IAction action) {
 		
 		final IProject project = getCurrentProject();
@@ -68,7 +69,7 @@ public abstract class AbstractAction implements IObjectActionDelegate{
 			  initAction(monitor,project);
 			  Job job2 = new UIJob("Add markers") {//To switch to the UI thread
 					@Override
-					public IStatus runInUIThread(IProgressMonitor monitor) {
+					public IStatus runInUIThread(IProgressMonitor monit) {
 						addMarkers(project);
 						//Measuring the time of InspectorWidget
 						//long endTime = System.currentTimeMillis();
@@ -199,7 +200,7 @@ public abstract class AbstractAction implements IObjectActionDelegate{
 //			urls.add(getDependencies(folder));
 //		}
 		
-		List<URL[]> urls = new ArrayList<URL[]>();
+		List<URL[]> urls = new ArrayList<>();
 		//for(String folder : folders){
 		for(File file : libs){
 			urls.add(getDependencies(file));
@@ -274,9 +275,9 @@ public abstract class AbstractAction implements IObjectActionDelegate{
 	/**
 	 * Find listeners in @factory and store them in @listeners
 	 */
-	protected void spoonProcess(Factory factory, List<AbstractProcessor<?>> processors){
+	protected void spoonProcess(Factory facto, List<AbstractProcessor<?>> processors){
 	
-		ProcessingManager processorManager = new QueueProcessingManager(factory);
+		ProcessingManager processorManager = new QueueProcessingManager(facto);
 		for (AbstractProcessor<?> proc: processors){
 			processorManager.addProcessor(proc);
 		}
@@ -305,6 +306,7 @@ public abstract class AbstractAction implements IObjectActionDelegate{
 	/**
 	 * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
 	 */
+	@Override
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
 		shell = targetPart.getSite().getShell();
 	}
@@ -314,6 +316,7 @@ public abstract class AbstractAction implements IObjectActionDelegate{
 	/**
 	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
 	 */
+	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 	}
 }

@@ -1,22 +1,22 @@
 package inspectorguidgetplugin.popup.actions;
 
+import inspectorguidget.analyser.dataflow.Action;
+import inspectorguidget.analyser.designsmells.Command;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import inspectorguidget.analyser.dataflow.Action;
-import inspectorguidget.analyser.designsmells.Command;
 import spoon.reflect.declaration.CtMethod;
 import views.BlobListenerView;
 
@@ -29,7 +29,7 @@ public class BlobListeners extends GUICommands{
 	/**
 	 * Link Markers to their methods
 	 */
-	static HashMap<IMarker,CtMethod> infoMapping;
+	static Map<IMarker,CtMethod<?>> infoMapping;
 	
 	public BlobListeners(){		
 		super();
@@ -37,12 +37,12 @@ public class BlobListeners extends GUICommands{
 	
 	@Override
 	protected void addMarkers(IProject project) {
-		infoMapping = new HashMap<IMarker, CtMethod>();
+		infoMapping = new HashMap<>();
 		
 		String projectName = project.getName();
-		IJavaProject jProject = JavaCore.create(project);
+//		IJavaProject jProject = JavaCore.create(project);
 		actions = new Command(listeners,factory);
-		IdentityHashMap<CtMethod, List<Action>> candidatesBlob = gatherCommandsBySource(actions.getMergedCommands());
+		Map<CtMethod<?>, List<Action>> candidatesBlob = gatherCommandsBySource(actions.getMergedCommands());
 		
 		try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("views.BlobListenerView");
@@ -51,8 +51,8 @@ public class BlobListeners extends GUICommands{
 			e1.printStackTrace();
 		}
 		
-		int totalOfLines = 0;
-		for (CtMethod listener : listeners.getListeners()){
+//		int totalOfLines = 0;
+		for (CtMethod<?> listener : listeners.getListeners()){
 			List<Action> cmds = candidatesBlob.get(listener);
 			
 			//Recovery blobListeners by checking if there is more than one command per listener
@@ -76,7 +76,7 @@ public class BlobListeners extends GUICommands{
 					
 					infoMapping.put(m, listener); //store mapping
 					
-					BlobListenerView.getSingleton().addMarker(m); //update the view
+					BlobListenerView.addMarker(m); //update the view
 				} catch (CoreException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -89,13 +89,13 @@ public class BlobListeners extends GUICommands{
 	/*
 	 * Gather commands that are detected in the same method
 	 */
-	public IdentityHashMap<CtMethod,List<Action>> gatherCommandsBySource(List<Action> commands){		
-		IdentityHashMap<CtMethod, List<Action>> res = new IdentityHashMap<CtMethod, List<Action>>();	
+	public Map<CtMethod<?>,List<Action>> gatherCommandsBySource(List<Action> commands){		
+		Map<CtMethod<?>, List<Action>> res = new IdentityHashMap<>();	
 		
 		for (Action cmd : commands){
 			List<Action> cmds = res.get(cmd.getSource());
 			if (cmds == null ){
-				cmds = new ArrayList<Action>();
+				cmds = new ArrayList<>();
 				cmds.add(cmd);
 				res.put(cmd.getSource(), cmds);
 			}
@@ -141,7 +141,7 @@ public class BlobListeners extends GUICommands{
 	public static String getInfo(IMarker marker){	
 		String res = "";
 		
-		CtMethod method = infoMapping.get(marker);
+		CtMethod<?> method = infoMapping.get(marker);
 		if(method != null){
 			String sourceFile = method.getPosition().getFile().getName();
 			int line = method.getPosition().getLine();

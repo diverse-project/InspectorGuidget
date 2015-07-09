@@ -68,8 +68,8 @@ public class Command {
 	Factory factory;	
 	public Command(ListenersWrapper procWrapper,Factory factory) {
 		this.wrapper = procWrapper;
-		List<CtMethod> listeners = wrapper.getListeners();
-		List<CtMethod> allCondListeners = wrapper.getConditionalListeners();
+		List<CtMethod<?>> listeners = wrapper.getListeners();
+		List<CtMethod<?>> allCondListeners = wrapper.getConditionalListeners();
 		this.factory = factory;
 		//To measure the LOC size of listeners
 		//int totalLOCListeners = getTotalLoc(getLOCListeners(listeners));
@@ -78,9 +78,9 @@ public class Command {
 		//System.out.println("GUICondListeners size "+ totalLOCondListeners);
 		
 		//candidateCommands = new ArrayList<Action>();
-		commandsWithAllConds = new ArrayList<Action>();
-		commands = new ArrayList<Action>();
-		for(CtMethod method : allCondListeners){
+		commandsWithAllConds = new ArrayList<>();
+		commands = new ArrayList<>();
+		for(CtMethod<?> method : allCondListeners){
 			//summaries = new ArrayList<MethodSummary>();
 			//summaries.add(new MethodSummary(method));			
 			cfg = new ControlFlowGraph(method);
@@ -103,12 +103,12 @@ public class Command {
 		// TODO Auto-generated constructor stub
 	}
 
-	private List<Action> looking4Commands(CtMethod method){
+	private List<Action> looking4Commands(CtMethod<?> method){
 		BasicBlock block = cfg.getEntryBlock();
-		Map<List<CtCodeElement>, List<CtExpression>> cmds = getElementsInConditionals(block);
+		Map<List<CtCodeElement>, List<CtExpression<?>>> cmds = getElementsInConditionals(block);
 		
-		List<Action> actions = new ArrayList<Action>();
-		for (Entry<List<CtCodeElement>, List<CtExpression>> cmd : cmds.entrySet()){	
+		List<Action> actions = new ArrayList<>();
+		for (Entry<List<CtCodeElement>, List<CtExpression<?>>> cmd : cmds.entrySet()){	
 			for  (CtCodeElement element : cmd.getKey()) {
 				Action action = new Action(element, cmd.getValue(), method);
 				actions.add(action); 
@@ -119,13 +119,13 @@ public class Command {
 	}
 	
 	//Traverse the CFG starting from the entry node and get all elements that are into eventRef conditionals  
-	private Map<List<CtCodeElement>, List<CtExpression>> getElementsInConditionals(BasicBlock block){
+	private Map<List<CtCodeElement>, List<CtExpression<?>>> getElementsInConditionals(BasicBlock block){
 		
-		Map<List<CtCodeElement>, List<CtExpression>> res = new IdentityHashMap<List<CtCodeElement>, List<CtExpression>>();
+		Map<List<CtCodeElement>, List<CtExpression<?>>> res = new IdentityHashMap<>();
 		
 		BasicBlock entryNode = block;
-		List<BasicBlock> queue = new ArrayList<BasicBlock>();
-		List<BasicBlock> visited = new ArrayList<BasicBlock>();
+		List<BasicBlock> queue = new ArrayList<>();
+		List<BasicBlock> visited = new ArrayList<>();
 		queue.add(entryNode);
 		
 		while (!queue.isEmpty()){		
@@ -136,7 +136,7 @@ public class Command {
 				if (!queue.contains(child) && !visited.contains(child)){
 					if (!child.getElements().isEmpty()){
 						List<CtCodeElement> elements = child.getElements();	
-						List<CtExpression> evtConditions = looking4Conditionals(elements);	
+						List<CtExpression<?>> evtConditions = looking4Conditionals(elements);	
 						if(!evtConditions.isEmpty()){
 							res.put(child.getElements(), evtConditions);	
 						}
@@ -149,16 +149,16 @@ public class Command {
 	}	
 	
 	//Looking for conditions that refer to event source and widget type
-	private List<CtExpression> looking4Conditionals(List<CtCodeElement> elements){
+	private List<CtExpression<?>> looking4Conditionals(List<CtCodeElement> elements){
 	
 //		List<CtExpression> res = new ArrayList<>();
-		List<CtExpression> allConditions = gatherContainingCondition(elements, cfg.getExecutable());
-		List<CtExpression> condRefEvents = new ArrayList<>();	
+		List<CtExpression<?>> allConditions = gatherContainingCondition(elements, cfg.getExecutable());
+		List<CtExpression<?>> condRefEvents = new ArrayList<>();	
 		
 		//Verify if the elements has conditions
-		List<CtExpression> allCondRefEvents = new ArrayList<>();	
+		List<CtExpression<?>> allCondRefEvents = new ArrayList<>();	
 		if (!allConditions.isEmpty()) {				
-			for (CtExpression cond : allConditions){
+			for (CtExpression<?> cond : allConditions){
 				if (isConditionEventRef(cond) || isCondRefWidgets(cond)){
 					allCondRefEvents.add(cond);
 				}	 
@@ -168,9 +168,9 @@ public class Command {
 				condRefEvents.addAll(allConditions);
 			}
 //			//Commands can have nested conditions that not refer to events
-			Iterator<CtExpression> it = allConditions.iterator();
+			Iterator<CtExpression<?>> it = allConditions.iterator();
 			while (it.hasNext() && allCondRefEvents.size() > 0){
-				CtExpression condition = it.next();
+				CtExpression<?> condition = it.next();
 				condRefEvents.add(condition);
 				allCondRefEvents.remove(condition);
 				
@@ -181,17 +181,17 @@ public class Command {
 
 	
 	//Verify if a condition refers to listener events of a method 
-	private boolean isConditionEventRef(CtExpression condition){		
+	private boolean isConditionEventRef(CtExpression<?> condition){		
 		List<CtParameter<?>> parameters = defuse.getExecutable().getParameters();
-		List<CtTypeReference> typesParam = new ArrayList<>();
-		for (CtParameter parameter : parameters){//get parameters'type of a method
+		List<CtTypeReference<?>> typesParam = new ArrayList<>();
+		for (CtParameter<?> parameter : parameters){//get parameters'type of a method
 			typesParam.add(parameter.getType());		
 		}
 		
 		Set<CtVariable<?>> variables = defuse.getDeepDef(condition);//TODO: improve to check firstly type of vars
 		if (!variables.isEmpty()){
-			for (CtVariable var : variables){	
-				CtTypeReference typeVar = var.getType();
+			for (CtVariable<?> var : variables){	
+				CtTypeReference<?> typeVar = var.getType();
 				if (typeVar != null){
 					if (evType.isEventRef(typeVar) && typesParam.contains(typeVar)){
 						return true;
@@ -200,8 +200,8 @@ public class Command {
 			}
 		}
 		else{
-			List<CtTypeReference> typeRefs = getDeepDef2(condition);
-			for (CtTypeReference typeRef : typeRefs){	
+			List<CtTypeReference<?>> typeRefs = getDeepDef2(condition);
+			for (CtTypeReference<?> typeRef : typeRefs){	
 				if (evType.isEventRef(typeRef) && typesParam.contains(typeRef)){
 					return true;
 				}
@@ -211,11 +211,11 @@ public class Command {
 	}
 	
 	//Workaround to force to get definitions for some variables that is not possible get the declaration/defs by using defuse.getDeepDef(condition): bug in defuse
-	private List<CtTypeReference> getDeepDef2(CtExpression condition){
-		List<CtTypeReference> res = new ArrayList<CtTypeReference>();
+	private List<CtTypeReference<?>> getDeepDef2(CtExpression<?> condition){
+		List<CtTypeReference<?>> res = new ArrayList<>();
 		
 		List<CtVariableAccess<?>> vars = defuse.findUsedVar(condition);
-		for (CtVariableAccess var : vars){	
+		for (CtVariableAccess<?> var : vars){	
 //			if (var.getVariable() instanceof CtFieldReference){//conds such as KeyEvent.VK_ESCAPE, where getDeepDef(var) does not found the var declaration
 //				CtFieldReference fieldRef = (CtFieldReference) var.getVariable();//FIXME
 //				CtTypeReference fieldType = fieldRef.getDeclaringType();
@@ -228,12 +228,12 @@ public class Command {
 //			}
 //			else 
 			if (var.getVariable() instanceof CtParameterReference){
-				CtParameterReference param = (CtParameterReference) var.getVariable();
+				CtParameterReference<?> param = (CtParameterReference<?>) var.getVariable();
 				res.add(param.getType());
 			}
 			else {
-				Set<CtExpression> defs = getVarDefs(var);
-				for (CtExpression def : defs){
+				Set<CtExpression<?>> defs = getVarDefs(var);
+				for (CtExpression<?> def : defs){
 					res.addAll(getDeepDef2(def));
 				}
 			}
@@ -242,10 +242,10 @@ public class Command {
 	}
 	
 	//Checking if an expression from a condition refers to a widget type  
-	private boolean isCondRefWidgets(CtExpression expr){
+	private boolean isCondRefWidgets(CtExpression<?> expr){
 		ComponentsAction access = new ComponentsAction();
 			if (expr instanceof CtInvocation){//"Copy to clipboard".equals(label);(label.contains("Copy")
-				CtInvocation invoke = (CtInvocation) expr;	
+				CtInvocation<?> invoke = (CtInvocation<?>) expr;	
 				if (invoke.getExecutable() != null && access.isGetProperty(invoke.getExecutable().getSimpleName())){
 						return true;
 				}
@@ -253,8 +253,8 @@ public class Command {
 					return true;
 				}
 				else {
-					List<CtExpression> arguments = invoke.getArguments();	
-					for (CtExpression arg : arguments){
+					List<CtExpression<?>> arguments = invoke.getArguments();	
+					for (CtExpression<?> arg : arguments){
 						if (arg != null){
 							if (isCondRefWidgets(arg)){
 								return true;
@@ -264,24 +264,22 @@ public class Command {
 				}
 			}
 			else if (expr instanceof CtVariableAccess){
-				CtVariableAccess varAccess = (CtVariableAccess) expr;
+				CtVariableAccess<?> varAccess = (CtVariableAccess<?>) expr;
 				if (evType.isComponent(varAccess.getType())){
 					return true;
 				}
-				else{
-					Set<CtExpression> defs = getVarDefs(varAccess);
-					if (!defs.isEmpty()){
-						for (CtExpression def : defs){
-							if (isCondRefWidgets(def)){
-								return true;	
-							}
+				Set<CtExpression<?>> defs = getVarDefs(varAccess);
+				if (!defs.isEmpty()){
+					for (CtExpression<?> def : defs){
+						if (isCondRefWidgets(def)){
+							return true;	
 						}
 					}
 				}
 			}
 			else if (expr instanceof CtBinaryOperator){
 				//Verify if is isDeclaredInSourceCode
-				CtBinaryOperator op = (CtBinaryOperator) expr;
+				CtBinaryOperator<?> op = (CtBinaryOperator<?>) expr;
 				if (op.getKind().name().equals("INSTANCEOF")){	
 					if (evType.isComponentRef(op.getRightHandOperand())){
 						return true;
@@ -292,7 +290,7 @@ public class Command {
 				} 
 			}
 			else if (expr instanceof CtUnaryOperator){
-				CtUnaryOperator unary = (CtUnaryOperator) expr;	
+				CtUnaryOperator<?> unary = (CtUnaryOperator<?>) expr;	
 				if (evType.isComponentRef(unary.getOperand())){
 					return true;
 				}
@@ -305,8 +303,8 @@ public class Command {
 		
 	}
 	
-	public List<CtExpression> gatherContainingCondition(List<CtCodeElement> elements, CtExecutable method){
-		List<CtExpression> res = new ArrayList<CtExpression>();		
+	public List<CtExpression<?>> gatherContainingCondition(List<CtCodeElement> elements, CtExecutable<?> method){
+		List<CtExpression<?>> res = new ArrayList<>();		
 		CtCodeElement action = elements.get(0);	
 		CtElement parent = action;
 		if (action != null){
@@ -325,10 +323,10 @@ public class Command {
 	}
 	
 	
-    public List<CtExpression> exploreConditionals(CtCodeElement action, CtCodeElement parent){
+    public List<CtExpression<?>> exploreConditionals(CtCodeElement action, CtCodeElement parent){
     	
     	CtUnaryOperator<Boolean> negCondition = factory.Core().createUnaryOperator();
-    	List<CtExpression> res = new ArrayList<CtExpression>(); 
+    	List<CtExpression<?>> res = new ArrayList<>(); 
 			if(parent instanceof CtIf){
 	            CtIf ctif = (CtIf) parent;
 	            CtStatement thenpart = ctif.getThenStatement();
@@ -337,13 +335,11 @@ public class Command {
 	            	 res.add(ctif.getCondition());
 	            	 return res;
 	            }
-	            else{
-	                List<CtExpression> childCond = exploreConditionals(action, thenpart);
-	                if(!childCond.isEmpty()){
-	                    res.add(ctif.getCondition());
-	                    res.addAll(exploreConditionals(action, thenpart));
-	                }
-	            }
+				List<CtExpression<?>> childCond = exploreConditionals(action, thenpart);
+				if(!childCond.isEmpty()){
+				    res.add(ctif.getCondition());
+				    res.addAll(exploreConditionals(action, thenpart));
+				}
 	            CtStatement elsepart = ctif.getElseStatement();
 	            if(isContainedBy(action,elsepart)){
 	                negCondition.setOperand(ctif.getCondition());
@@ -351,13 +347,11 @@ public class Command {
 	                res.add(negCondition);
 					return res;
 	            }
-	            else{
-	                List<CtExpression> childCond = exploreConditionals(action, elsepart);
-	                if(!childCond.isEmpty()){
-	                    res.add(ctif.getCondition());
-	                	res.addAll(exploreConditionals(action, elsepart));
-	                }
-	            }
+				childCond = exploreConditionals(action, elsepart);
+				if(!childCond.isEmpty()){
+				    res.add(ctif.getCondition());
+					res.addAll(exploreConditionals(action, elsepart));
+				}
 	        } 
 	        else if(parent instanceof CtWhile){
 				CtWhile while_ = (CtWhile) parent;
@@ -372,7 +366,7 @@ public class Command {
 				res.add(case_.getCaseExpression());
 			}
 			else if(parent instanceof CtConditional){//TODO: get the negation too
-				CtConditional cond = (CtConditional) parent;
+				CtConditional<?> cond = (CtConditional<?>) parent;
 				res.add(cond.getCondition());
 			}
 			else if(parent instanceof CtDo){
@@ -410,9 +404,9 @@ public class Command {
     //Gather elements of commands that are found into same conditional statement
 	public List<Action> gatherCommands(List<Action> actions){
 		
-		List<Action> cmds = new ArrayList<Action>();
-		List<Action> tmp = new ArrayList<Action>(actions);
-		List<Action> linked = new ArrayList<Action>();
+		List<Action> cmds = new ArrayList<>();
+		List<Action> tmp = new ArrayList<>(actions);
+		List<Action> linked = new ArrayList<>();
 		
 		for (Action action : actions){
 			List<CtCodeElement> statements = new ArrayList<>();
@@ -445,11 +439,11 @@ public class Command {
 	}	
 		
 	//Refactor: comes from ComponentsPropertiesProcessor
-	private Set<CtExpression> getVarDefs(CtVariableAccess var){
-		Set<CtExpression> res = new HashSet<CtExpression>();
+	private Set<CtExpression<?>> getVarDefs(CtVariableAccess<?> var){
+		Set<CtExpression<?>> res = new HashSet<>();
 
 		Set<CtCodeElement> defs = defuse.getReachingDef(var);
-		CtVariable dec = var.getVariable().getDeclaration();
+		CtVariable<?> dec = var.getVariable().getDeclaration();
 		if(defs != null){
 			for(CtCodeElement def : defs){
 				res.addAll(processLine(def));
@@ -463,12 +457,12 @@ public class Command {
 	}
 		
 	//Refactor: comes from ComponentsPropertiesProcessor
-	private List<CtExpression> processLine(CtCodeElement line){
+	private List<CtExpression<?>> processLine(CtCodeElement line){
 	ConditionalListeners condStmt = new ConditionalListeners();
 	
-		List<CtExpression> res = new ArrayList<>();
+		List<CtExpression<?>> res = new ArrayList<>();
 		if (line instanceof CtExecutable){
-			for (CtCodeElement lMethod : ((CtExecutable) line).getBody().getStatements()){		
+			for (CtCodeElement lMethod : ((CtExecutable<?>) line).getBody().getStatements()){		
 				processLine(lMethod);	
 			}
 		}
@@ -479,11 +473,11 @@ public class Command {
 			}
 		}
 		else if (line instanceof CtExpression){//CtInvocation, CtVariableAccess, CtFieldAccess, CtAssignment, etc.
-			CtExpression expr = (CtExpression) line;
+			CtExpression<?> expr = (CtExpression<?>) line;
 			res.add(expr);	
 		}
 		else if (line instanceof CtVariable){
-			CtVariable var = (CtVariable) line;
+			CtVariable<?> var = (CtVariable<?>) line;
 			if (var.getDefaultExpression() != null){
 				res.add(var.getDefaultExpression());
 			}
@@ -493,20 +487,20 @@ public class Command {
 	
 	//Merge commands that represent the same command
 	public List<Action> mergeCommands(List<Action> cmds){		
-		List<Action> mergedCmds = new ArrayList<Action>();
+		List<Action> mergedCmds = new ArrayList<>();
 		for (Action cmd : cmds){
 			cfg = new ControlFlowGraph(cmd.getSource());
 			defuse = new DefUse(cfg);
-			List<CtExpression> conditions = cmd.getConditions();
-			CtExpression surroundedCond = null;
-			for (CtExpression cond : conditions){
+			List<CtExpression<?>> conditions = cmd.getConditions();
+			CtExpression<?> surroundedCond = null;
+			for (CtExpression<?> cond : conditions){
 				if (isCondRefWidgets(cond) || isConditionEventRef(cond)){//Get only the conditions that refer a widget/event, also remove the negation condition	
 					surroundedCond = cond;
 					break;
 				}
 			}
 			List<CtCodeElement> statements  = getSurroundedBlock(cmd, surroundedCond);
-			List<CtExpression> list = new ArrayList<CtExpression>();
+			List<CtExpression<?>> list = new ArrayList<>();
 			list.add(surroundedCond);
 			Action action = new Action(statements, list, cmd.getSource());
 			if (!isAdded(mergedCmds, action)){
@@ -519,7 +513,7 @@ public class Command {
 	}
 	
 	public List<Action> removeNestedCommands(List<Action> actions){
-		List<Action> res = new ArrayList<Action>();
+		List<Action> res = new ArrayList<>();
 		
 //		IdentityHashMap<CtMethod, List<Action>> cmds = gatherCommandsBySource(actions);
 //		for (Entry<CtMethod, List<Action>> entry: cmds.entrySet()){
@@ -548,10 +542,10 @@ public class Command {
 //			res.addAll(findProperCommand(cmdsANDNested));
 			
 		//}
-		IdentityHashMap<Action, List<Action>> cmdsANDNested = new IdentityHashMap<Action, List<Action>>();
+		IdentityHashMap<Action, List<Action>> cmdsANDNested = new IdentityHashMap<>();
 		for (Action cmd : actions){//want to know all nested for this command	
 		int cmdPosLine = cmd.getStatements().get(0).getPosition().getLine();
-			List<Action> nested = new ArrayList<Action>();
+			List<Action> nested = new ArrayList<>();
 			Iterator<Action> it = actions.iterator();
 			while(it.hasNext()){
 				Action tmp = it.next();
@@ -599,7 +593,7 @@ public class Command {
 	
 	//Check all nested command and get the most pertinent command
 	public List<Action> findProperCommand(IdentityHashMap<Action,List<Action>> cmdsANDNested){
-		IdentityHashMap<Action,List<Action>> cmdANDparents = new  IdentityHashMap<Action,List<Action>>();
+		IdentityHashMap<Action,List<Action>> cmdANDparents = new  IdentityHashMap<>();
 		
 		//For each nested get parents		
 		for (Entry<Action, List<Action>> entry : cmdsANDNested.entrySet()){;
@@ -607,7 +601,7 @@ public class Command {
 			for (Action child : entry.getValue()){
 				List<Action> parents = cmdANDparents.get(child);
 				if (parents == null){
-					parents = new ArrayList<Action>();
+					parents = new ArrayList<>();
 					parents.add(parent);
 					cmdANDparents.put(child, parents);
 				}
@@ -617,8 +611,8 @@ public class Command {
 			}
 		}
 		
-		List<Action> candidate = new ArrayList<Action>();
-		Set<Action> notCandidate = new HashSet<Action>();
+		List<Action> candidate = new ArrayList<>();
+		Set<Action> notCandidate = new HashSet<>();
 		//Get the proper commands by filter their nested commands
 		for (Entry<Action, List<Action>> entry : cmdsANDNested.entrySet()){
 			Action cmd = entry.getKey();
@@ -628,7 +622,7 @@ public class Command {
 				notCandidate.addAll(nested);
 			}
 			else if (nested.size() > 1){//more one nested command
-				List<Action> cmds = new ArrayList<Action>();
+				List<Action> cmds = new ArrayList<>();
 				cmds.add(cmd);
 				cmds.addAll(entry.getValue());
 				if(isAllNested(cmds,cmdANDparents)){
@@ -653,7 +647,7 @@ public class Command {
 			//List<Action> parents = new ArrayList<Action>();
 			List<Action> parents = cmdsANDparents2.get(cmd);	 
 			if (parents != null){
-				List<Action> cmds2 = new ArrayList<Action>(cmds);
+				List<Action> cmds2 = new ArrayList<>(cmds);
 				cmds2.remove(cmd);
 				//If all parents are the same
 				if(parents.containsAll(cmds2)){//If some cmd has all parents in the list cmds2, it means all cmds are nested
@@ -665,8 +659,8 @@ public class Command {
 	}
 	
 	//Return the block surrounded by this condition 
-	private List<CtCodeElement> getSurroundedBlock(Action cmd, CtExpression cond) {
-		List<CtCodeElement> res = new ArrayList<CtCodeElement>();
+	private List<CtCodeElement> getSurroundedBlock(Action cmd, CtExpression<?> cond) {
+		List<CtCodeElement> res = new ArrayList<>();
 		CtUnaryOperator<Boolean> negation = factory.Core().createUnaryOperator();
 		
 		List<CtCodeElement> stmts = cmd.getStatements();
@@ -712,7 +706,7 @@ public class Command {
 						}
 					}
 					else if(parent instanceof CtConditional){
-						CtConditional conditional = (CtConditional) parent;
+						CtConditional<?> conditional = (CtConditional<?>) parent;
 						if (conditional.getCondition() == cond){
 							res.add(conditional.getThenExpression());
 							return res;
@@ -765,7 +759,7 @@ public class Command {
 		if (elements.size() == 1){
 			if (elements.toString().contains("return")){
 				if (elements.get(0) instanceof CtReturn){
-					CtReturn ret = (CtReturn) elements.get(0);
+					CtReturn<?> ret = (CtReturn<?>) elements.get(0);
 					if (ret.getReturnedExpression() == null){
 						return true;
 					}
@@ -787,10 +781,10 @@ public class Command {
 		List<Action> candidates = new ArrayList<>();
 		
 		for ( Action action : cmds){
-			List<CtExpression> conditions = action.getConditions();
-			for (CtExpression cond : conditions){				
+			List<CtExpression<?>> conditions = action.getConditions();
+			for (CtExpression<?> cond : conditions){				
 				if (cond instanceof CtBinaryOperator){	
-					CtBinaryOperator operator = (CtBinaryOperator) cond;					
+					CtBinaryOperator<?> operator = (CtBinaryOperator<?>) cond;					
 					if (operator.toString().contains("instanceof")){						
 						candidates.add(action);
 					}

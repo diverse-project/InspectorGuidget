@@ -102,7 +102,7 @@ public class ListenerType {
 	
 	public ListenerType(){
 		//References for a listener registration
-		registers = new ArrayList<String>();
+		registers = new ArrayList<>();
 		registers.add("addComponentListener");
 		registers.add("addFocusListener");
 		registers.add("addHierarchyBoundsListener");

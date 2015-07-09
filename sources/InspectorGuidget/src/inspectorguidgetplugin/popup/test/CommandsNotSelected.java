@@ -11,8 +11,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtExpression;
@@ -27,10 +25,10 @@ public class CommandsNotSelected extends GUICommands{
 	@Override
 	protected void addMarkers(IProject project) {
 		String projectName = project.getName();
-		IJavaProject jProject = JavaCore.create(project);
+//		IJavaProject jProject = JavaCore.create(project);
 		
 		actions = new Command(listeners,factory);
-		List<Action> candidates = actions.getCommands();//All command before the merge
+//		List<Action> candidates = actions.getCommands();//All command before the merge
 		List<Action> commands = actions.getMergedCommands();		
 		for (Action candidate : candidates){
 			List<CtCodeElement> candStmts = candidate.getStatements();
@@ -38,7 +36,7 @@ public class CommandsNotSelected extends GUICommands{
 				List<CtCodeElement> cmdStmts = cmd.getStatements();
 				if (candidate.getSource() == cmd.getSource() && candStmts != cmdStmts){	//check conditions too			
 					File source = candidate.getSource().getPosition().getFile();
-					List<CtExpression> conditions = candidate.getConditions();
+					List<CtExpression<?>> conditions = candidate.getConditions();
 					int initPosOfCommand;
 					if (conditions.get(0).getPosition() != null){				
 						initPosOfCommand = conditions.get(0).getPosition().getLine();
