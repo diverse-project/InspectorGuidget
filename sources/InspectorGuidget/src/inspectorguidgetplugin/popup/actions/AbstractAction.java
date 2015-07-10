@@ -102,9 +102,13 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 				for (IClasspathEntry entry : jProject.getRawClasspath()) {
 					switch (entry.getEntryKind()) {
 					case IClasspathEntry.CPE_SOURCE:
-						// String path =
-						// project.getFile(entry.getPath().lastSegment()).getLocation().toString();
-						IPath rel = entry.getPath().makeRelativeTo(project.getFullPath());
+						IPath rel;
+
+						if(project.getFullPath().toOSString().equals("/"+project.getName()))
+							rel = project.getFullPath();
+						else
+							rel = entry.getPath().makeRelativeTo(project.getFullPath());
+						
 						String path = project.getFile(rel).getLocation().toString();
 						File file = new File(path);
 						// if(mainProject)
