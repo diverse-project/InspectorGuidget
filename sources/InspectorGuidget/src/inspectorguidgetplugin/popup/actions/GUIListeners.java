@@ -68,6 +68,14 @@ public class GUIListeners extends AbstractAction {
 			String path = absPath.substring(begin);
 
 			IResource r = project.findMember(path);
+			
+			if(r==null) {
+				int i = path.indexOf('/');
+				if(i!=-1)
+					path = path.substring(i);
+				r = project.findMember(path);
+			}
+			
 			IMarker m;
 			try {
 				m = r.createMarker(IMarker.PROBLEM);
