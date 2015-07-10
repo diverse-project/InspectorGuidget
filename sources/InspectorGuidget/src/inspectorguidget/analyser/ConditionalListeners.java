@@ -33,7 +33,7 @@ public class ConditionalListeners {
 	}
 
 	public ConditionalListeners() {
-		// TODO Auto-generated constructor stub
+		super();
 	}
 
 	// Looking for methods of listeners that contain a condition block such as

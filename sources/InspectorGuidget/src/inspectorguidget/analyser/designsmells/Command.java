@@ -378,7 +378,7 @@ public class Command {
 			CtFor for_ = (CtFor) parent;
 			res.add(for_.getExpression());
 		} else if (parent instanceof CtCase) {
-			CtCase case_ = (CtCase) parent;
+			CtCase<?> case_ = (CtCase<?>) parent;
 			res.add(case_.getCaseExpression());
 		} else if (parent instanceof CtConditional) {// TODO: get the negation
 														// too
@@ -388,7 +388,7 @@ public class Command {
 			CtDo do_ = (CtDo) parent;
 			res.add(do_.getLoopingExpression());
 		} else if (parent instanceof CtSwitch) {
-			CtSwitch switch_ = (CtSwitch) parent;
+			CtSwitch<?> switch_ = (CtSwitch<?>) parent;
 			res.add(switch_.getSelector());
 		}
 
@@ -753,7 +753,7 @@ public class Command {
 							return res;
 						}
 					} else if (parent instanceof CtCase) {
-						CtCase case_ = (CtCase) parent;
+						CtCase<?> case_ = (CtCase<?>) parent;
 						if (case_.getCaseExpression() == cond) {
 							res.addAll(case_.getStatements());
 							return res;
@@ -771,7 +771,7 @@ public class Command {
 							return res;
 						}
 					} else if (parent instanceof CtSwitch) {
-						CtSwitch switch_ = (CtSwitch) parent;
+						CtSwitch<?> switch_ = (CtSwitch<?>) parent;
 						if (switch_.getSelector() == cond) {
 							res.addAll(switch_.getCases());
 							return res;
