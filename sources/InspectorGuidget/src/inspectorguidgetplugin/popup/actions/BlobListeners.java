@@ -69,22 +69,7 @@ public class BlobListeners extends GUICommands {
 																						// remove
 																						// the
 																						// '/'
-				String path = absPath.substring(begin);
-
-				IResource r = project.findMember(path);
-				
-				if(r==null) {
-					int i = path.indexOf('/');
-					if(i!=-1)
-						path = path.substring(i);
-					r = project.findMember(path);
-				}
-				
-				if(r==null && path.startsWith("/"+project.getName())) {
-					path = path.replaceFirst("/"+project.getName(), "");
-					r = project.findMember(path);
-				}
-				
+				IResource r = getResource(project, absPath.substring(begin));
 				IMarker m;
 				try {
 					m = r.createMarker(IMarker.PROBLEM);
