@@ -1,0 +1,20 @@
+#! /bin/bash
+
+if [ "$#" -ne 1 ]
+then
+	echo "The following arguments must be provided:"
+	echo -e "\t1. The name of the file that contains the GUI listeners of a git repository."
+	exit
+fi
+
+declare -r LISTENERS_FILE=$1
+
+while read line ; do
+echo $line
+IFS=";"
+read -ra lineTab <<< "$line"
+./fileCommitsAnalyse ${lineTab[1]} "/home/ablouin/Bureau/log.txt" ${lineTab[2]} ${lineTab[3]}
+
+done < $LISTENERS_FILE
+
+
