@@ -21,9 +21,9 @@ declare -r LINES_OF_CTX=0
 declare -r DEBUG=0
 declare -r NAME_LISTENER=`basename $FILE_NAME ".java"`$startLine"to"$endLine
 
-blame=`git --no-pager blame -l -L $startLine,$endLine $FILE_NAME | sed -e "s/^\([a-zA-Z0-9]*\) .*/\1/g" | sort | uniq | tr '\n' ';'`
+blame=`git --no-pager blame -l -L $startLine,$endLine $FILE_NAME | sed -e "s/^\^*\([a-zA-Z0-9]*\) .*/\1/g" | sort | uniq | tr '\n' ';'`
 
-if [ -z $blame ]; then exit; fi
+if [ -z "$blame" ]; then exit; fi
 
 printf $REPO_NAME";"$FILE_NAME";"$NAME_LISTENER";" >> $LOG_FILE
 
@@ -141,7 +141,7 @@ while read rev ; do
 								case $res in
 									N ) end=1; break;;
 									F ) end=1; break;;
-									[[:digit:]]*|-[[:digit:]]* ) echo "coucou"; nbLinesToRemoveEnd=$((-res)); break;;
+									[[:digit:]]*|-[[:digit:]]* ) nbLinesToRemoveEnd=$((-res)); break;;
 									* ) echo "Please answer N, F, or an integer value";;
 								esac
 							done
