@@ -14,6 +14,7 @@ declare -r GIT_REPO_PATH=`git rev-parse --show-toplevel`
 declare -r REPO_NAME=`basename $GIT_REPO_PATH`
 declare -i startLine=$3
 declare -i endLine=$4
+declare -i end=0
 declare -r LOG_FILE=$2
 declare -r FILE_NAME=$1
 declare -r LINES_OF_CTX=0
@@ -26,7 +27,6 @@ if [ -z $blame ]; then exit; fi
 
 printf $REPO_NAME";"$FILE_NAME";"$NAME_LISTENER";" >> $LOG_FILE
 
-end=0
 
 while read rev ; do
 		commitConcerned=0
@@ -38,7 +38,7 @@ while read rev ; do
 			if [ "$DEBUG" -eq "1" ] ; then 
 				echo $rev", startLine:"$startLine" endLine:"$endLine
 				echo $chunkHeader
-#				git --no-pager show --unified=$LINES_OF_CTX $rev
+#				git --no-pager log --unified=$LINES_OF_CTX -p $rev -1 $FILE_NAME
 			fi
 
 			if [[ "$chunkHeader" =~ ^@@@.* ]] ; then
@@ -106,8 +106,8 @@ while read rev ; do
 								case $res1 in
 									F ) end=1; break;;
 									N ) end=1; break;;
-									[[:digit:]]|-[[:digit:]] ) nbLinesToRemoveStart=res1; break;;
-									* ) echo "Please answer N or an integer value";;
+									[[:digit:]]*|-[[:digit:]]* ) nbLinesToRemoveStart=res1; break;;
+									* ) echo "Please answer N, F, or an integer value";;
 								esac
 							done
 
@@ -115,7 +115,7 @@ while read rev ; do
 								while true; do
 								read -p "And how many lines added/removed (negative value when removed) IN the listener?" res2 </dev/tty
 									case $res2 in
-										[[:digit:]]|-[[:digit:]] ) nbLinesToRemoveEnd=$((res1+res2)); break;;
+										[[:digit:]]*|-[[:digit:]]* ) nbLinesToRemoveEnd=$((res1+res2)); break;;
 										* ) echo "Please an integer value";;
 									esac
 								done
@@ -141,8 +141,8 @@ while read rev ; do
 								case $res in
 									N ) end=1; break;;
 									F ) end=1; break;;
-									[[:digit:]]|-[[:digit:]] ) nbLinesToRemoveEnd=$((-res)); break;;
-									* ) echo "Please answer N or an integer value";;
+									[[:digit:]]*|-[[:digit:]]* ) echo "coucou"; nbLinesToRemoveEnd=$((-res)); break;;
+									* ) echo "Please answer N, F, or an integer value";;
 								esac
 							done
 						fi
@@ -165,7 +165,6 @@ while read rev ; do
 
 done < <(git rev-list HEAD -- $FILE_NAME)
 
-#printf `echo -e "$blame" | sort | uniq | tr '\n' ';'`"\n"
 blame=`echo "$blame" | tr ';' '\n' | sort | uniq | tr '\n' ';'`
 printf "$blame""\n" >> $LOG_FILE
 
