@@ -1,12 +1,13 @@
 #! /bin/bash
 
-if [ "$#" -ne 4 ]
+if [ "$#" -ne 5 ]
 then
 	echo "The following arguments must be provided:"
 	echo -e "\t1. The name of the file to analyse;"
 	echo -e "\t2. The log file;"
 	echo -e "\t3. The start line of the listener to analyse;"
 	echo -e "\t4. The end line of the listener to analyse."
+	echo -e "\t5. The number of commands of the listener."
 	exit
 fi
 
@@ -17,15 +18,15 @@ declare -i endLine=$4
 declare -i end=0
 declare -r LOG_FILE=$2
 declare -r FILE_NAME=$1
+declare -r NB_CMDS=$5
 declare -r LINES_OF_CTX=0
 declare -r DEBUG=0
-declare -r NAME_LISTENER=`basename $FILE_NAME ".java"`$startLine"to"$endLine
 
 blame=`git --no-pager blame -l -L $startLine,$endLine $FILE_NAME | sed -e "s/^\^*\([a-zA-Z0-9]*\) .*/\1/g" | sort | uniq | tr '\n' ';'`
 
 if [ -z "$blame" ]; then exit; fi
 
-printf $REPO_NAME";"$FILE_NAME";"$NAME_LISTENER";" >> $LOG_FILE
+printf $REPO_NAME";"$FILE_NAME";"$startLine";"$endLine";"$NB_CMDS";" >> $LOG_FILE
 
 
 while read rev ; do
@@ -165,6 +166,8 @@ while read rev ; do
 
 done < <(git rev-list HEAD -- $FILE_NAME)
 
+nbCommits=`echo "$blame" | tr ';' '\n' | sort | uniq | wc -l`
+echo $nbCommits
 blame=`echo "$blame" | tr ';' '\n' | sort | uniq | tr '\n' ';'`
-printf "$blame""\n" >> $LOG_FILE
+printf $nbCommits"$blame""\n" >> $LOG_FILE
 

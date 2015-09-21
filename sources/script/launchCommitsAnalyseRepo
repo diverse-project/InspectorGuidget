@@ -13,7 +13,7 @@ while read line ; do
 echo $line
 IFS=";"
 read -ra lineTab <<< "$line"
-./fileCommitsAnalyse ${lineTab[1]} "/home/ablouin/Bureau/log.txt" ${lineTab[2]} ${lineTab[3]}
+./fileCommitsAnalyse ${lineTab[1]} "/home/ablouin/Bureau/logFreePlane.txt" ${lineTab[2]} ${lineTab[3]} ${lineTab[4]}
 
 done < $LISTENERS_FILE
 
