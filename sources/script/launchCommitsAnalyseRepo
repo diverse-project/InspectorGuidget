@@ -3,17 +3,17 @@
 if [ "$#" -ne 1 ]
 then
 	echo "The following arguments must be provided:"
-	echo -e "\t1. The name of the file that contains the GUI listeners of a git repository."
+	echo -e "\t1. The name of the file that contains the code blocks of a git repository to analyse."
 	exit
 fi
 
 declare -r LISTENERS_FILE=$1
 
 while read line ; do
-echo $line
+echo "Analysing: "$line
 IFS=";"
 read -ra lineTab <<< "$line"
-./fileCommitsAnalyse ${lineTab[1]} "/home/ablouin/Bureau/logFreePlane.txt" ${lineTab[2]} ${lineTab[3]} ${lineTab[4]}
+./git-stalk ${lineTab[1]} "/home/ablouin/Bureau/logFreePlane.txt" ${lineTab[2]} ${lineTab[3]} ${lineTab[4]}
 
 done < $LISTENERS_FILE
 
