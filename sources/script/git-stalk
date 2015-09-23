@@ -19,7 +19,7 @@ declare -r LOG_FILE=$2
 declare -r FILE_NAME=$1
 declare -r NB_CMDS=$5
 declare -r LINES_OF_CTX=0
-declare -r DEBUG=1
+declare -r DEBUG=0
 declare -r DEBUG_FILE="DEBUG.log"
 
 blame=`git --no-pager blame -l -L $startLine,$endLine $FILE_NAME | sed -e "s/^\^*\([a-zA-Z0-9]*\) .*/\1/g" | sort | uniq | tr '\n' ';'`
@@ -153,7 +153,7 @@ while read rev ; do # Reading all the revisions that concern the file
 	if [ $end -eq "1" ]; then break; fi
 done < <(git rev-list HEAD -- $FILE_NAME)
 
-nbCommits=`echo "$blame" | tr ';' '\n' | sort | uniq | wc -l`
+nbCommits=`echo "$blame" | tr ';' '\n' | sort | uniq | grep -v '^$' | wc -l`
 blame=`echo "$blame" | tr ';' '\n' | sort | uniq | tr '\n' ';'`
 printf $nbCommits"$blame""\n" >> $LOG_FILE
 
