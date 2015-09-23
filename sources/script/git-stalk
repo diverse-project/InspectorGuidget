@@ -26,7 +26,7 @@ blame=`git --no-pager blame -l -L $startLine,$endLine $FILE_NAME | sed -e "s/^\^
 
 if [ -z "$blame" ]; then exit; fi
 
-printf $REPO_NAME";"$FILE_NAME";"$startLine";"$endLine";"$NB_CMDS";" >> $LOG_FILE
+printf $REPO_NAME";"$FILE_NAME";"$startLine";"$endLine";"$NB_CMDS";0;" >> $LOG_FILE # The ending 0; is specific to our use: the number of fix/bug among the commit (not computed here)
 
 if [ "$DEBUG" -eq "1" ] ; then 
 	echo "### DEBUGGING "$REPO_NAME";"$FILE_NAME";"$startLine";"$endLine >> $DEBUG_FILE
