@@ -32,7 +32,7 @@ if [ "$DEBUG" -eq "1" ] ; then
 	echo "### DEBUGGING "$REPO_NAME";"$FILE_NAME";"$startLine";"$endLine >> $DEBUG_FILE
 fi
 
-while read rev ; do
+while read rev ; do # Reading all the revisions that concern the file
 		if [ "$DEBUG" -eq "1" ] ; then 
 			echo -e "\tREV: "$rev >> $DEBUG_FILE
 			echo -e "\t\t### CODE BLOCK POSITION ($startLine-$endLine): " >> $DEBUG_FILE
@@ -41,17 +41,17 @@ while read rev ; do
 			echo -e "$currCodeBlock" >> $DEBUG_FILE
 		fi
 
-		commitConcerned=0
-		nbChunkHeaders=0
+		commitConcerned=0 # Does the commit affect the code block of interest?
+		nbChunkHeaders=0 # The number of diffs of the commit
 
-		while read chunkHeader ; do
+		while read chunkHeader ; do # Reading all the diffs of the commit
 			nbChunkHeaders=$((nbChunkHeaders+1))
 			if [ "$DEBUG" -eq "1" ] ; then 
 				echo -e "\t\tStartLine:"$startLine", endLine:"$endLine >> $DEBUG_FILE
 				echo -e "\t\t"$chunkHeader >> $DEBUG_FILE
 			fi
 
-			if [[ "$chunkHeader" =~ ^@@@.* ]] ; then
+			if [[ "$chunkHeader" =~ ^@@@.* ]] ; then # When the diff is a merge ('@@@ ... @@@')
 				startCurrentFile=`echo $chunkHeader | sed -e "s/^@@@ -[0-9]*\(,[0-9]*\)\? -[0-9]*\(,[0-9]*\)\? +\([0-9]*\).*@@@.*$/\3/g"`
 				startCurrentFile=$((startCurrentFile+LINES_OF_CTX))
 				endCurrentFile=`echo $chunkHeader | sed -e "s/^@@@ -[0-9]*\(,[0-9]*\)\? -[0-9]*\(,[0-9]*\)\? +[0-9]*,\([0-9]*\) @@@.*$/\3/g"`
@@ -66,7 +66,7 @@ while read rev ; do
 				if [[ "$endPrevFile2" =~ ^@.* ]]; then endPrevFile2=1 ; fi
 
 				nbLines=$((endCurrentFile*2-endPrevFile-endPrevFile2))
-			else
+			else # When the diff is not a merge ('@@ ... @@')
 				startCurrentFile=`echo $chunkHeader | sed -e "s/^@@ -[0-9]*\(,[0-9]*\)\? +\([0-9]*\).*@@.*$/\2/g"`
 				startCurrentFile=$((startCurrentFile+LINES_OF_CTX))
 				endCurrentFile=`echo $chunkHeader | sed -e "s/^@@ -[0-9]*\(,[0-9]*\)\? +[0-9]*,\([0-9]*\) @@.*$/\2/g"`
@@ -88,20 +88,23 @@ while read rev ; do
 				echo $chunkHeader" startCurr:"$startCurrentFile" endCurr:"$endCurrentFile" startPrev:"$startPrevFile" endPrev:"$endPrevFile" addedLines:"$nbLines >> $DEBUG_FILE
 			fi
 
-			if [ $endPrevFilePlusLines -lt $startLine ]; then
+			if [ $endPrevFilePlusLines -lt $startLine ]; then # When the diff affects lines before the code block of interest
 				if [ "$DEBUG" -eq "1" ] ; then echo -e "\t\t\tMoving up the code block of "$nbLines" lines." >> $DEBUG_FILE; fi
 				startLine=$((startLine-nbLines))
 				endLine=$((endLine-nbLines))
 			else
-				if [ $endPrevFilePlusLines -le $endLine ] ; then
+				if [ $endPrevFilePlusLines -le $endLine ] ; then # When the diff affects lines before the end of code block of interest
 					commitConcerned=1
-					if [ $startPrevFile -ge $startLine ] ; then
+					if [ $startPrevFile -ge $startLine ] ; then # When the diff affects lines in the code block of interest
 						if [ "$DEBUG" -eq "1" ] ; then echo -e "\t\t\tReducing the code block of "$nbLines" lines (moving the end)." >> $DEBUG_FILE; fi
 						endLine=$((endLine-nbLines))
-					else
+					else 
+						# The following 'if' statement may be removed. 
+						# This is a shortcut when the diff seems to create the file or when no line is added (this last may not be correct in some rare cases, to check).
 						if [[ "$startPrevFile" -lt 1 && "$endPrevFile" -lt 1 ]] || [[ "$startPrevFile" -eq "$startCurrentFile" && "$endPrevFile" -eq "$endCurrentFile" ]] ; then end=1;
 						else 
-							while true; do
+							while true; do # This case is not deterministic since the diff affects the beginning of the code block of interest and some other lines of code.
+							# gitk permits to look at the diff and answer the following questions.
 							gitk --unified=$LINES_OF_CTX $rev -1 $FILE_NAME &
 							read -p "Look at the header: $chunkHeader. If the code block is in the code above (if not, type N), is it the commit that introduced the code block (type F)? Or how many lines added/removed (the total, negative value when removed) BEFORE the beginning of the code block?" res1 </dev/tty
 								case $res1 in
@@ -124,7 +127,7 @@ while read rev ; do
 						fi
 					fi
 				else
-					if [ $startCurrentFile -le $endLine ] ; then
+					if [ $startCurrentFile -le $endLine ] ; then # When the diff affects the end of the code block of interest plus some other lines of code.
 						if [[ "$startPrevFile" -lt 1 && "$endPrevFile" -lt 1 ]] || [[ "$startPrevFile" -eq "$startCurrentFile" && "$endPrevFile" -eq "$endCurrentFile" ]] ; then end=1;
 						else 
 							while true; do
@@ -146,9 +149,8 @@ while read rev ; do
 		done < <(git --no-pager log --unified=$LINES_OF_CTX -p $rev -1 $FILE_NAME | grep -o '^@@.*')
 
 	if [ $nbChunkHeaders -eq "0" ]; then end=1; fi
-	if [ $commitConcerned -eq 1 ] ; then blame+=";"$rev ; fi
+	if [ $commitConcerned -eq 1 ] ; then blame+=";"$rev ; fi # Adding the commit to the list of commits that affect the code block of interest.
 	if [ $end -eq "1" ]; then break; fi
-	if [ $end -eq "1" ]; then echo "FAILLL BREAK" >> $DEBUG_FILE; fi
 done < <(git rev-list HEAD -- $FILE_NAME)
 
 nbCommits=`echo "$blame" | tr ';' '\n' | sort | uniq | wc -l`
