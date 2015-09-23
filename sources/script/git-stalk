@@ -10,6 +10,7 @@ if [ "$#" -ne 5 ]; then
 	exit
 fi
 
+declare -r CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 declare -r GIT_REPO_PATH=`git rev-parse --show-toplevel`
 declare -r REPO_NAME=`basename $GIT_REPO_PATH`
 declare -i startLine=$3
@@ -151,7 +152,7 @@ while read rev ; do # Reading all the revisions that concern the file
 	if [ $nbChunkHeaders -eq "0" ]; then end=1; fi
 	if [ $commitConcerned -eq 1 ] ; then blame+=";"$rev ; fi # Adding the commit to the list of commits that affect the code block of interest.
 	if [ $end -eq "1" ]; then break; fi
-done < <(git rev-list HEAD -- $FILE_NAME)
+done < <(git rev-list $CURRENT_BRANCH -- $FILE_NAME)
 
 nbCommits=`echo "$blame" | tr ';' '\n' | sort | uniq | grep -v '^$' | wc -l`
 blame=`echo "$blame" | tr ';' '\n' | sort | uniq | tr '\n' ';'`
