@@ -28,6 +28,7 @@ public class ListenerType {
 	List<CtTypeReference<?>>		swingListeners;
 	List<CtTypeReference<?>>		awtListeners;
 	List<CtTypeReference<?>>		adapterListeners;
+	List<CtTypeReference<?>>		swtListenersRef;
 	List<String>					registers;
 	Factory							fac;
 
@@ -97,6 +98,68 @@ public class ListenerType {
 
 		adapterListeners.add(factory.Type().createReference(javax.swing.event.MouseInputAdapter.class));
 		adapterListeners.add(factory.Type().createReference(javax.swing.event.InternalFrameAdapter.class));
+		
+		//SWT
+		swtListenersRef = new ArrayList<>();
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleActionListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleAttributeListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleControlListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleEditableTextListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleHyperlinkListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleTableCellListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleTableListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleTextExtendedListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleTextListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.accessibility.AccessibleValueListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ArmListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.AuthenticationListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.BidiSegmentListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.CaretListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.CloseWindowListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ControlListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.CTabFolder2Listener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.CTabFolderListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.DisposeListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.DragDetectListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.dnd.DragSourceListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.dnd.DropTargetListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ExpandListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.ExtendedModifyListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.FocusListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.GestureListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.HelpListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.graphics.ImageLoaderListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.KeyListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.LineBackgroundListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.LineStyleListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.LocationListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MenuDetectListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MenuListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ModifyListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseMoveListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseTrackListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseWheelListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.MovementListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.OpenWindowListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.PaintListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.PaintObjectListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.ProgressListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.SegmentListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.SelectionListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ShellListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.StatusTextListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.TextChangeListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.TitleListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.TouchListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.jface.util.TransferDragSourceListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.jface.util.TransferDropTargetListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.TraverseListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.TreeListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.custom.VerifyKeyListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.VerifyListener.class));
+		swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.browser.VisibilityWindowListener.class));
 
 		// TODO: check spinner model: extends JComponent
 	}

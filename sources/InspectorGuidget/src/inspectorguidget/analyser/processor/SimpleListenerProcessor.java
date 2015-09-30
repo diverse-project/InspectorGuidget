@@ -136,6 +136,8 @@ public final class SimpleListenerProcessor extends AbstractProcessor<CtClass<?>>
 		// Added
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.WindowListener.class));
 		
+		//SWT
+		swtListenersRef = new ArrayList<>();
 		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.accessibility.AccessibleActionListener.class));
 		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.accessibility.AccessibleAttributeListener.class));
 		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.accessibility.AccessibleControlListener.class));
