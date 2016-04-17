@@ -1,11 +1,12 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -30,38 +31,33 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		if(LOG.isLoggable(Level.ALL))
 			LOG.log(Level.INFO, "process CtClass: " + clazz);
 
-		boolean isAdded = false;
+		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
+
 		// Case SWING
-		for (CtTypeReference<?> ref : swingListenersRef) {
-			if (clazz.isSubtypeOf(ref)) {
-				isAdded = true;
-				swingClassListeners.forEach(l -> l.onSwingListenerClass(clazz));
-				processMethods(clazz, ref);
-			}
-		}
+		swingListenersRef.stream().filter(ref -> clazz.isSubtypeOf(ref)).forEach(ref -> {
+			isAdded.setValue(true);
+			swingClassListeners.forEach(l -> l.onSwingListenerClass(clazz));
+			processMethods(clazz, ref);
+		});
 
 		// Case AWT
-		for (CtTypeReference<?> ref : awtListenersRef) {
-			if (clazz.isSubtypeOf(ref)) {
-				isAdded = true;
-			 	awtClassListeners.forEach(l -> l.onAWTListenerClass(clazz));
-				processMethods(clazz, ref);
-			}
-		}
-		
+		awtListenersRef.stream().filter(ref -> clazz.isSubtypeOf(ref)).forEach(ref -> {
+			isAdded.setValue(true);
+			awtClassListeners.forEach(l -> l.onAWTListenerClass(clazz));
+			processMethods(clazz, ref);
+		});
+
 //		// Case SWT
 //				for (CtTypeReference<?> ref : swtListenersRef) {
 //					if (clazz.isSubtypeOf(ref)) {
-//						isAdded = true;
+//						isAdded.setValue(true);
 //						processMethods(clazz, ref);
 //					}
 //				}
 
 		// Case GENERIC
-		if (!isAdded) {
-			if (clazz.isSubtypeOf(eventListenerRef)) {
-				processMethods(clazz, eventListenerRef);
-			}
+		if (!isAdded.getValue() && clazz.isSubtypeOf(eventListenerRef)) {
+			processMethods(clazz, eventListenerRef);
 		}
 	}
 
@@ -86,17 +82,17 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 	 * Store each method from cl that implements interf
 	 */
 	private void processMethods(final CtClass<?> cl, final CtTypeReference<?> interf) {
-		for(final Method m : interf.getActualClass().getMethods()) {
-			List<CtMethod<?>> methods = cl.getMethodsByName(m.getName());
-			for (CtMethod<?> method : methods) {
-//				if (!Helper.identityContains(method, allListernerMethods)) { // TODO:
-//																				// find
-//																				// an
-//																				// alternative
-//					allListernerMethods.add(method);
+		for(final Method interfMeth : interf.getActualClass().getMethods()) {
+			cl.getMethodsByName(interfMeth.getName()).forEach(method -> {
+//				if(!Helper.identityContains(method, allListernerMethods)) { // TODO:
+//					//																				// find
+//					//																				// an
+//					//																				// alternative
+//					//					allListernerMethods.add(method);
+//					//				}
+//					registerEvent(method);
 //				}
-				registerEvent(method);
-			}
+			});
 		}
 	}
 
