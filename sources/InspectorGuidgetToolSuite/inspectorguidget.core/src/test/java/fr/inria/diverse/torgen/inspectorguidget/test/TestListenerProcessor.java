@@ -1,0 +1,77 @@
+package fr.inria.diverse.torgen.inspectorguidget.test;
+
+import fr.inria.diverse.torgen.inspectorguidget.listener.AWTListenerClass;
+import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.processor.ListenerProcessor;
+import org.junit.Before;
+import org.junit.Test;
+import spoon.reflect.code.CtLambda;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+
+public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcessor<? extends CtElement>> implements AWTListenerClass {
+	private Set<CtClass<?>> clazzListener;
+	private Set<CtLambda<?>> lambdaListener;
+
+	@Override
+	@Before
+	public void setUp() {
+		super.setUp();
+		clazzListener = new HashSet<>();
+		lambdaListener= new HashSet<>();
+		processors.forEach(p -> p.addAWTClassListener(this));
+	}
+
+	@Test
+	public void testActionListenerAsLambda() {
+		run("src/test/resources/java/listeners/ActionListenerLambda.java");
+		assertEquals(1, lambdaListener.size());
+	}
+
+	@Test
+	public void testSwingMouseListernerAsClassImplementingInterface() {
+		run("src/test/resources/java/listeners/MouseListClass.java");
+		assertEquals(1, clazzListener.size());
+	}
+
+	@Test
+	public void testSwingMouseListernerAsAnonClass() {
+		run("src/test/resources/java/listeners/MouseListAnonClass.java");
+		assertEquals(1, clazzListener.size());
+	}
+
+	@Test
+	public void testSwingMouseListernerAsClassWithInheritance() {
+		run("src/test/resources/java/listeners/MouseListAnonClassWithInheritance.java");
+		assertEquals(2, clazzListener.size());
+	}
+
+	@Test
+	public void testSwingMouseListernerAsAnonClassWithInheritance() {
+		run("src/test/resources/java/listeners/MouseListClassInheritance.java");
+		assertEquals(2, clazzListener.size());
+	}
+
+	@Override
+	public List<ListenerProcessor<? extends CtElement>> createProcessor() {
+		return Arrays.asList(new ClassListenerProcessor(), new LambdaListenerProcessor());
+	}
+
+	@Override
+	public void onAWTListenerClass(final CtClass<?> clazz) {
+		clazzListener.add(clazz);
+	}
+
+	@Override
+	public void onAWTListenerLambda(final CtLambda<?> lambda) {
+		lambdaListener.add(lambda);
+	}
+}

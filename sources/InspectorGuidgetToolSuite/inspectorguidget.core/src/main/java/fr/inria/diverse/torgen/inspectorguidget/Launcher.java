@@ -1,13 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import fr.inria.diverse.torgen.inspectorguidget.processor.ListenerProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import spoon.SpoonAPI;
 import spoon.compiler.Environment;
 import spoon.compiler.SpoonCompiler;
@@ -20,6 +14,10 @@ import spoon.reflect.visitor.Filter;
 import spoon.support.DefaultCoreFactory;
 import spoon.support.StandardEnvironment;
 import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
  *     <build>
@@ -41,8 +39,6 @@ import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 
 public class Launcher implements SpoonAPI {
     private SpoonCompiler modelBuilder;
-    private List<String> processorTypes = new ArrayList<>();
-
 
     public static void main(String[] args) throws IOException {
         Launcher launcher = new Launcher();
@@ -116,8 +112,7 @@ public class Launcher implements SpoonAPI {
 
     @Override
     public void process() {
-        ListenerProcessor proc = new ListenerProcessor();
-        modelBuilder.process(Arrays.asList(proc));
+		modelBuilder.process(Arrays.asList(new ClassListenerProcessor(), new LambdaListenerProcessor()));
     }
 
     @Override
@@ -147,7 +142,10 @@ public class Launcher implements SpoonAPI {
 
     @Override
     public Environment createEnvironment() {
-        return new StandardEnvironment();
+        StandardEnvironment evt = new StandardEnvironment();
+        evt.setComplianceLevel(8);
+        evt.setPreserveLineNumbers(true);
+        return evt;
     }
 
     @Override
