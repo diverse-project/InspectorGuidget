@@ -28,14 +28,21 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 		// Case SWING
 		swingListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			swingClassListeners.forEach(l -> l.onSwingListenerLambda(lambda));
+			swingClassObservers.forEach(l -> l.onSwingListenerLambda(lambda));
 			processMethods(lambda);
 		});
 
 		// Case AWT
 		awtListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			awtClassListeners.forEach(l -> l.onAWTListenerLambda(lambda));
+			awtClassObservers.forEach(l -> l.onAWTListenerLambda(lambda));
+			processMethods(lambda);
+		});
+
+		// Case JFX
+		jfxListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
+			isAdded.setValue(true);
+			jfxClassObservers.forEach(l -> l.onJFXListenerLambda(lambda));
 			processMethods(lambda);
 		});
 

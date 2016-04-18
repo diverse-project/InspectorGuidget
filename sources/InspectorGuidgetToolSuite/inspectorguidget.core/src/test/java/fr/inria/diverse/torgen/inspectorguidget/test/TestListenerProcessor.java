@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.listener.AWTListenerClass;
+import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.listener.SwingListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
@@ -19,7 +20,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 
 public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcessor<? extends CtElement>>
-		implements AWTListenerClass, SwingListenerClass {
+		implements AWTListenerClass, SwingListenerClass, JFXListenerClass {
 	private Set<CtClass<?>> clazzListener;
 	private Set<CtLambda<?>> lambdaListener;
 	private LambdaListenerProcessor lambdaProc;
@@ -33,6 +34,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 		lambdaListener= new HashSet<>();
 		processors.forEach(p -> p.addAWTClassListener(this));
 		processors.forEach(p -> p.addSwingClassListener(this));
+		processors.forEach(p -> p.addJFXClassListener(this));
 	}
 
 	@Test
@@ -50,6 +52,19 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	@Test
 	public void testSwingCaretListenerAsLambda() {
 		run("src/test/resources/java/listeners/CaretListenerLambda.java");
+		assertEquals(1, lambdaListener.size());
+	}
+
+	@Test
+	public void testJFXHandlerAsClass() {
+		run("src/test/resources/java/listeners/JFXEventHandlerClass.java");
+		assertEquals(1, clazzListener.size());
+		assertEquals(1, classProc.getAllListenerMethods().size());
+	}
+
+	@Test
+	public void testJFXEventHandlerAsLambda() {
+		run("src/test/resources/java/listeners/JFXEventHandlerLambda.java");
 		assertEquals(1, lambdaListener.size());
 	}
 
@@ -120,6 +135,16 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 
 	@Override
 	public void onSwingListenerLambda(final CtLambda<?> lambda) {
+		lambdaListener.add(lambda);
+	}
+
+	@Override
+	public void onJFXListenerClass(final CtClass<?> clazz) {
+		clazzListener.add(clazz);
+	}
+
+	@Override
+	public void onJFXListenerLambda(final CtLambda<?> lambda) {
 		lambdaListener.add(lambda);
 	}
 }

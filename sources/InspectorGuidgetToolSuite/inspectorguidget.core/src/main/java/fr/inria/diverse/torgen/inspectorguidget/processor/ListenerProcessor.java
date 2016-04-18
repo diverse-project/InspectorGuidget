@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
 import fr.inria.diverse.torgen.inspectorguidget.listener.AWTListenerClass;
+import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.listener.SwingListenerClass;
 import org.eclipse.jdt.annotation.NonNull;
 import spoon.processing.AbstractProcessor;
@@ -26,6 +27,7 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 	// Listener interfaces targeted
 	protected List<CtTypeReference<?>> swingListenersRef;
 	protected List<CtTypeReference<?>> awtListenersRef;
+	protected List<CtTypeReference<?>> jfxListenersRef;
 	//	List<CtTypeReference<?>> swtListenersRef;
 	protected CtTypeReference<?> eventListenerRef;
 
@@ -34,14 +36,16 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 
 	protected final Set<CtTypeReference<?>> events;
 
-	protected final Set<AWTListenerClass> awtClassListeners;
-	protected final Set<SwingListenerClass> swingClassListeners;
+	protected final Set<AWTListenerClass> awtClassObservers;
+	protected final Set<SwingListenerClass> swingClassObservers;
+	protected final Set<JFXListenerClass> jfxClassObservers;
 
 
 	public ListenerProcessor() {
 		super();
-		awtClassListeners = new HashSet<>();
-		swingClassListeners = new HashSet<>();
+		awtClassObservers= new HashSet<>();
+		swingClassObservers= new HashSet<>();
+		jfxClassObservers= new HashSet<>();
 		// The results
 		events = new HashSet<>();
 	}
@@ -53,6 +57,9 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 
 		// Generic listener
 		eventListenerRef = getFactory().Type().createReference(java.util.EventListener.class);
+
+		jfxListenersRef = new ArrayList<>();
+		jfxListenersRef.add(getFactory().Type().createReference(javafx.event.EventHandler.class));
 
 		// Swing listeners
 		swingListenersRef = new ArrayList<>();
@@ -179,10 +186,14 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 
 
 	public void addAWTClassListener(final @NonNull AWTListenerClass lis) {
-		awtClassListeners.add(lis);
+		awtClassObservers.add(lis);
 	}
 
 	public void addSwingClassListener(final @NonNull SwingListenerClass lis) {
-		swingClassListeners.add(lis);
+		swingClassObservers.add(lis);
+	}
+
+	public void addJFXClassListener(final @NonNull JFXListenerClass lis) {
+		jfxClassObservers.add(lis);
 	}
 }

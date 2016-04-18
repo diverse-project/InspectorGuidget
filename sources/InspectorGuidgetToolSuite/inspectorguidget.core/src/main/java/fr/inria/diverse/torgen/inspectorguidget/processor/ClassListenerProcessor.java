@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtTypedElement;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.factory.ClassFactory;
 import spoon.reflect.reference.CtTypeReference;
 
@@ -52,14 +53,21 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		// Case SWING
 		swingListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			swingClassListeners.forEach(l -> l.onSwingListenerClass(clazz));
+			swingClassObservers.forEach(l -> l.onSwingListenerClass(clazz));
 			processMethods(clazz, ref);
 		});
 
 		// Case AWT
 		awtListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			awtClassListeners.forEach(l -> l.onAWTListenerClass(clazz));
+			awtClassObservers.forEach(l -> l.onAWTListenerClass(clazz));
+			processMethods(clazz, ref);
+		});
+
+		// Case JFX
+		jfxListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
+			isAdded.setValue(true);
+			jfxClassObservers.forEach(l -> l.onJFXListenerClass(clazz));
 			processMethods(clazz, ref);
 		});
 
@@ -85,8 +93,8 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 //	public void processingDone() {
 //		wrapper.create(allListernerLambdas, events);
 //		System.out.println("done:");
-//		swingClassListeners.forEach(System.out::println);
-//		awtClassListeners.forEach(System.out::println);
+//		swingClassObservers.forEach(System.out::println);
+//		awtClassObservers.forEach(System.out::println);
 //	}
 
 	@Override
@@ -106,10 +114,17 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 	 */
 	private void processMethods(final CtClass<?> cl, final CtTypeReference<?> interf) {
 		for(final Method interfMeth : interf.getActualClass().getMethods()) {
-			final CtMethod<?> m = cl.getMethod(interfMeth.getName(), getTypeRefFromClasses(interfMeth.getParameterTypes()));
+			CtMethod<?> m = cl.getMethod(interfMeth.getName(), getTypeRefFromClasses(interfMeth.getParameterTypes()));
+
+			//FIXME generics in methods are not correctly managed by Spoon. So...
+			if(m==null && cl.isSubtypeOf(jfxListenersRef.get(0))) {
+				m = cl.getMethodsByName(interfMeth.getName()).get(0);
+			}
 
 			if(m==null) {
-				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfMeth + " from the interface: " + interf);
+				if(!cl.hasModifier(ModifierKind.ABSTRACT))// FIXME add test for that.
+				//FIXME may not work when methods of the interface are implemented in super classes. Add test.
+					LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfMeth + " from the interface: " + interf);
 			}else {
 				if(!allListenerMethods.containsKey(m)) {
 					allListenerMethods.put(m, m);
