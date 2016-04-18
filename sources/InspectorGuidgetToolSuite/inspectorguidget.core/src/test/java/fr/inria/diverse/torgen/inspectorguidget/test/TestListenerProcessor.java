@@ -39,6 +39,12 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Test
+	public void testActionListenerAsLambdaInheritance() {
+		run("src/test/resources/java/listeners/ActionListenerLambdaInheritance.java");
+		assertEquals(1, lambdaListener.size());
+	}
+
+	@Test
 	public void testSwingMouseListernerAsClassImplementingInterface() {
 		run("src/test/resources/java/listeners/MouseListClass.java");
 		assertEquals(1, clazzListener.size());
