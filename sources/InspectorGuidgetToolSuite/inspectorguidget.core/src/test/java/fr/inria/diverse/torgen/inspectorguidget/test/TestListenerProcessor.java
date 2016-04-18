@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.listener.AWTListenerClass;
+import fr.inria.diverse.torgen.inspectorguidget.listener.SwingListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ListenerProcessor;
@@ -17,7 +18,8 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcessor<? extends CtElement>> implements AWTListenerClass {
+public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcessor<? extends CtElement>>
+		implements AWTListenerClass, SwingListenerClass {
 	private Set<CtClass<?>> clazzListener;
 	private Set<CtLambda<?>> lambdaListener;
 	private LambdaListenerProcessor lambdaProc;
@@ -30,6 +32,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 		clazzListener = new HashSet<>();
 		lambdaListener= new HashSet<>();
 		processors.forEach(p -> p.addAWTClassListener(this));
+		processors.forEach(p -> p.addSwingClassListener(this));
 	}
 
 	@Test
@@ -45,27 +48,45 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Test
-	public void testSwingMouseListernerAsClassImplementingInterface() {
+	public void testSwingCaretListenerAsLambda() {
+		run("src/test/resources/java/listeners/CaretListenerLambda.java");
+		assertEquals(1, lambdaListener.size());
+	}
+
+	@Test
+	public void testAWTMouseListernerAsClassImplementingInterface() {
 		run("src/test/resources/java/listeners/MouseListClass.java");
 		assertEquals(1, clazzListener.size());
+		assertEquals(5, classProc.getAllListenerMethods().size());
+	}
+
+
+	@Test
+	public void testSwingMouseInputListernerAsClassImplementingInterface() {
+		run("src/test/resources/java/listeners/MouseInputListClass.java");
+		assertEquals(1, clazzListener.size());
+		assertEquals(7, classProc.getAllListenerMethods().size());
 	}
 
 	@Test
 	public void testSwingMouseListernerAsAnonClass() {
 		run("src/test/resources/java/listeners/MouseListAnonClass.java");
 		assertEquals(1, clazzListener.size());
+		assertEquals(5, classProc.getAllListenerMethods().size());
 	}
 
 	@Test
 	public void testSwingMouseListernerAsClassWithInheritance() {
 		run("src/test/resources/java/listeners/MouseListAnonClassWithInheritance.java");
 		assertEquals(2, clazzListener.size());
+		assertEquals(6, classProc.getAllListenerMethods().size());
 	}
 
 	@Test
 	public void testSwingMouseListernerAsAnonClassWithInheritance() {
 		run("src/test/resources/java/listeners/MouseListClassInheritance.java");
 		assertEquals(2, clazzListener.size());
+		assertEquals(6, classProc.getAllListenerMethods().size());
 	}
 
 	@Test
@@ -89,6 +110,16 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 
 	@Override
 	public void onAWTListenerLambda(final CtLambda<?> lambda) {
+		lambdaListener.add(lambda);
+	}
+
+	@Override
+	public void onSwingListenerClass(final CtClass<?> clazz) {
+		clazzListener.add(clazz);
+	}
+
+	@Override
+	public void onSwingListenerLambda(final CtLambda<?> lambda) {
 		lambdaListener.add(lambda);
 	}
 }
