@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcessor<? extends CtElement>> implements AWTListenerClass {
 	private Set<CtClass<?>> clazzListener;
 	private Set<CtLambda<?>> lambdaListener;
+	private LambdaListenerProcessor lambdaProc;
+	private ClassListenerProcessor classProc;
 
 	@Override
 	@Before
@@ -60,9 +62,18 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 		assertEquals(2, clazzListener.size());
 	}
 
+	@Test
+	public void testSwingMouseListernerTwoSameClasses() {
+		run("src/test/resources/java/listeners/MouseListTwoSameClasses.java");
+		assertEquals(2, clazzListener.size());
+		assertEquals(10, classProc.getAllListenerMethods().size());
+	}
+
 	@Override
 	public List<ListenerProcessor<? extends CtElement>> createProcessor() {
-		return Arrays.asList(new ClassListenerProcessor(), new LambdaListenerProcessor());
+		lambdaProc = new LambdaListenerProcessor();
+		classProc = new ClassListenerProcessor();
+		return Arrays.asList(classProc, lambdaProc);
 	}
 
 	@Override

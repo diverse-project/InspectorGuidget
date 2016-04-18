@@ -4,9 +4,15 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtTypedElement;
+import spoon.reflect.factory.ClassFactory;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -21,7 +27,17 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 //	public ClassListenerProcessor(ListenersWrapper wrapper) {
 //		this.wrapper = wrapper;
 //	}
+	protected final Map<CtMethod<?>,CtMethod<?>> allListenerMethods;
 
+
+	public ClassListenerProcessor() {
+		super();
+		allListenerMethods= new IdentityHashMap<>();
+	}
+
+	public Set<CtMethod<?>> getAllListenerMethods() {
+		return allListenerMethods.keySet();
+	}
 
 	/**
 	 * Store each listener-related methods from @clazz
@@ -34,14 +50,14 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
 
 		// Case SWING
-		swingListenersRef.stream().filter(ref -> clazz.isSubtypeOf(ref)).forEach(ref -> {
+		swingListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			swingClassListeners.forEach(l -> l.onSwingListenerClass(clazz));
 			processMethods(clazz, ref);
 		});
 
 		// Case AWT
-		awtListenersRef.stream().filter(ref -> clazz.isSubtypeOf(ref)).forEach(ref -> {
+		awtListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			awtClassListeners.forEach(l -> l.onAWTListenerClass(clazz));
 			processMethods(clazz, ref);
@@ -67,7 +83,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 //	 */
 //	@Override
 //	public void processingDone() {
-//		wrapper.create(allListernerMethods, events);
+//		wrapper.create(allListernerLambdas, events);
 //		System.out.println("done:");
 //		swingClassListeners.forEach(System.out::println);
 //		awtClassListeners.forEach(System.out::println);
@@ -78,25 +94,32 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		return isListenerCass(candidate);
 	}
 
+
+	private CtTypeReference<?>[] getTypeRefFromClasses(Class<?>[] classes) {
+		final ClassFactory facto = getFactory().Class();
+		return Arrays.stream(classes).map(facto::createReference).toArray(CtTypeReference<?>[]::new);
+	}
+
+
 	/**
 	 * Store each method from cl that implements interf
 	 */
 	private void processMethods(final CtClass<?> cl, final CtTypeReference<?> interf) {
 		for(final Method interfMeth : interf.getActualClass().getMethods()) {
-			cl.getMethodsByName(interfMeth.getName()).forEach(method -> {
-//				if(!Helper.identityContains(method, allListernerMethods)) { // TODO:
-//					//																				// find
-//					//																				// an
-//					//																				// alternative
-//					//					allListernerMethods.add(method);
-//					//				}
-//					registerEvent(method);
-//				}
-			});
+			final CtMethod<?> m = cl.getMethod(interfMeth.getName(), getTypeRefFromClasses(interfMeth.getParameterTypes()));
+
+			if(m==null) {
+				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfMeth + " from the interface: " + interf);
+			}else {
+				if(!allListenerMethods.containsKey(m)) {
+					allListenerMethods.put(m, m);
+				//  registerEvent(method);
+				}
+			}
 		}
 	}
 
 	private void registerEvent(final CtMethod<?> met) {
-		met.getParameters().stream().map(par -> par.getType()).filter(type -> type.isSubtypeOf(eventRef)).forEach(type -> events.add(type));
+		met.getParameters().stream().map(CtTypedElement::getType).filter(type -> type.isSubtypeOf(eventRef)).forEach(events::add);
 	}
 }

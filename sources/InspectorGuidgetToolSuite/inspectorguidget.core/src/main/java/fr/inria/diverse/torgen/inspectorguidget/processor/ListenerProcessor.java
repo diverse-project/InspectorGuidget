@@ -6,7 +6,6 @@ import fr.inria.diverse.torgen.inspectorguidget.listener.SwingListenerClass;
 import org.eclipse.jdt.annotation.NonNull;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.reference.CtTypeReference;
 
@@ -33,9 +32,7 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 	// Event interface
 	protected CtTypeReference<?> eventRef;
 
-	protected Set<CtTypeReference<?>> events;
-
-	protected List<CtMethod<?>>			allListernerMethods;
+	protected final Set<CtTypeReference<?>> events;
 
 	protected final Set<AWTListenerClass> awtClassListeners;
 	protected final Set<SwingListenerClass> swingClassListeners;
@@ -45,6 +42,8 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 		super();
 		awtClassListeners = new HashSet<>();
 		swingClassListeners = new HashSet<>();
+		// The results
+		events = new HashSet<>();
 	}
 
 	@Override
@@ -166,10 +165,6 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 		//		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.browser.VisibilityWindowListener.class));
 
 		eventRef = getFactory().Type().createReference(java.util.EventObject.class);
-
-		// The results
-		allListernerMethods = new ArrayList<>();
-		events = new HashSet<>();
 	}
 
 

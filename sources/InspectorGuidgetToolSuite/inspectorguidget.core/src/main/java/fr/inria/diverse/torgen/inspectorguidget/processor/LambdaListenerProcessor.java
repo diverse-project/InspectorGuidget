@@ -1,38 +1,43 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtTypeInformation;
-import spoon.reflect.reference.CtTypeReference;
 
-import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
+	protected final Set<CtLambda<?>> allListernerLambdas;
+
+	public LambdaListenerProcessor() {
+		super();
+		allListernerLambdas= new HashSet<>();
+	}
+
 	@Override
 	public void process(final CtLambda<?> lambda) {
 		if(LOG.isLoggable(Level.ALL))
 			LOG.log(Level.INFO, "process CtLambda: " + lambda);
 
-		boolean isAdded = false;
+		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
 		final CtTypeInformation type = lambda.getType();
 
 		// Case SWING
-		for (CtTypeReference<?> ref : swingListenersRef) {
-			if (type.isSubtypeOf(ref)) {
-				isAdded = true;
-				swingClassListeners.forEach(l -> l.onSwingListenerLambda(lambda));
-				processMethods(lambda, ref);
-			}
-		}
+		swingListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
+			isAdded.setValue(true);
+			swingClassListeners.forEach(l -> l.onSwingListenerLambda(lambda));
+			processMethods(lambda);
+		});
 
 		// Case AWT
-		for (CtTypeReference<?> ref : awtListenersRef) {
-			if (type.isSubtypeOf(ref)) {
-				isAdded = true;
-				awtClassListeners.forEach(l -> l.onAWTListenerLambda(lambda));
-				processMethods(lambda, ref);
-			}
-		}
+		awtListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
+			isAdded.setValue(true);
+			awtClassListeners.forEach(l -> l.onAWTListenerLambda(lambda));
+			processMethods(lambda);
+		});
 
 		//		// Case SWT
 		//				for (CtTypeReference<?> ref : swtListenersRef) {
@@ -43,26 +48,29 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 		//				}
 
 		// Case GENERIC
-		if (!isAdded) {
-			if (type.isSubtypeOf(eventListenerRef)) {
-				processMethods(lambda, eventListenerRef);
-			}
+		if(!isAdded.getValue() && type.isSubtypeOf(eventListenerRef)) {
+			processMethods(lambda);
 		}
 	}
 
-	private void processMethods(final CtLambda<?> cl, final CtTypeReference<?> interf) {
-		for(final Method m : interf.getActualClass().getMethods()) {
-//			List<CtMethod<?>> methods = cl.getMethodsByName(m.getName());//FIXME
-//			for (CtMethod<?> method : methods) {
-//				//				if (!Helper.identityContains(method, allListernerMethods)) { // TODO:
-//				//																				// find
-//				//																				// an
-//				//																				// alternative
-//				//					allListernerMethods.add(method);
-//				//				}
-//				registerEvent(method);
-//			}
-		}
+
+	private void processMethods(final CtLambda<?> lambda) {
+		allListernerLambdas.add(lambda);
+
+//		final List<CtMethod<?>> ms = interf.
+//				getDeclaration().getMethods().stream().
+//				filter(m -> !m.isDefaultMethod() &&	!m.hasModifier(ModifierKind.STATIC)).collect(Collectors.toList());
+//
+//		if(ms.size()>1) {
+//			LOG.log(Level.SEVERE, "More than one abstract method found in a lambda functional interface: " + ms);
+//		}
+//
+//		if(ms.isEmpty()) {
+//			LOG.log(Level.SEVERE, "No abstract method found in a lambda functional interface: " + lambda);
+//			throw new ArrayIndexOutOfBoundsException("No abstract method found in a lambda functional interface: " + lambda);
+//		}
+//
+//		System.out.println("got the lambda method: " + ms.get(0));
 	}
 
 	@Override
