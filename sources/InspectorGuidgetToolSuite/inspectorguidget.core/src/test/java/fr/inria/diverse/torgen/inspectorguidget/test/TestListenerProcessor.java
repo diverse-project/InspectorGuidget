@@ -11,6 +11,8 @@ import org.junit.Test;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtField;
+import spoon.reflect.declaration.CtMethod;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -152,5 +154,13 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	@Override
 	public void onJFXListenerLambda(final CtLambda<?> lambda) {
 		lambdaListener.add(lambda);
+	}
+
+	@Override
+	public void onJFXFXMLAnnotationOnField(final CtField<?> field) {
+	}
+
+	@Override
+	public void onJFXFXMLAnnotationOnMethod(final CtMethod<?> method) {
 	}
 }

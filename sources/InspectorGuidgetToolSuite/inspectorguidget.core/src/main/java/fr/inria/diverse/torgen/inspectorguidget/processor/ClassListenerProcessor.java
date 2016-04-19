@@ -116,7 +116,8 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		for(final Method interfMeth : interf.getActualClass().getMethods()) {
 			CtMethod<?> m = cl.getMethod(interfMeth.getName(), getTypeRefFromClasses(interfMeth.getParameterTypes()));
 
-			//FIXME generics in methods are not correctly managed by Spoon. So...
+			//FIXME generics in methods are not correctly managed by Spoon or Java (getClass from Class
+			// does not provide any generics). So...
 			if(m==null && cl.isSubtypeOf(jfxListenersRef.get(0))) {
 				m = cl.getMethodsByName(interfMeth.getName()).get(0);
 			}
