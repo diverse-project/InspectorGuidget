@@ -122,8 +122,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 			}
 
 			if(m==null) {
-				if(!cl.hasModifier(ModifierKind.ABSTRACT))// FIXME add test for that.
-				//FIXME may not work when methods of the interface are implemented in super classes. Add test.
+				if(!cl.hasModifier(ModifierKind.ABSTRACT))
 					LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfMeth + " from the interface: " + interf);
 			}else {
 				if(!allListenerMethods.containsKey(m)) {

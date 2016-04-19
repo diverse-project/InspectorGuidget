@@ -50,6 +50,12 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Test
+	public void testActionListenerAsLambdaInheritanceDefaultMethod() {
+		run("src/test/resources/java/listeners/ListenerLambdaInheritanceDefault.java");
+		assertEquals(1, lambdaListener.size());
+	}
+
+	@Test
 	public void testSwingCaretListenerAsLambda() {
 		run("src/test/resources/java/listeners/CaretListenerLambda.java");
 		assertEquals(1, lambdaListener.size());
