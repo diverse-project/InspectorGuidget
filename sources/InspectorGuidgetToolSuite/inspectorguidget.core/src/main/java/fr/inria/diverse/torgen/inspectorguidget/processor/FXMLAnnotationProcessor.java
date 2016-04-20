@@ -1,22 +1,15 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
-import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
 import javafx.fxml.FXML;
-import org.eclipse.jdt.annotation.NonNull;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class FXMLAnnotationProcessor extends ListenerProcessor<CtAnnotation<?>>{
-	protected final Set<JFXListenerClass> jfxClassObservers;
-
+//TODO see whether AbstractManualProcessor improves the performance by precising the visit.
+public class FXMLAnnotationProcessor extends InspectorGuidgetProcessor<CtAnnotation<?>> {
 	public FXMLAnnotationProcessor() {
 		super();
-		jfxClassObservers= new HashSet<>();
 	}
 
 	@Override
@@ -36,9 +29,5 @@ public class FXMLAnnotationProcessor extends ListenerProcessor<CtAnnotation<?>>{
 	@Override
 	public boolean isToBeProcessed(final CtAnnotation<?> candidate) {
 		return FXML.class.getName().equals(candidate.getActualAnnotation().annotationType().getName());
-	}
-
-	public void addJFXClassListener(final @NonNull JFXListenerClass lis) {
-		jfxClassObservers.add(lis);
 	}
 }

@@ -1,11 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
-import fr.inria.diverse.torgen.inspectorguidget.listener.AWTListenerClass;
-import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
-import fr.inria.diverse.torgen.inspectorguidget.listener.SwingListenerClass;
-import org.eclipse.jdt.annotation.NonNull;
-import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.reference.CtTypeReference;
@@ -15,15 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public abstract class ListenerProcessor<T extends CtElement> extends AbstractProcessor<T> {
-	protected static final Logger LOG = Logger.getLogger("ListenerProcessor");
-
-	static {
-		LOG.setLevel(LoggingHelper.INSTANCE.loggingLevel);
-	}
-
+public abstract class ListenerProcessor<T extends CtElement> extends InspectorGuidgetProcessor<T> {
 	// Listener interfaces targeted
 	protected List<CtTypeReference<?>> swingListenersRef;
 	protected List<CtTypeReference<?>> awtListenersRef;
@@ -36,17 +24,9 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 
 	protected final Set<CtTypeReference<?>> events;
 
-	protected final Set<AWTListenerClass> awtClassObservers;
-	protected final Set<SwingListenerClass> swingClassObservers;
-	protected final Set<JFXListenerClass> jfxClassObservers;
-
 
 	public ListenerProcessor() {
 		super();
-		awtClassObservers= new HashSet<>();
-		swingClassObservers= new HashSet<>();
-		jfxClassObservers= new HashSet<>();
-		// The results
 		events = new HashSet<>();
 	}
 
@@ -182,18 +162,5 @@ public abstract class ListenerProcessor<T extends CtElement> extends AbstractPro
 			LoggingHelper.INSTANCE.logException(ex, LOG);
 		}
 		return false;
-	}
-
-
-	public void addAWTClassListener(final @NonNull AWTListenerClass lis) {
-		awtClassObservers.add(lis);
-	}
-
-	public void addSwingClassListener(final @NonNull SwingListenerClass lis) {
-		swingClassObservers.add(lis);
-	}
-
-	public void addJFXClassListener(final @NonNull JFXListenerClass lis) {
-		jfxClassObservers.add(lis);
 	}
 }

@@ -4,12 +4,10 @@ import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.FXMLAnnotationProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
-import fr.inria.diverse.torgen.inspectorguidget.processor.ListenerProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 
@@ -20,7 +18,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestFXMLAnnotationProcessor extends TestInspectorGuidget<ListenerProcessor<? extends CtElement>> implements JFXListenerClass {
+public class TestFXMLAnnotationProcessor extends TestInspectorGuidget<FXMLAnnotationProcessor> implements JFXListenerClass {
 	private Set<CtField<?>> fieldsFXML;
 	private Set<CtMethod<?>> methodsFXML;
 	private LambdaListenerProcessor lambdaProc;
@@ -36,7 +34,7 @@ public class TestFXMLAnnotationProcessor extends TestInspectorGuidget<ListenerPr
 	}
 
 	@Override
-	public List<ListenerProcessor<? extends CtElement>> createProcessor() {
+	public List<FXMLAnnotationProcessor> createProcessor() {
 		return Collections.singletonList(new FXMLAnnotationProcessor());
 	}
 
