@@ -7,7 +7,9 @@ import fr.inria.diverse.torgen.inspectorguidget.listener.SwingListenerClass;
 import org.eclipse.jdt.annotation.NonNull;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.reference.CtTypeReference;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -41,5 +43,9 @@ public abstract class InspectorGuidgetProcessor <T extends CtElement> extends Ab
 
 	public void addJFXClassListener(final @NonNull JFXListenerClass lis) {
 		jfxClassObservers.add(lis);
+	}
+
+	public static boolean isASubTypeOf(final CtTypeReference<?> candidate, final Collection<CtTypeReference<?>> types) {
+		return types.stream().filter(candidate::isSubtypeOf).findFirst().isPresent();
 	}
 }

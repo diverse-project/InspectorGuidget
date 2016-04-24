@@ -13,4 +13,6 @@ public interface JFXListenerClass {
 	void onJFXFXMLAnnotationOnField(CtField<?> field);
 
 	void onJFXFXMLAnnotationOnMethod(CtMethod<?> method);
+
+	void onJFXWidgetAttribute(CtField<?> widget);
 }

@@ -1,7 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
-import fr.inria.diverse.torgen.inspectorguidget.processor.FXMLAnnotationProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import spoon.reflect.code.CtLambda;
@@ -16,29 +16,32 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestFXMLAnnotationProcessor extends TestInspectorGuidget<FXMLAnnotationProcessor> implements JFXListenerClass {
-	private Set<CtField<?>> fieldsFXML;
-	private Set<CtMethod<?>> methodsFXML;
+public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> implements JFXListenerClass {
+	private Set<CtField<?>> widgetAttrs;
 
 	@Override
 	@Before
 	public void setUp() {
 		super.setUp();
-		fieldsFXML = new HashSet<>();
-		methodsFXML = new HashSet<>();
+		widgetAttrs= new HashSet<>();
 		processors.forEach(p -> p.addJFXClassListener(this));
 	}
 
 	@Override
-	public List<FXMLAnnotationProcessor> createProcessor() {
-		return Collections.singletonList(new FXMLAnnotationProcessor());
+	public List<WidgetProcessor> createProcessor() {
+		return Collections.singletonList(new WidgetProcessor());
 	}
 
 	@Test
-	public void testFXMLAnnotationAttributes() {
-		run("src/test/resources/java/fxml/FXMLAnnotationAttributes.java");
-		assertEquals(2, fieldsFXML.size());
-		assertEquals(0, methodsFXML.size());
+	public void testWidgetsAsExplicitAttr() {
+		run("src/test/resources/java/widgets/WidgetAsStdAttr.java");
+		assertEquals(3, widgetAttrs.size());
+	}
+
+	@Test
+	public void testWidgetsAsListAttr() {
+		run("src/test/resources/java/widgets/WidgetAsListAttr.java");
+		assertEquals(1, widgetAttrs.size());
 	}
 
 	@Override
@@ -51,15 +54,14 @@ public class TestFXMLAnnotationProcessor extends TestInspectorGuidget<FXMLAnnota
 
 	@Override
 	public void onJFXFXMLAnnotationOnField(final CtField<?> field) {
-		fieldsFXML.add(field);
 	}
 
 	@Override
 	public void onJFXFXMLAnnotationOnMethod(final CtMethod<?> method) {
-		methodsFXML.add(method);
 	}
 
 	@Override
 	public void onJFXWidgetAttribute(final CtField<?> widget) {
+		widgetAttrs.add(widget);
 	}
 }
