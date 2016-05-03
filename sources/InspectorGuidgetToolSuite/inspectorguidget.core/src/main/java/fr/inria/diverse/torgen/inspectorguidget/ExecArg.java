@@ -1,8 +1,5 @@
 package fr.inria.diverse.torgen.inspectorguidget;
 
-import fr.inria.diverse.torgen.inspectorguidget.Launcher;
-import spoon.SpoonAPI;
-
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -10,13 +7,8 @@ public class ExecArg {
     public static final String EXEC_CP_ARG = "-c";
     public static final String EXEC_SRC_ARG = "-s";
 
-    private boolean srcParsed;
-    private boolean cpParsed;
-
     public ExecArg() {
         super();
-        srcParsed = false;
-        cpParsed = false;
     }
 
     public void parse(final String[] args, final Launcher launcher) {
