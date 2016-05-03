@@ -16,11 +16,11 @@ public class FXMLAnnotationProcessor extends InspectorGuidgetProcessor<CtAnnotat
 	public void process(final CtAnnotation<?> element) {
 		CtElement elt = element.getAnnotatedElement();
 
-		if(elt instanceof CtField) {
-			CtField field =(CtField) elt;
+		if(elt instanceof CtField<?>) {
+			CtField<?> field =(CtField<?>) elt;
 			jfxClassObservers.forEach(o -> o.onJFXFXMLAnnotationOnField(field));
 		} else if(elt instanceof CtMethod) {
-			CtMethod method =(CtMethod) elt;
+			CtMethod<?> method =(CtMethod<?>) elt;
 			jfxClassObservers.forEach(o -> o.onJFXFXMLAnnotationOnMethod(method));
 		}
 	}
