@@ -23,12 +23,10 @@ public class SpoonStructurePrinter extends CtScanner {
 		System.out.print(e.getClass().getSimpleName());
 
 		if(e instanceof CtNamedElement) {
-			System.out.print(": " + ((CtNamedElement)e).getSimpleName());
+			System.out.print(": " + ((CtNamedElement)e).getSimpleName() + " " + SpoonHelper.INSTANCE.formatPosition(e.getPosition()));
 		}else if(e instanceof CtReference) {
-			System.out.print(": " + ((CtReference)e).getSimpleName());
+			System.out.print(": " + ((CtReference)e).getSimpleName() + " " + SpoonHelper.INSTANCE.formatPosition(e.getPosition()));
 		}
-
-		System.out.print(" " + e.toString());
 
 		nbTab++;
 	}
