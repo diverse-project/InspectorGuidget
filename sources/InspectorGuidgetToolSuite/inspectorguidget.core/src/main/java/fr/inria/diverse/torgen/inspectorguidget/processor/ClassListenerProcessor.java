@@ -103,9 +103,9 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 	}
 
 
-	private CtTypeReference<?>[] getTypeRefFromClasses(Class<?>[] classes) {
+	private CtTypeReference<?>[] getTypeRefFromClasses(final Class<?>[] classes) {
 		final ClassFactory facto = getFactory().Class();
-		return Arrays.stream(classes).map(facto::createReference).toArray(CtTypeReference<?>[]::new);
+		return Arrays.stream(classes).map(type -> facto.createReference(type)).toArray(CtTypeReference<?>[]::new);
 	}
 
 
