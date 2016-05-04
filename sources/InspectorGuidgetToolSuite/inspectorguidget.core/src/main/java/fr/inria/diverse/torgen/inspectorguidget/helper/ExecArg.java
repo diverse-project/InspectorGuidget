@@ -1,4 +1,6 @@
-package fr.inria.diverse.torgen.inspectorguidget;
+package fr.inria.diverse.torgen.inspectorguidget.helper;
+
+import fr.inria.diverse.torgen.inspectorguidget.analyser.InspectorGuidetAnalyser;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -11,7 +13,7 @@ public class ExecArg {
         super();
     }
 
-    public void parse(final String[] args, final Launcher launcher) {
+    public void parse(final String[] args, final InspectorGuidetAnalyser launcher) {
         if(args.length==0 || !EXEC_SRC_ARG.equals(args[0]))
             throw getArgumentException();
 
