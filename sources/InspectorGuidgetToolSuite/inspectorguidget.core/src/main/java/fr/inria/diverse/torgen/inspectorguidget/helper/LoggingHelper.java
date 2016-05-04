@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 public final class LoggingHelper {
     public static final LoggingHelper INSTANCE = new LoggingHelper();
 
-    public final Level loggingLevel = Level.ALL;
+    public final Level loggingLevel = Level.WARNING;
 
     private LoggingHelper() {
         super();

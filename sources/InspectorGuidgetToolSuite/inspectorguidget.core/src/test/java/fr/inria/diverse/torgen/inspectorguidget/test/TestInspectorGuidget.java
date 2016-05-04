@@ -11,6 +11,7 @@ import spoon.support.StandardEnvironment;
 import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -30,8 +31,8 @@ public abstract class TestInspectorGuidget<T extends Processor<? extends CtEleme
 
 	protected abstract Collection<T> createProcessor();
 
-	protected void run(final String srcPath) {
-		modelBuilder.addInputSource(new File(srcPath));
+	protected void run(final String... srcPath) {
+		Arrays.stream(srcPath).forEach(src -> modelBuilder.addInputSource(new File(src)));
 		modelBuilder.build();
 
 		if(SHOW_MODEL) {

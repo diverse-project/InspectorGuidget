@@ -6,10 +6,12 @@ import org.eclipse.jdt.annotation.NonNull;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.visitor.filter.InvocationFilter;
 import spoon.reflect.visitor.filter.VariableAccessFilter;
 
 import java.util.*;
@@ -80,12 +82,23 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			addNotifyObserversOnField(((CtFieldReference<?>) parent).getDeclaration(), element);
 			return;
 		}
+		if(parent instanceof CtMethod<?>) {
+			analyseMethodUse((CtMethod<?>) parent, element);
+			return;
+		}
 		if(parent instanceof CtExecutableReference<?>) {
 			// A method is called on a widget, so ignored.
 			return;
 		}
 
 		LOG.log(Level.SEVERE, "CTypeReference parent not supported: " + parent.getClass() + " " + parent);
+	}
+
+
+	private void analyseMethodUse(final CtMethod<?> meth, final CtTypeReference<?> element) {
+		meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).forEach(invok -> {
+			analyseWidgetInvocation(invok, element);
+		});
 	}
 
 
@@ -109,20 +122,23 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			return;
 		}
 
+		if(elt instanceof CtReturn<?>) {
+			// The return statements are not useful for the analysis.
+			return;
+		}
+
 		LOG.log(Level.SEVERE, "Widget use not supported (" + SpoonHelper.INSTANCE.formatPosition(elt.getPosition()) +
 				"): " + elt.getClass());
 	}
 
 
-	private void analyseUseOfLocalVariable(final CtLocalVariableReference<?> var, final CtBlock block, final CtTypeReference<?> refType) {
+	private void analyseUseOfLocalVariable(final CtLocalVariableReference<?> var, final CtBlock<?> block, final CtTypeReference<?> refType) {
 		if(block==null) {
 			LOG.log(Level.SEVERE, "No block ("+SpoonHelper.INSTANCE.formatPosition(var.getPosition())+"): " + var);
 			return;
 		}
 
-		block.getElements(new VariableAccessFilter<>(var)).parallelStream().forEach(access -> {
-			analyseWidgetUse(access.getParent(), refType);
-		});
+		block.getElements(new VariableAccessFilter<>(var)).forEach(access -> analyseWidgetUse(access.getParent(), refType));
 	}
 
 
@@ -168,7 +184,12 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			return;
 		}
 
-		LOG.log(Level.SEVERE, "Widget invocation not supported: " + type.getClass() + " " + invok);
+		if(invok.getParent() instanceof CtAssignment<?,?>) {
+			analyseWidgetAssignment((CtAssignment<?, ?>) invok.getParent(), element);
+			return;
+		}
+
+		LOG.log(Level.SEVERE, "Widget invocation not supported: " + type.getSimpleName() + " " + invok);
 	}
 
 
