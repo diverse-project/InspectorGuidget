@@ -79,6 +79,13 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> i
 		assertEquals(4, widgetAttrs.size());
 	}
 
+	@Test
+	public void testWidgetsConstructorObjectFunction3() {
+		run("src/test/resources/java/widgets/WidgetConstructorObjectFunction3.java");
+		assertEquals(1, widgetAttrs.size());
+		assertEquals(1, widgetAddedToContainer.size());
+	}
+
 	@Override
 	public void onWidgetAttribute(final CtField<?> widget, final CtTypeReference<?> element) {
 		widgetAttrs.add(widget);

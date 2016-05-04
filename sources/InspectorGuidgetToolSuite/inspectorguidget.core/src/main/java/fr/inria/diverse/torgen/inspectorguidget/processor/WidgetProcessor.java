@@ -55,8 +55,9 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 	@Override
 	public boolean isToBeProcessed(CtTypeReference<?> type) {
-		return isASubTypeOf(type, controlType) || type.isSubtypeOf(collectionType) &&
-				type.getActualTypeArguments().stream().filter(t -> isASubTypeOf(t, controlType)).findFirst().isPresent();
+		return isASubTypeOf(type, controlType);
+		//|| type.isSubtypeOf(collectionType) &&
+		//		type.getActualTypeArguments().stream().filter(t -> isASubTypeOf(t, controlType)).findFirst().isPresent();
 	}
 
 	@Override
@@ -86,12 +87,16 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			analyseMethodUse((CtMethod<?>) parent, element);
 			return;
 		}
+		if(parent instanceof CtTypeReference<?>) {
+			process((CtTypeReference<?>) parent);
+			return;
+		}
 		if(parent instanceof CtExecutableReference<?>) {
 			// A method is called on a widget, so ignored.
 			return;
 		}
 
-		LOG.log(Level.SEVERE, "CTypeReference parent not supported: " + parent.getClass() + " " + parent);
+		LOG.log(Level.WARNING, "CTypeReference parent not supported or ignored: " + parent.getClass() + " " + parent);
 	}
 
 
@@ -122,12 +127,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			return;
 		}
 
-		if(elt instanceof CtReturn<?>) {
-			// The return statements are not useful for the analysis.
-			return;
-		}
-
-		LOG.log(Level.SEVERE, "Widget use not supported (" + SpoonHelper.INSTANCE.formatPosition(elt.getPosition()) +
+		LOG.log(Level.WARNING, "Widget use not supported or ignored (" + SpoonHelper.INSTANCE.formatPosition(elt.getPosition()) +
 				"): " + elt.getClass());
 	}
 
@@ -152,7 +152,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		if(exp instanceof CtFieldWrite<?>) {
 			addNotifyObserversOnField(((CtFieldWrite<?>) exp).getVariable().getDeclaration(), element);
 		}else {
-			LOG.log(Level.SEVERE, "Widget Assignment not supported: " + exp.getClass() + " " + exp);
+			LOG.log(Level.WARNING, "Widget Assignment not supported or ignored: " + exp.getClass() + " " + exp);
 		}
 	}
 
@@ -183,13 +183,17 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			addNotifyObserversOnContained(invok, element);
 			return;
 		}
-
 		if(invok.getParent() instanceof CtAssignment<?,?>) {
 			analyseWidgetAssignment((CtAssignment<?, ?>) invok.getParent(), element);
 			return;
 		}
+		if(invok.getParent() instanceof CtInvocation<?> && invok.getParent() instanceof CtInvocation<?>) {
+			// Calling a method on a collection.
+			addNotifyObserversOnContained(invok, element);
+			return;
+		}
 
-		LOG.log(Level.SEVERE, "Widget invocation not supported: " + type.getSimpleName() + " " + invok);
+		LOG.log(Level.WARNING, "Widget invocation not supported or ignored: " + type.getSimpleName() + " " + invok);
 	}
 
 
