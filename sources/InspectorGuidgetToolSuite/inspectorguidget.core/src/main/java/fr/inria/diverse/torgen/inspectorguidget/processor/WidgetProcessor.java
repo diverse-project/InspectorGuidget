@@ -56,8 +56,6 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	@Override
 	public boolean isToBeProcessed(CtTypeReference<?> type) {
 		return isASubTypeOf(type, controlType);
-		//|| type.isSubtypeOf(collectionType) &&
-		//		type.getActualTypeArguments().stream().filter(t -> isASubTypeOf(t, controlType)).findFirst().isPresent();
 	}
 
 	@Override
@@ -101,9 +99,8 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 
 	private void analyseMethodUse(final CtMethod<?> meth, final CtTypeReference<?> element) {
-		meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).forEach(invok -> {
-			analyseWidgetInvocation(invok, element);
-		});
+		meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).
+				forEach(invok -> analyseWidgetInvocation(invok, element));
 	}
 
 
