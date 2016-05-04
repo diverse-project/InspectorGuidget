@@ -58,8 +58,4 @@ public class TestFXMLAnnotationProcessor extends TestInspectorGuidget<FXMLAnnota
 	public void onJFXFXMLAnnotationOnMethod(final CtMethod<?> method) {
 		methodsFXML.add(method);
 	}
-
-	@Override
-	public void onJFXWidgetAttribute(final CtField<?> widget) {
-	}
 }

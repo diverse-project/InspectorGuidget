@@ -19,8 +19,7 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 
 	@Override
 	public void process(final CtLambda<?> lambda) {
-		if(LOG.isLoggable(Level.ALL))
-			LOG.log(Level.INFO, "process CtLambda: " + lambda);
+		LOG.log(Level.INFO, "process CtLambda: " + lambda);
 
 		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
 		final CtTypeInformation type = lambda.getType();

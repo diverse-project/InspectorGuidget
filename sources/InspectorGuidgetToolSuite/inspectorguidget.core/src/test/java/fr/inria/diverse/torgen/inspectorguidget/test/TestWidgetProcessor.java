@@ -1,13 +1,12 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
-import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
+import fr.inria.diverse.torgen.inspectorguidget.listener.WidgetListener;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.Before;
 import org.junit.Test;
-import spoon.reflect.code.CtLambda;
-import spoon.reflect.declaration.CtClass;
+import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtField;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.reference.CtTypeReference;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -16,16 +15,19 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> implements JFXListenerClass {
+public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> implements WidgetListener {
 	private Set<CtField<?>> widgetAttrs;
+	private Set<CtTypeReference<?>> widgetAddedToContainer;
 
 	@Override
 	@Before
 	public void setUp() {
 		super.setUp();
 		widgetAttrs= new HashSet<>();
-		processors.forEach(p -> p.addJFXClassListener(this));
+		widgetAddedToContainer= new HashSet<>();
+		processors.forEach(p -> p.addWidgetObserver(this));
 	}
+
 
 	@Override
 	public List<WidgetProcessor> createProcessor() {
@@ -44,24 +46,38 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> i
 		assertEquals(1, widgetAttrs.size());
 	}
 
-	@Override
-	public void onJFXListenerClass(final CtClass<?> clazz) {
+	@Test
+	public void testWidgetsConstructorObject() {
+		run("src/test/resources/java/widgets/WidgetConstructorObject.java");
+		assertEquals(1, widgetAttrs.size());
+	}
+
+	@Test
+	public void testWidgetsConstructorListObject() {
+		run("src/test/resources/java/widgets/WidgetConstructorListObject.java");
+		assertEquals(1, widgetAttrs.size());
+	}
+
+	@Test
+	public void testWidgetsConstructorContainer() {
+		run("src/test/resources/java/widgets/WidgetConstructorContainer.java");
+		assertEquals(1, widgetAttrs.size());
+		assertEquals(1, widgetAddedToContainer.size());
+	}
+
+	@Test
+	public void testWidgetsConstructorObjectUndirect() {
+		run("src/test/resources/java/widgets/WidgetConstructorObjectUndirect.java");
+		assertEquals(1, widgetAttrs.size());
 	}
 
 	@Override
-	public void onJFXListenerLambda(final CtLambda<?> lambda) {
-	}
-
-	@Override
-	public void onJFXFXMLAnnotationOnField(final CtField<?> field) {
-	}
-
-	@Override
-	public void onJFXFXMLAnnotationOnMethod(final CtMethod<?> method) {
-	}
-
-	@Override
-	public void onJFXWidgetAttribute(final CtField<?> widget) {
+	public void onWidgetAttribute(final CtField<?> widget, final CtTypeReference<?> element) {
 		widgetAttrs.add(widget);
+	}
+
+	@Override
+	public void onWidgetCreatedForContainer(CtInvocation<?> widgetInvoc, CtTypeReference<?> element) {
+		widgetAddedToContainer.add(element);
 	}
 }

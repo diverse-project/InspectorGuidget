@@ -32,8 +32,7 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 
 	@Override
 	public void init() {
-		if(LOG.isLoggable(Level.ALL))
-			LOG.log(Level.INFO, "init processor " + getClass().getSimpleName());
+		LOG.log(Level.INFO, "init processor " + getClass().getSimpleName());
 
 		// Generic listener
 		eventListenerRef = getFactory().Type().createReference(java.util.EventListener.class);

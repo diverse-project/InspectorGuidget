@@ -163,8 +163,4 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	@Override
 	public void onJFXFXMLAnnotationOnMethod(final CtMethod<?> method) {
 	}
-
-	@Override
-	public void onJFXWidgetAttribute(final CtField<?> widget) {
-	}
 }

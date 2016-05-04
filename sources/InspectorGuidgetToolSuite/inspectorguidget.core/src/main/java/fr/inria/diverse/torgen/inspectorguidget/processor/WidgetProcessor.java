@@ -1,28 +1,46 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.listener.WidgetListener;
+import org.eclipse.jdt.annotation.NonNull;
+import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
+import spoon.reflect.reference.CtExecutableReference;
+import spoon.reflect.reference.CtFieldReference;
+import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.visitor.filter.VariableAccessFilter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
  * Detects declaration of widgets.
  */
 public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?>> {
-	protected Collection<CtTypeReference<?>> controlType;
-	protected Map<CtField<?>, CtField<?>> fields;
-	protected CtTypeReference<?> collectionType;
+	private Collection<CtTypeReference<?>> controlType;
+	private Map<CtField<?>, CtField<?>> fields;
+	/** The widgets created and directly added in a container. */
+	private Map<CtTypeReference<?>, CtTypeReference<?>> references;
+	private CtTypeReference<?> collectionType;
+	private final Set<WidgetListener> widgetObs;
+
+	public WidgetProcessor() {
+		super();
+		widgetObs = new HashSet<>();
+	}
+
+	public void addWidgetObserver(final @NonNull WidgetListener obs) {
+		widgetObs.add(obs);
+	}
 
 	@Override
 	public void init() {
-		if(LOG.isLoggable(Level.ALL)) LOG.log(Level.INFO, "init processor " + getClass().getSimpleName());
+		LOG.log(Level.INFO, "init processor " + getClass().getSimpleName());
 
 		fields = new IdentityHashMap<>();
+		references = new IdentityHashMap<>();
 		controlType = new ArrayList<>();
 		collectionType = getFactory().Type().createReference(Collection.class);
 
@@ -41,12 +59,126 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 	@Override
 	public void process(final CtTypeReference<?> element) {
-		CtElement parent = element.getParent();
+		final CtElement parent = element.getParent();
 
-		if(parent instanceof CtField<?> && !fields.containsKey(parent)) {
-			final CtField<?> field = (CtField<?>) parent;
-			fields.put(field, field);
-			jfxClassObservers.forEach(o -> o.onJFXWidgetAttribute(field));
+		if(LOG.isLoggable(Level.INFO))
+			LOG.log(Level.INFO, "PROCESSING " + element + " " + parent.getClass() + " " + parent.getParent().getClass());
+
+		if(parent instanceof CtField<?>) {
+			addNotifyObserversOnField((CtField<?>) parent, element);
+			return;
 		}
+		if(parent instanceof CtExecutableReference<?> && parent.getParent() instanceof CtConstructorCall<?>) {
+			analyseWidgetConstructorCall((CtConstructorCall<?>) parent.getParent(), element);
+			return;
+		}
+		if(parent instanceof CtAssignment<?,?>) {
+			analyseWidgetAssignment((CtAssignment<?, ?>) parent, element);
+			return;
+		}
+		if(parent instanceof CtFieldReference<?>) {
+			addNotifyObserversOnField(((CtFieldReference<?>) parent).getDeclaration(), element);
+			return;
+		}
+		if(parent instanceof CtExecutableReference<?>) {
+			// A method is called on a widget, so ignored.
+			return;
+		}
+
+		LOG.log(Level.SEVERE, "CTypeReference parent not supported: " + parent.getClass() + " " + parent);
+	}
+
+
+	private void analyseWidgetConstructorCall(final CtConstructorCall<?> call, final CtTypeReference<?> element) {
+		analyseWidgetUse(call.getParent(), element);
+	}
+
+
+	private void analyseWidgetUse(final CtElement elt, final CtTypeReference<?> refType) {
+		if(elt instanceof CtAssignment<?, ?>) {
+			analyseWidgetAssignment((CtAssignment<?, ?>) elt, refType);
+			return;
+		}
+		if(elt instanceof CtInvocation<?>) {
+			analyseWidgetInvocation((CtInvocation<?>) elt, refType);
+			return;
+		}
+
+		if(elt instanceof CtLocalVariable<?>) {
+			analyseUseOfLocalVariable(((CtLocalVariable<?>)elt).getReference(), elt.getParent(CtBlock.class), refType);
+			return;
+		}
+
+		LOG.log(Level.SEVERE, "Widget use not supported (" + SpoonHelper.INSTANCE.formatPosition(elt.getPosition()) +
+				"): " + elt.getClass());
+	}
+
+
+	private void analyseUseOfLocalVariable(final CtLocalVariableReference<?> var, final CtBlock block, final CtTypeReference<?> refType) {
+		if(block==null) {
+			LOG.log(Level.SEVERE, "No block ("+SpoonHelper.INSTANCE.formatPosition(var.getPosition())+"): " + var);
+			return;
+		}
+
+		block.getElements(new VariableAccessFilter<>(var)).parallelStream().forEach(access -> {
+			analyseWidgetUse(access.getParent(), refType);
+		});
+	}
+
+
+	/**
+	 * Object foo;
+	 * foo = new JButton();
+	 */
+	private void analyseWidgetAssignment(final CtAssignment<?,?> assign, final CtTypeReference<?> element) {
+		final CtExpression<?> exp = assign.getAssigned();
+
+		if(exp instanceof CtFieldWrite<?>) {
+			addNotifyObserversOnField(((CtFieldWrite<?>) exp).getVariable().getDeclaration(), element);
+		}else {
+			LOG.log(Level.SEVERE, "Widget Assignment not supported: " + exp.getClass() + " " + exp);
+		}
+	}
+
+
+	/**
+	 * JPanel panel = new JPanel();
+	 * panel.add(new JWindow());
+	 * ****
+	 * List<Object> foo = new ArrayList<>();
+	 * foo.add(new JMenuItem());
+	 */
+	private void analyseWidgetInvocation(final CtInvocation<?> invok, final CtTypeReference<?> element) {
+		final CtExpression<?> exp = invok.getTarget();
+
+		if(exp==null) {
+			LOG.log(Level.WARNING, "Cannot treat the widget invocation because of a null type: " + invok);
+			return;
+		}
+
+		final CtTypeReference<?> type = exp.getType();
+
+		if(type.isSubtypeOf(collectionType) && type.getParent() instanceof CtFieldReference<?>) {
+			addNotifyObserversOnField(((CtFieldReference<?>) type.getParent()).getDeclaration(), element);
+			return;
+		}
+
+		if(isASubTypeOf(type, controlType)) {
+			addNotifyObserversOnContained(invok, element);
+			return;
+		}
+
+		LOG.log(Level.SEVERE, "Widget invocation not supported: " + type.getClass() + " " + invok);
+	}
+
+
+	private void addNotifyObserversOnContained(final CtInvocation<?> invok, final CtTypeReference<?> element) {
+		if(element!=null && references.putIfAbsent(element, element)==null)
+			widgetObs.forEach(o -> o.onWidgetCreatedForContainer(invok, element));
+	}
+
+	private void addNotifyObserversOnField(final CtField<?> field, final CtTypeReference<?> element) {
+		if(field!=null && fields.putIfAbsent(field, field)==null)
+			widgetObs.forEach(o -> o.onWidgetAttribute(field, element));
 	}
 }
