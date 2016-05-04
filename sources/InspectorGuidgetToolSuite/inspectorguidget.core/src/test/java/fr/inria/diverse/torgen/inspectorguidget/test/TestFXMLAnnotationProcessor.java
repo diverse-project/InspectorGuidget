@@ -42,7 +42,7 @@ public class TestFXMLAnnotationProcessor extends TestInspectorGuidget<FXMLAnnota
 	}
 
 	@Override
-	public void onJFXListenerClass(final CtClass<?> clazz) {
+	public void onJFXListenerClass(final CtClass<?> clazz, Set<CtMethod<?>> methods) {
 	}
 
 	@Override

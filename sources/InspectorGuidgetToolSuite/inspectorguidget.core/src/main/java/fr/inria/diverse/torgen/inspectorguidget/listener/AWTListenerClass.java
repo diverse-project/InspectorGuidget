@@ -2,9 +2,17 @@ package fr.inria.diverse.torgen.inspectorguidget.listener;
 
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtMethod;
+
+import java.util.Set;
 
 public interface AWTListenerClass {
-    void onAWTListenerClass(CtClass<?> clazz);
+	/**
+	 * Notified method when an AWT listener class is analysed.
+	 * @param clazz The AWT listener class.
+	 * @param methods All the methods of clazz that come from implemented listeners.
+	 */
+	void onAWTListenerClass(CtClass<?> clazz, Set<CtMethod<?>> methods);
 
 	void onAWTListenerLambda(CtLambda<?> lambda);
 }

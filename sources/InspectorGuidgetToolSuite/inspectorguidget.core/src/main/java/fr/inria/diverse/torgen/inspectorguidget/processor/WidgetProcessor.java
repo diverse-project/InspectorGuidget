@@ -62,8 +62,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	public void process(final CtTypeReference<?> element) {
 		final CtElement parent = element.getParent();
 
-		if(LOG.isLoggable(Level.INFO))
-			LOG.log(Level.INFO, "PROCESSING " + element + " " + parent.getClass() + " " + parent.getParent().getClass());
+		LOG.log(Level.INFO, () -> "PROCESSING " + element + " " + parent.getClass() + " " + parent.getParent().getClass());
 
 		if(parent instanceof CtField<?>) {
 			addNotifyObserversOnField((CtField<?>) parent, element);

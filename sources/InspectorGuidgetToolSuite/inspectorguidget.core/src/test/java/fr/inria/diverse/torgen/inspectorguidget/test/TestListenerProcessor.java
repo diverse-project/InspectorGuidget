@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -67,7 +68,8 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	public void testJFXHandlerAsClass() {
 		run("src/test/resources/java/listeners/JFXEventHandlerClass.java");
 		assertEquals(1, clazzListener.size());
-		assertEquals(1, classProc.getAllListenerMethods().size());
+		assertEquals(1, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(1, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 	@Test
@@ -80,7 +82,8 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	public void testAWTMouseListernerAsClassImplementingInterface() {
 		run("src/test/resources/java/listeners/MouseListClass.java");
 		assertEquals(1, clazzListener.size());
-		assertEquals(5, classProc.getAllListenerMethods().size());
+		assertEquals(1, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(5, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 
@@ -88,35 +91,40 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	public void testSwingMouseInputListernerAsClassImplementingInterface() {
 		run("src/test/resources/java/listeners/MouseInputListClass.java");
 		assertEquals(1, clazzListener.size());
-		assertEquals(7, classProc.getAllListenerMethods().size());
+		assertEquals(1, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(7, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 	@Test
 	public void testSwingMouseListernerAsAnonClass() {
 		run("src/test/resources/java/listeners/MouseListAnonClass.java");
 		assertEquals(1, clazzListener.size());
-		assertEquals(5, classProc.getAllListenerMethods().size());
+		assertEquals(1, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(5, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 	@Test
 	public void testSwingMouseListernerAsClassWithInheritance() {
 		run("src/test/resources/java/listeners/MouseListAnonClassWithInheritance.java");
 		assertEquals(2, clazzListener.size());
-		assertEquals(6, classProc.getAllListenerMethods().size());
+		assertEquals(2, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(6, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 	@Test
 	public void testSwingMouseListernerAsAnonClassWithInheritance() {
 		run("src/test/resources/java/listeners/MouseListClassInheritance.java");
 		assertEquals(2, clazzListener.size());
-		assertEquals(6, classProc.getAllListenerMethods().size());
+		assertEquals(2, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(6, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 	@Test
 	public void testSwingMouseListernerTwoSameClasses() {
 		run("src/test/resources/java/listeners/MouseListTwoSameClasses.java");
 		assertEquals(2, clazzListener.size());
-		assertEquals(10, classProc.getAllListenerMethods().size());
+		assertEquals(2, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(10, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 	@Override
@@ -127,7 +135,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Override
-	public void onAWTListenerClass(final CtClass<?> clazz) {
+	public void onAWTListenerClass(final CtClass<?> clazz, Set<CtMethod<?>> methods) {
 		clazzListener.add(clazz);
 	}
 
@@ -137,7 +145,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Override
-	public void onSwingListenerClass(final CtClass<?> clazz) {
+	public void onSwingListenerClass(final CtClass<?> clazz, Set<CtMethod<?>> methods) {
 		clazzListener.add(clazz);
 	}
 
@@ -147,7 +155,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Override
-	public void onJFXListenerClass(final CtClass<?> clazz) {
+	public void onJFXListenerClass(final CtClass<?> clazz, Set<CtMethod<?>> methods) {
 		clazzListener.add(clazz);
 	}
 
