@@ -1,7 +1,9 @@
 package fr.inria.diverse.torgen.inspectorguidget;
 
+import fr.inria.diverse.torgen.inspectorguidget.processor.FXMLAnnotationProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import spoon.SpoonAPI;
 import spoon.compiler.Environment;
 import spoon.compiler.SpoonCompiler;
@@ -112,7 +114,8 @@ public class Launcher implements SpoonAPI {
 
     @Override
     public void process() {
-		modelBuilder.process(Arrays.asList(new ClassListenerProcessor(), new LambdaListenerProcessor()));
+		modelBuilder.process(Arrays.asList(new ClassListenerProcessor(), new LambdaListenerProcessor(),
+				new FXMLAnnotationProcessor(), new WidgetProcessor()));
     }
 
     @Override
