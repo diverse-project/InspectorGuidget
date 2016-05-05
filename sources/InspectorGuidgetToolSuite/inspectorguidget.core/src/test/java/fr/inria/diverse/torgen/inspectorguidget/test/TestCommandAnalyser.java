@@ -53,4 +53,12 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testClassListenerMethodNoCodeMultipleMethods() {
+		analyser.addInputResource("src/test/resources/java/listeners/MouseInputListClass.java");
+		analyser.run();
+		assertEquals(7, analyser.getCommands().values().size());
+		assertEquals(0l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

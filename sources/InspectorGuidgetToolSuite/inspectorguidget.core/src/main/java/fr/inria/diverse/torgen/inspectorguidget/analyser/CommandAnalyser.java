@@ -66,14 +66,19 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private void analyseMultipleListenerMethods(final CtClass<?> listenerClass, final List<CtMethod<?>> listenerMethods) {
-		final List<CtMethod<?>> nonEmptyM = listenerMethods.stream().
-				filter(l -> l.getBody()!=null && !l.getBody().getStatements().isEmpty()).collect(Collectors.toList());
+		final List<CtMethod<?>> nonEmptyM=listenerMethods.stream().
+				filter(l -> l.getBody() != null && !l.getBody().getStatements().isEmpty()).collect(Collectors.toList());
 
-		if(nonEmptyM.size()==1) {
-			// Only one method used.
-			analyseSingleListenerMethod(Optional.of(listenerClass), nonEmptyM.get(0));
-		}else {
-			//TODO
+		switch(nonEmptyM.size()) {
+			case 0:
+				synchronized(commands) { listenerMethods.forEach(l -> commands.put(l, Collections.emptyList())); }
+				break;
+			case 1:
+				analyseSingleListenerMethod(Optional.of(listenerClass), nonEmptyM.get(0));
+				break;
+			default:
+				//TODO
+				break;
 		}
 	}
 }
