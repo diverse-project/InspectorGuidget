@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
+import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtSwitch;
@@ -12,6 +13,6 @@ public class ConditionalFilter extends AbstractFilter<CtStatement>{
 
 	@Override
 	public boolean matches(CtStatement stat) {
-		return stat instanceof CtIf || stat instanceof CtSwitch<?>;
+		return stat instanceof CtIf || stat instanceof CtSwitch<?> || stat instanceof CtConditional;
 	}
 }

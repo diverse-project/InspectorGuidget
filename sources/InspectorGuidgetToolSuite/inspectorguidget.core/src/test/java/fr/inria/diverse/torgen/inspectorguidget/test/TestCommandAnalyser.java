@@ -29,4 +29,20 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(0l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testClassListenerMethodNoConditional() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditClass.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testLambdaListenerMethodNoConditional() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditLambda.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }
