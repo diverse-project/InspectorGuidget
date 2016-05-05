@@ -5,16 +5,21 @@ import javafx.beans.property.SimpleBooleanProperty;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtTypeInformation;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
 public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
-	protected final Set<CtLambda<?>> allListernerLambdas;
+	protected final Set<CtLambda<?>> allListenerLambdas;
 
 	public LambdaListenerProcessor() {
 		super();
-		allListernerLambdas= new HashSet<>();
+		allListenerLambdas= new HashSet<>();
+	}
+
+	public Set<CtLambda<?>> getAllListenerLambdas() {
+		return Collections.unmodifiableSet(allListenerLambdas);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 
 
 	private void processMethods(final CtLambda<?> lambda) {
-		allListernerLambdas.add(lambda);
+		allListenerLambdas.add(lambda);
 
 //		final List<CtMethod<?>> ms = interf.
 //				getDeclaration().getMethods().stream().

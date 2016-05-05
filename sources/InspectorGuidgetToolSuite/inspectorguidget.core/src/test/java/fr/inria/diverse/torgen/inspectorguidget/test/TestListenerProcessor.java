@@ -127,6 +127,14 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 		assertEquals(10, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
+	@Test
+	public void testActionListenerClassEmpty() {
+		run("src/test/resources/java/analysers/ActionListenerEmptyClass.java");
+		assertEquals(1, clazzListener.size());
+		assertEquals(1, classProc.getAllListenerMethods().keySet().size());
+		assertEquals(1, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
+	}
+
 	@Override
 	public List<ListenerProcessor<? extends CtElement>> createProcessor() {
 		lambdaProc = new LambdaListenerProcessor();
@@ -135,7 +143,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Override
-	public void onAWTListenerClass(final CtClass<?> clazz, Set<CtMethod<?>> methods) {
+	public void onAWTListenerClass(final CtClass<?> clazz, List<CtMethod<?>> methods) {
 		clazzListener.add(clazz);
 	}
 
@@ -145,7 +153,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Override
-	public void onSwingListenerClass(final CtClass<?> clazz, Set<CtMethod<?>> methods) {
+	public void onSwingListenerClass(final CtClass<?> clazz, List<CtMethod<?>> methods) {
 		clazzListener.add(clazz);
 	}
 
@@ -155,7 +163,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Override
-	public void onJFXListenerClass(final CtClass<?> clazz, Set<CtMethod<?>> methods) {
+	public void onJFXListenerClass(final CtClass<?> clazz, List<CtMethod<?>> methods) {
 		clazzListener.add(clazz);
 	}
 

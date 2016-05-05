@@ -7,6 +7,7 @@ import java.awt.event.MouseListener;
 class MousenputListClass implements MouseInputListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		// Nothing, just a comment
 
 	}
 
@@ -18,6 +19,9 @@ class MousenputListClass implements MouseInputListener {
 	@Override
 	public void mouseReleased(MouseEvent e) {
 
+		/*
+		Another comment
+		 */
 	}
 
 	@Override
@@ -27,7 +31,7 @@ class MousenputListClass implements MouseInputListener {
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-
+		// System.out.println("coucou");
 	}
 
 	@Override

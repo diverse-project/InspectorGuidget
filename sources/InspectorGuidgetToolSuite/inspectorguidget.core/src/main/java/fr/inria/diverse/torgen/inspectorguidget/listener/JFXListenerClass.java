@@ -5,7 +5,7 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 
-import java.util.Set;
+import java.util.List;
 
 public interface JFXListenerClass {
 	/**
@@ -13,7 +13,7 @@ public interface JFXListenerClass {
 	 * @param clazz The JFX listener class.
 	 * @param methods All the methods of clazz that come from implemented listeners.
 	 */
-	void onJFXListenerClass(CtClass<?> clazz, Set<CtMethod<?>> methods);
+	void onJFXListenerClass(CtClass<?> clazz, List<CtMethod<?>> methods);
 
 	void onJFXListenerLambda(CtLambda<?> lambda);
 

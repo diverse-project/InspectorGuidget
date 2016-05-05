@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * This processor find listener methods in the source code
  */
 public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
-	private final Map<CtClass<?>, Set<CtMethod<?>>> listenerMethods;
+	private final Map<CtClass<?>, List<CtMethod<?>>> listenerMethods;
 
 
 	public ClassListenerProcessor() {
@@ -25,7 +25,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		listenerMethods= new IdentityHashMap<>();
 	}
 
-	public Map<CtClass<?>, Set<CtMethod<?>>> getAllListenerMethods() {
+	public Map<CtClass<?>, List<CtMethod<?>>> getAllListenerMethods() {
 		return Collections.unmodifiableMap(listenerMethods);
 	}
 
@@ -40,7 +40,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		swingListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			if(!listenerMethods.containsKey(clazz)) {
-				Set<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
+				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
 				listenerMethods.put(clazz, methds);
 				swingClassObservers.forEach(l -> l.onSwingListenerClass(clazz, methds));
 			}
@@ -50,7 +50,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		awtListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			if(!listenerMethods.containsKey(clazz)) {
-				Set<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
+				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
 				listenerMethods.put(clazz, methds);
 				awtClassObservers.forEach(l -> l.onAWTListenerClass(clazz, methds));
 			}
@@ -60,7 +60,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		jfxListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			if(!listenerMethods.containsKey(clazz)) {
-				Set<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
+				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
 				listenerMethods.put(clazz, methds);
 				jfxClassObservers.forEach(l -> l.onJFXListenerClass(clazz, methds));
 			}
@@ -88,7 +88,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 	/**
 	 * Store each method from cl that implements interf
 	 */
-	private Set<CtMethod<?>> getImplementedListenerMethods(final CtClass<?> cl, final CtTypeReference<?> interf) {
+	private List<CtMethod<?>> getImplementedListenerMethods(final CtClass<?> cl, final CtTypeReference<?> interf) {
 		return Arrays.stream(interf.getActualClass().getMethods()).parallel().map(interfM -> {
 			CtMethod<?> m = cl.getMethod(interfM.getName(), getTypeRefFromClasses(interfM.getParameterTypes()));
 
@@ -100,6 +100,6 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 			if(m==null && !cl.hasModifier(ModifierKind.ABSTRACT))
 				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfM + " from the interface: " + interf);
 			return m;
-		}).filter(m -> m!=null).collect(Collectors.toSet());
+		}).filter(m -> m!=null).collect(Collectors.toList());
 	}
 }

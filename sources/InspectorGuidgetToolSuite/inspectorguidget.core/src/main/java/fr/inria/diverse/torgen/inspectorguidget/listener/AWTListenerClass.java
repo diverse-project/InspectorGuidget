@@ -4,7 +4,7 @@ import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 
-import java.util.Set;
+import java.util.List;
 
 public interface AWTListenerClass {
 	/**
@@ -12,7 +12,7 @@ public interface AWTListenerClass {
 	 * @param clazz The AWT listener class.
 	 * @param methods All the methods of clazz that come from implemented listeners.
 	 */
-	void onAWTListenerClass(CtClass<?> clazz, Set<CtMethod<?>> methods);
+	void onAWTListenerClass(CtClass<?> clazz, List<CtMethod<?>> methods);
 
 	void onAWTListenerLambda(CtLambda<?> lambda);
 }

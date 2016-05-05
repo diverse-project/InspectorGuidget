@@ -4,7 +4,7 @@ import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 
-import java.util.Set;
+import java.util.List;
 
 public interface SwingListenerClass {
 	/**
@@ -12,7 +12,7 @@ public interface SwingListenerClass {
 	 * @param clazz The swing listener class.
 	 * @param methods All the methods of clazz that come from implemented listeners.
 	 */
-    void onSwingListenerClass(CtClass<?> clazz, Set<CtMethod<?>> methods);
+    void onSwingListenerClass(CtClass<?> clazz, List<CtMethod<?>> methods);
 
 	void onSwingListenerLambda(CtLambda<?> lambda);
 }
