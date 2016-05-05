@@ -9,6 +9,7 @@ import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private final ClassListenerProcessor classProc;
@@ -55,6 +56,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			final List<CtStatement> conds = SpoonHelper.INSTANCE.getConditionalStatements(listenerMethod);
 
 			if(conds.isEmpty()) {
+				// when no conditional, the content of the method forms a command.
 				synchronized(commands) { commands.put(listenerMethod, Arrays.asList(new Command(listenerMethod.getBody().getStatements()))); }
 			}else {
 				//TODO
@@ -64,6 +66,14 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private void analyseMultipleListenerMethods(final CtClass<?> listenerClass, final List<CtMethod<?>> listenerMethods) {
-		//TODO
+		final List<CtMethod<?>> nonEmptyM = listenerMethods.stream().
+				filter(l -> l.getBody()!=null && !l.getBody().getStatements().isEmpty()).collect(Collectors.toList());
+
+		if(nonEmptyM.size()==1) {
+			// Only one method used.
+			analyseSingleListenerMethod(Optional.of(listenerClass), nonEmptyM.get(0));
+		}else {
+			//TODO
+		}
 	}
 }
