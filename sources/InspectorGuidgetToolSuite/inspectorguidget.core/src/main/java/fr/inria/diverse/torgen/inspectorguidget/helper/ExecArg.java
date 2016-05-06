@@ -1,6 +1,8 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.InspectorGuidetAnalyser;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -13,8 +15,8 @@ public class ExecArg {
         super();
     }
 
-    public void parse(final String[] args, final InspectorGuidetAnalyser launcher) {
-        if(args.length==0 || !EXEC_SRC_ARG.equals(args[0]))
+    public void parse(final @Nullable String[] args, final @NotNull InspectorGuidetAnalyser launcher) {
+        if(args==null || args.length==0 || !EXEC_SRC_ARG.equals(args[0]))
             throw getArgumentException();
 
         int i = 1;
@@ -32,7 +34,7 @@ public class ExecArg {
 
 
 
-    private IllegalArgumentException getArgumentException() {
+	private @NotNull IllegalArgumentException getArgumentException() {
         return new IllegalArgumentException("Arguments: -s path/to/scr/to/analyse -c path/to/optional/classpath/libs.jar");
     }
 }

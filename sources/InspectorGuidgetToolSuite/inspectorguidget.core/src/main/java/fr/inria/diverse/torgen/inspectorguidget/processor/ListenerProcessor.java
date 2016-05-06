@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
+import org.jetbrains.annotations.NotNull;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.reference.CtTypeReference;
@@ -22,7 +23,7 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 	// Event interface
 	protected CtTypeReference<?> eventRef;
 
-	protected final Set<CtTypeReference<?>> events;
+	protected final @NotNull Set<CtTypeReference<?>> events;
 
 
 	public ListenerProcessor() {
@@ -154,10 +155,10 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 	}
 
 
-	protected boolean isListenerCass(final CtTypeInformation type) {
+	protected boolean isListenerCass(final @NotNull CtTypeInformation type) {
 		try {
 			return type.isSubtypeOf(eventListenerRef);
-		} catch(final Exception ex) {
+		} catch(final @NotNull Exception ex) {
 			LoggingHelper.INSTANCE.logException(ex, LOG);
 		}
 		return false;

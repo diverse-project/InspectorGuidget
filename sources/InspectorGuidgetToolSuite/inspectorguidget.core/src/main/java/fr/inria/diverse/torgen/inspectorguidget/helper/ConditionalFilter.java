@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
+import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtStatement;
@@ -12,7 +13,15 @@ public class ConditionalFilter extends AbstractFilter<CtStatement>{
 	}
 
 	@Override
-	public boolean matches(CtStatement stat) {
+	public boolean matches(final @Nullable CtStatement stat) {
+		return isConditional(stat);
+	}
+
+	/**
+	 * @param stat The statement to check.
+	 * @return True if the given statement is a conditional statement (if, switch, ternary).
+	 */
+	public static boolean isConditional(final @Nullable CtStatement stat) {
 		return stat instanceof CtIf || stat instanceof CtSwitch<?> || stat instanceof CtConditional;
 	}
 }

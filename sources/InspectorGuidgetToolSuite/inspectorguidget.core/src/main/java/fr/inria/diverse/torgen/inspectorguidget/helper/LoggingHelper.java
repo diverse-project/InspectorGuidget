@@ -1,5 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
@@ -14,7 +16,7 @@ public final class LoggingHelper {
         super();
     }
 
-    public void logException(final Exception ex, final Logger logger) {
+    public void logException(final @NotNull Exception ex, final @NotNull Logger logger) {
         StringWriter sw = new StringWriter();
         ex.printStackTrace(new PrintWriter(sw));
         logger.log(Level.SEVERE, sw.toString());

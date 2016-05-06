@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import javafx.fxml.FXML;
+import org.jetbrains.annotations.NotNull;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
@@ -13,7 +14,7 @@ public class FXMLAnnotationProcessor extends InspectorGuidgetProcessor<CtAnnotat
 	}
 
 	@Override
-	public void process(final CtAnnotation<?> element) {
+	public void process(final @NotNull CtAnnotation<?> element) {
 		CtElement elt = element.getAnnotatedElement();
 
 		if(elt instanceof CtField<?>) {
@@ -27,7 +28,7 @@ public class FXMLAnnotationProcessor extends InspectorGuidgetProcessor<CtAnnotat
 
 
 	@Override
-	public boolean isToBeProcessed(final CtAnnotation<?> candidate) {
+	public boolean isToBeProcessed(final @NotNull CtAnnotation<?> candidate) {
 		return FXML.class.getName().equals(candidate.getActualAnnotation().annotationType().getName());
 	}
 }

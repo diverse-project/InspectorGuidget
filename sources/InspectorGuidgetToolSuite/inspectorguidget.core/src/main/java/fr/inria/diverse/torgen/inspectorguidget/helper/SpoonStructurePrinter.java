@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
+import org.jetbrains.annotations.NotNull;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtNamedElement;
 import spoon.reflect.reference.CtReference;
@@ -16,7 +17,7 @@ public class SpoonStructurePrinter extends CtScanner {
 	}
 
 	@Override
-	protected void enter(CtElement e) {
+	protected void enter(final @NotNull CtElement e) {
 		super.enter(e);
 		System.out.print('\n');
 		printTabs();
@@ -32,7 +33,7 @@ public class SpoonStructurePrinter extends CtScanner {
 	}
 
 	@Override
-	protected void exit(CtElement e) {
+	protected void exit(final CtElement e) {
 		super.exit(e);
 		nbTab--;
 	}

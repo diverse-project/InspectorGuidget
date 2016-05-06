@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtTypeInformation;
 
@@ -11,19 +12,19 @@ import java.util.Set;
 import java.util.logging.Level;
 
 public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
-	protected final Set<CtLambda<?>> allListenerLambdas;
+	protected final @NotNull Set<CtLambda<?>> allListenerLambdas;
 
 	public LambdaListenerProcessor() {
 		super();
 		allListenerLambdas= new HashSet<>();
 	}
 
-	public Set<CtLambda<?>> getAllListenerLambdas() {
+	public @NotNull Set<CtLambda<?>> getAllListenerLambdas() {
 		return Collections.unmodifiableSet(allListenerLambdas);
 	}
 
 	@Override
-	public void process(final CtLambda<?> lambda) {
+	public void process(final @NotNull CtLambda<?> lambda) {
 		LOG.log(Level.INFO, "process CtLambda: " + lambda);
 
 		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
@@ -85,7 +86,7 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 	}
 
 	@Override
-	public boolean isToBeProcessed(final CtLambda<?> candidate) {
+	public boolean isToBeProcessed(final @NotNull CtLambda<?> candidate) {
 		return isListenerCass(candidate.getType());
 	}
 }

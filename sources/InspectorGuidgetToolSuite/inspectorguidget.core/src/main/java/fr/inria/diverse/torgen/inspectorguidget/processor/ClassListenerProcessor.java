@@ -3,6 +3,7 @@ package fr.inria.diverse.torgen.inspectorguidget.processor;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import org.jetbrains.annotations.NotNull;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.ModifierKind;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
  * This processor find listener methods in the source code
  */
 public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
-	private final Map<CtClass<?>, List<CtMethod<?>>> listenerMethods;
+	private final @NotNull Map<CtClass<?>, List<CtMethod<?>>> listenerMethods;
 
 
 	public ClassListenerProcessor() {
@@ -25,14 +26,14 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		listenerMethods= new IdentityHashMap<>();
 	}
 
-	public Map<CtClass<?>, List<CtMethod<?>>> getAllListenerMethods() {
+	public @NotNull Map<CtClass<?>, List<CtMethod<?>>> getAllListenerMethods() {
 		return Collections.unmodifiableMap(listenerMethods);
 	}
 
 
 	@Override
-	public void process(CtClass<?> clazz) {
-			LOG.log(Level.INFO, () -> "process CtClass: " + clazz);
+	public void process(final @NotNull CtClass<?> clazz) {
+		LOG.log(Level.INFO, () -> "process CtClass: " + clazz);
 
 		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
 
@@ -74,12 +75,12 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 
 
 	@Override
-	public boolean isToBeProcessed(final CtClass<?> candidate) {
+	public boolean isToBeProcessed(final @NotNull CtClass<?> candidate) {
 		return isListenerCass(candidate);
 	}
 
 
-	private CtTypeReference<?>[] getTypeRefFromClasses(final Class<?>[] classes) {
+	private CtTypeReference<?>[] getTypeRefFromClasses(final @NotNull Class<?>[] classes) {
 		final ClassFactory facto = getFactory().Class();
 		return Arrays.stream(classes).map(type -> facto.createReference(type)).toArray(CtTypeReference<?>[]::new);
 	}
@@ -88,7 +89,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 	/**
 	 * Store each method from cl that implements interf
 	 */
-	private List<CtMethod<?>> getImplementedListenerMethods(final CtClass<?> cl, final CtTypeReference<?> interf) {
+	private List<CtMethod<?>> getImplementedListenerMethods(final @NotNull CtClass<?> cl, final @NotNull CtTypeReference<?> interf) {
 		return Arrays.stream(interf.getActualClass().getMethods()).parallel().map(interfM -> {
 			CtMethod<?> m = cl.getMethod(interfM.getName(), getTypeRefFromClasses(interfM.getParameterTypes()));
 

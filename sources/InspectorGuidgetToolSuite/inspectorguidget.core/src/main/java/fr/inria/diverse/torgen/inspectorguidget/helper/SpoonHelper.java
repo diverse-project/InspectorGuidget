@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
-import org.eclipse.jdt.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtExecutable;
@@ -15,7 +16,7 @@ public final class SpoonHelper {
 		super();
 	}
 
-	public String formatPosition(final @Nullable SourcePosition position) {
+	public @NotNull String formatPosition(final @Nullable SourcePosition position) {
 		if(position==null)
 			return "";
 
@@ -23,7 +24,7 @@ public final class SpoonHelper {
 				+",C"+position.getColumn()+":"+position.getEndColumn();
 	}
 
-	public List<CtStatement> getConditionalStatements(final CtExecutable<?> exec) {
+	public @NotNull List<CtStatement> getConditionalStatements(final @Nullable CtExecutable<?> exec) {
 		return exec==null || exec.getBody()==null ? Collections.emptyList() : exec.getBody().getElements(new ConditionalFilter());
 	}
 }

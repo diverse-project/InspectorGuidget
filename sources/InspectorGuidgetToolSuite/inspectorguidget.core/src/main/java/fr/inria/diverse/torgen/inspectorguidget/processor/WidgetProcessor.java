@@ -2,7 +2,8 @@ package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.listener.WidgetListener;
-import org.eclipse.jdt.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
@@ -26,14 +27,14 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	/** The widgets created and directly added in a container. */
 	private Map<CtTypeReference<?>, CtTypeReference<?>> references;
 	private CtTypeReference<?> collectionType;
-	private final Set<WidgetListener> widgetObs;
+	private final @NotNull Set<WidgetListener> widgetObs;
 
 	public WidgetProcessor() {
 		super();
 		widgetObs = new HashSet<>();
 	}
 
-	public void addWidgetObserver(final @NonNull WidgetListener obs) {
+	public void addWidgetObserver(final @NotNull WidgetListener obs) {
 		widgetObs.add(obs);
 	}
 
@@ -59,7 +60,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	}
 
 	@Override
-	public void process(final CtTypeReference<?> element) {
+	public void process(final @NotNull CtTypeReference<?> element) {
 		final CtElement parent = element.getParent();
 
 		LOG.log(Level.INFO, () -> "PROCESSING " + element + " " + parent.getClass() + " " + parent.getParent().getClass());
@@ -97,13 +98,13 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	}
 
 
-	private void analyseMethodUse(final CtMethod<?> meth, final CtTypeReference<?> element) {
+	private void analyseMethodUse(final @NotNull CtMethod<?> meth, final CtTypeReference<?> element) {
 		meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).
 				forEach(invok -> analyseWidgetInvocation(invok, element));
 	}
 
 
-	private void analyseWidgetConstructorCall(final CtConstructorCall<?> call, final CtTypeReference<?> element) {
+	private void analyseWidgetConstructorCall(final @NotNull CtConstructorCall<?> call, final CtTypeReference<?> element) {
 		analyseWidgetUse(call.getParent(), element);
 	}
 
@@ -128,7 +129,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	}
 
 
-	private void analyseUseOfLocalVariable(final CtLocalVariableReference<?> var, final CtBlock<?> block, final CtTypeReference<?> refType) {
+	private void analyseUseOfLocalVariable(final @NotNull CtLocalVariableReference<?> var, final @Nullable CtBlock<?> block, final CtTypeReference<?> refType) {
 		if(block==null) {
 			LOG.log(Level.SEVERE, "No block ("+SpoonHelper.INSTANCE.formatPosition(var.getPosition())+"): " + var);
 			return;
@@ -142,7 +143,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	 * Object foo;
 	 * foo = new JButton();
 	 */
-	private void analyseWidgetAssignment(final CtAssignment<?,?> assign, final CtTypeReference<?> element) {
+	private void analyseWidgetAssignment(final @NotNull CtAssignment<?,?> assign, final CtTypeReference<?> element) {
 		final CtExpression<?> exp = assign.getAssigned();
 
 		if(exp instanceof CtFieldWrite<?>) {
@@ -160,7 +161,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	 * List<Object> foo = new ArrayList<>();
 	 * foo.add(new JMenuItem());
 	 */
-	private void analyseWidgetInvocation(final CtInvocation<?> invok, final CtTypeReference<?> element) {
+	private void analyseWidgetInvocation(final @NotNull CtInvocation<?> invok, final CtTypeReference<?> element) {
 		final CtExpression<?> exp = invok.getTarget();
 
 		if(exp==null) {
@@ -193,12 +194,12 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	}
 
 
-	private void addNotifyObserversOnContained(final CtInvocation<?> invok, final CtTypeReference<?> element) {
+	private void addNotifyObserversOnContained(final CtInvocation<?> invok, final @Nullable CtTypeReference<?> element) {
 		if(element!=null && references.putIfAbsent(element, element)==null)
 			widgetObs.forEach(o -> o.onWidgetCreatedForContainer(invok, element));
 	}
 
-	private void addNotifyObserversOnField(final CtField<?> field, final CtTypeReference<?> element) {
+	private void addNotifyObserversOnField(final @Nullable CtField<?> field, final CtTypeReference<?> element) {
 		if(field!=null && fields.putIfAbsent(field, field)==null)
 			widgetObs.forEach(o -> o.onWidgetAttribute(field, element));
 	}

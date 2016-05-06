@@ -1,6 +1,8 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.ExecArg;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.SpoonAPI;
 import spoon.compiler.Environment;
 import spoon.compiler.SpoonCompiler;
@@ -20,10 +22,10 @@ import java.util.Collection;
 import java.util.List;
 
 public abstract class InspectorGuidetAnalyser implements SpoonAPI {
-	protected final SpoonCompiler modelBuilder;
-	protected final List<Processor<?>> processors;
+	protected final @NotNull SpoonCompiler modelBuilder;
+	protected final @NotNull List<Processor<?>> processors;
 
-	public InspectorGuidetAnalyser(final Collection<Processor<?>> procs) {
+	public InspectorGuidetAnalyser(final @NotNull Collection<Processor<?>> procs) {
 		super();
 		processors = new ArrayList<>();
 		procs.forEach(pr -> addProcessor(pr));
@@ -31,7 +33,7 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	}
 
 	@Override
-	public void run(String[] args) {
+	public void run(@Nullable String[] args) {
 		if(args!=null)
 			new ExecArg().parse(args, this);
 		buildModel();
@@ -48,7 +50,7 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	}
 
 	@Override
-	public void addInputResource(String file) {
+	public void addInputResource(@NotNull String file) {
 		modelBuilder.addInputSource(new File(file));
 	}
 
@@ -107,22 +109,22 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	}
 
 	@Override
-	public Factory getFactory() {
+	public @Nullable Factory getFactory() {
 		return null;
 	}
 
 	@Override
-	public Environment getEnvironment() {
+	public @Nullable Environment getEnvironment() {
 		return null;
 	}
 
 	@Override
-	public Factory createFactory() {
+	public @NotNull Factory createFactory() {
 		return new FactoryImpl(new DefaultCoreFactory(), createEnvironment());
 	}
 
 	@Override
-	public Environment createEnvironment() {
+	public @NotNull Environment createEnvironment() {
 		StandardEnvironment evt = new StandardEnvironment();
 		evt.setComplianceLevel(8);
 		evt.setPreserveLineNumbers(true);
@@ -130,7 +132,7 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	}
 
 	@Override
-	public SpoonCompiler createCompiler() {
+	public @NotNull SpoonCompiler createCompiler() {
 		return new JDTBasedSpoonCompiler(createFactory());
 	}
 }
