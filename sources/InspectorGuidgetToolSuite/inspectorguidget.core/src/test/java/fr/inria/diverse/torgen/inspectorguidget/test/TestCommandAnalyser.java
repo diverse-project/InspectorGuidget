@@ -19,7 +19,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerEmptyClass.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -27,7 +27,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerEmptyLambda.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -35,7 +35,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditClass.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -43,7 +43,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditLambda.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -51,7 +51,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/MouseInputListOneMethodUsed.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/listeners/MouseInputListClass.java");
 		analyser.run();
 		assertEquals(7, analyser.getCommands().values().size());
-		assertEquals(0l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -67,7 +67,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOf.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -75,6 +75,14 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOfElse.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testClassListenerCondInstanceOfReturn() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfReturn.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 }

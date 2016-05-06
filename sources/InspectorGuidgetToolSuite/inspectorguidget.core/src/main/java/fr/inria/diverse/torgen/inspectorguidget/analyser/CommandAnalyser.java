@@ -65,7 +65,6 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 														final @NotNull CtExecutable<?> listenerMethod) {
 		final CtBlock<?> body = listenerMethod.getBody();
 		final List<CtVariableAccess<?>> use = body.getElements(new VariableAccessFilter<>(varRef));
-		System.out.println(use);
 
 		use.forEach(varAcc -> {
 			// Two cases:
