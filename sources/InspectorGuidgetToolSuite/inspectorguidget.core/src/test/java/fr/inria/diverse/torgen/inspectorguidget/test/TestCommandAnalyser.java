@@ -61,4 +61,20 @@ public class TestCommandAnalyser {
 		assertEquals(7, analyser.getCommands().values().size());
 		assertEquals(0l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testClassListenerOneMethodCondOneInstanceOf() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOf.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testClassListenerOneMethodCondOneInstanceOfElse() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOfElse.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2l, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

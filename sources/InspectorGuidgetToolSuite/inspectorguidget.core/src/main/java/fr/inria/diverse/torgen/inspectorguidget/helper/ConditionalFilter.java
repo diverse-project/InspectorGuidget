@@ -5,6 +5,7 @@ import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtSwitch;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.filter.AbstractFilter;
 
 public class ConditionalFilter extends AbstractFilter<CtStatement>{
@@ -18,10 +19,10 @@ public class ConditionalFilter extends AbstractFilter<CtStatement>{
 	}
 
 	/**
-	 * @param stat The statement to check.
-	 * @return True if the given statement is a conditional statement (if, switch, ternary).
+	 * @param stat The element to check.
+	 * @return True if the given element is a conditional statement (if, switch, ternary).
 	 */
-	public static boolean isConditional(final @Nullable CtStatement stat) {
+	public static boolean isConditional(final @Nullable CtElement stat) {
 		return stat instanceof CtIf || stat instanceof CtSwitch<?> || stat instanceof CtConditional;
 	}
 }

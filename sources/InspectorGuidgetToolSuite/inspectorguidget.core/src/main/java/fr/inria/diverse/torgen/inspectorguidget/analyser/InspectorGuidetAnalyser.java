@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.ExecArg;
+import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.SpoonAPI;
@@ -20,8 +21,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 public abstract class InspectorGuidetAnalyser implements SpoonAPI {
+	protected static final @NotNull Logger LOG = Logger.getLogger("InspectorGuidget analysers");
+
+	static {
+		LOG.setLevel(LoggingHelper.INSTANCE.loggingLevel);
+	}
+
 	protected final @NotNull SpoonCompiler modelBuilder;
 	protected final @NotNull List<Processor<?>> processors;
 
