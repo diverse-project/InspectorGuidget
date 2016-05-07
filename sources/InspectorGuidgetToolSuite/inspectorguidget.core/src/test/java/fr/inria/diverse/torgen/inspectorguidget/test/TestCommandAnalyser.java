@@ -1,8 +1,13 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,6 +17,12 @@ public class TestCommandAnalyser {
 	@Before
 	public void setUp() {
 		analyser = new CommandAnalyser();
+	}
+
+	@After
+	public void tearsDown() {
+		SpoonStructurePrinter printer = new SpoonStructurePrinter();
+		printer.scan(Collections.singletonList(analyser.getModelBuilder().getFactory().Package().getRootPackage()));
 	}
 
 	@Test
@@ -84,5 +95,11 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(17, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
+		assertEquals(18, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
+		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
+		assertEquals(22, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+		assertEquals(25, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineStart());
+		assertEquals(26, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
 	}
 }

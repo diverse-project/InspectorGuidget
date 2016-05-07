@@ -53,6 +53,11 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 		run(null);
 	}
 
+
+	public SpoonCompiler getModelBuilder() {
+		return modelBuilder;
+	}
+
 	public void setSourceClasspath(String ... args) {
 		modelBuilder.setSourceClasspath(args);
 	}

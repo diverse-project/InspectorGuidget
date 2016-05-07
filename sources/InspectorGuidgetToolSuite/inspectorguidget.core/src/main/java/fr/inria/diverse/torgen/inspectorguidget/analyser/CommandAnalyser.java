@@ -4,10 +4,7 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
-import spoon.reflect.code.CtBlock;
-import spoon.reflect.code.CtIf;
-import spoon.reflect.code.CtStatement;
-import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.VariableAccessFilter;
@@ -95,11 +92,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		if(condStat instanceof CtIf) {
 			final CtIf ifStat = (CtIf) condStat;
 			final CtBlock<?> elseStat =  ifStat.getElseStatement();
-			cmds.add(new Command(((CtBlock<?>)ifStat.getThenStatement()).getStatements()));
+			cmds.add(new Command(((CtBlock<?>)ifStat.getThenStatement()).getStatements(),
+									Collections.singletonList(ifStat.getCondition())));
 
 			if(elseStat!=null) {
 				//TODO create a command if it does not contain any other GUI conditional statement
-				cmds.add(new Command(elseStat.getStatements()));
+				// For the else block, creating a negation of the condition.
+				final CtUnaryOperator<Boolean> neg = ifStat.getFactory().Core().createUnaryOperator();
+				neg.setKind(UnaryOperatorKind.NEG);
+				neg.setOperand(ifStat.getCondition());
+				cmds.add(new Command(elseStat.getStatements(), Collections.singletonList(neg)));
 			}
 			return;
 		}
@@ -119,7 +121,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
 				synchronized(commands) {
-					commands.put(listenerMethod, Collections.singletonList(new Command(listenerMethod.getBody().getStatements())));
+					commands.put(listenerMethod, Collections.singletonList(
+							new Command(listenerMethod.getBody().getStatements(), Collections.emptyList())));
 				}
 			}else {
 				analyseParameters(listenerMethod.getParameters(), listenerMethod);
