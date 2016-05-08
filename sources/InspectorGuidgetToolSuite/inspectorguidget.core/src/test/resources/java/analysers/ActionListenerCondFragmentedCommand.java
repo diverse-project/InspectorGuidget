@@ -15,8 +15,10 @@ class Foo {
 				Bar bar = new Bar(); // Part of commands 1 and 2
 
 				if(e.getSource() instanceof JButton) { // Condition of command 1
+					Bar bar2 = new Bar();// Command 1
 					System.out.println(((JButton)e.getSource()).getName()); // Command 1
 					bar.bar(); // Command 1
+					bar2.bar();// Command 1
 				}
 
 				if(e.getSource() instanceof JScrollBar) { // Condition of command 2

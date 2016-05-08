@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtStatement;
 
-import java.util.Collections;
 import java.util.List;
 
 public class Command {
@@ -27,10 +26,10 @@ public class Command {
 	}
 
 	public List<CtExpression<Boolean>> getConditions() {
-		return Collections.unmodifiableList(conditions);
+		return conditions;
 	}
 
 	public List<CtStatement> getStatements() {
-		return Collections.unmodifiableList(statements);
+		return statements;
 	}
 }

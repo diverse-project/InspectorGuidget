@@ -2,16 +2,14 @@ package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.ConditionalFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.VariableAccessFilter;
 
@@ -53,6 +51,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		});
 
 		lambdaProc.getAllListenerLambdas().parallelStream().forEach(l -> analyseSingleListenerMethod(Optional.empty(), l));
+
+		// Post-process to add statements (e.g. var def) used in commands bu not present in the current command (because defined before or after)
+		commands.values().parallelStream().flatMap(s -> s.stream()).forEach(cmd ->
+			// For each command, adding the required local variable definitions.
+			cmd.getStatements().addAll(0,
+				// Looking for local variable accesses in the command
+				cmd.getStatements().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
+					// Selecting the local variable definitions not already contained in the command
+					map(v -> v.getDeclaration()).filter(v -> !cmd.getStatements().contains(v)).
+					collect(Collectors.toList())).flatMap(s -> s.stream()).map(elt -> (CtStatement)elt).collect(Collectors.toList())));
 	}
 
 

@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Foo {
+	JButton b = new JButton();
 	public void foo() {
-		JButton b = new JButton();
 		b.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

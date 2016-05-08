@@ -184,15 +184,14 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
 	public void testClassListenerFragmentedCommand() {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondFragmentedCommand.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 		assertEquals(15, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
-		assertEquals(19, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
+		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(15, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
-		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+		assertEquals(26, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
 	}
 }
