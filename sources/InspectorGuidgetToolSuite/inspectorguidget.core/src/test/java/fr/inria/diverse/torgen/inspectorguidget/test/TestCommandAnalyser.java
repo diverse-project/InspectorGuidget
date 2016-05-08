@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
+import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
@@ -135,10 +136,18 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
-		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
-		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
-		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
-		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+
+		Command cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(0);
+
+		assertEquals(20, cmd.getLineStart());
+		assertEquals(20, cmd.getLineEnd());
+		assertEquals(2, cmd.getConditions().size());
+
+		cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(1);
+
+		assertEquals(24, cmd.getLineStart());
+		assertEquals(24, cmd.getLineEnd());
+		assertEquals(2, cmd.getConditions().size());
 	}
 
 	@Test
