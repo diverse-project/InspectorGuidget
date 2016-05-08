@@ -140,4 +140,12 @@ public class TestCommandAnalyser {
 		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
 		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
 	}
+
+	@Test
+	public void testClassListenerCondInstanceOfEmptyReturn() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfEmptyReturn.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

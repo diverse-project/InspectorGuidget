@@ -70,70 +70,80 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		if(condStat instanceof CtIf) {
-			final CtIf ifStat = (CtIf) condStat;
-			final CtBlock<?> elseStat =  ifStat.getElseStatement();
-			final List<CtStatement> stats = new ArrayList<>();
-
-			stats.addAll(((CtBlock<?>)ifStat.getThenStatement()).getStatements());
-
-			if(stats.get(stats.size()-1) instanceof CtReturn<?>) {
-				stats.remove(stats.size() - 1);
-			}
-
-			cmds.add(new Command(stats, Collections.singletonList(ifStat.getCondition())));
-
-			if(elseStat!=null) {
-				//TODO create a command if it does not contain any other GUI conditional statement
-				// For the else block, creating a negation of the condition.
-				final List<CtStatement> statsElse = new ArrayList<>();
-
-				statsElse.addAll(elseStat.getStatements());
-
-				if(statsElse.get(stats.size()-1) instanceof CtReturn<?>) {
-					statsElse.remove(stats.size() - 1);
-				}
-
-				final CtUnaryOperator<Boolean> neg = ifStat.getFactory().Core().createUnaryOperator();
-				neg.setKind(UnaryOperatorKind.NEG);
-				neg.setOperand(ifStat.getCondition());
-				cmds.add(new Command(statsElse, Collections.singletonList(neg)));
-			}
+			extractCommandsFromIf((CtIf) condStat, listenerMethod, cmds);
 			return;
 		}
 
 		if(condStat instanceof CtSwitch<?>) {
-			final CtSwitch<?> swStat = (CtSwitch<?>) condStat;
-			final CtExpression<?> selector = swStat.getSelector();
-
-			cmds.addAll(swStat.getCases().stream().
-				// Ignoring the case statements that are empty
-				filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
-				map(cas -> {
-					//For each case, a condition is created using the case value.
-					final CtBinaryOperator<Boolean> testCondition = listenerMethod.getFactory().Core().createBinaryOperator();
-					// A switch is an equality test against values
-					testCondition.setKind(BinaryOperatorKind.EQ);
-					// The tested object
-					testCondition.setLeftHandOperand(selector);
-					// The tested constant
-					testCondition.setRightHandOperand(cas.getCaseExpression());
-
-					// Creating the body of the command.
-					final List<CtStatement> stats = new ArrayList<>(cas.getStatements());
-
-					// Removing the last 'return' or 'break' statement from the command.
-					if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
-						stats.remove(stats.size() - 1);
-					}
-
-					return new Command(stats, Collections.singletonList(testCondition));
-				}).collect(Collectors.toList()));
-
+			extractCommandsFromSwitch((CtSwitch<?>) condStat, listenerMethod, cmds);
 			return;
 		}
 
 		//TODO ternary
 		LOG.log(Level.SEVERE, "Unsupported conditional blocks: " + condStat);
+	}
+
+
+	private void extractCommandsFromSwitch(final @NotNull CtSwitch<?> switchStat, final @NotNull CtExecutable<?> listenerMethod,
+										   final @NotNull List<Command> cmds) {
+		final CtExpression<?> selector = switchStat.getSelector();
+
+		cmds.addAll(switchStat.getCases().stream().
+		// Ignoring the case statements that are empty
+			filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
+			map(cas -> {
+				//For each case, a condition is created using the case value.
+				final CtBinaryOperator<Boolean> testCondition = listenerMethod.getFactory().Core().createBinaryOperator();
+				// A switch is an equality test against values
+				testCondition.setKind(BinaryOperatorKind.EQ);
+				// The tested object
+				testCondition.setLeftHandOperand(selector);
+				// The tested constant
+				testCondition.setRightHandOperand(cas.getCaseExpression());
+
+				// Creating the body of the command.
+				final List<CtStatement> stats = new ArrayList<>(cas.getStatements());
+
+				// Removing the last 'return' or 'break' statement from the command.
+				if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
+					stats.remove(stats.size() - 1);
+				}
+
+				return new Command(stats, Collections.singletonList(testCondition));
+			}).collect(Collectors.toList()));
+	}
+
+
+	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull CtExecutable<?> listenerMethod,
+									   final @NotNull List<Command> cmds) {
+		final CtBlock<?> elseStat =  ifStat.getElseStatement();
+		List<CtStatement> stats = new ArrayList<>(((CtBlock<?>) ifStat.getThenStatement()).getStatements());
+
+		if(!stats.isEmpty()) {
+			if(stats.get(stats.size() - 1) instanceof CtReturn<?>)
+				stats.remove(stats.size() - 1);
+
+			if(!stats.isEmpty())
+				cmds.add(new Command(stats, Collections.singletonList(ifStat.getCondition())));
+		}
+
+		if(elseStat!=null) {
+			//TODO create a command if it does not contain any other GUI conditional statement
+			// For the else block, creating a negation of the condition.
+			stats = new ArrayList<>(elseStat.getStatements());
+
+			if(!stats.isEmpty()) {
+				if(stats.get(stats.size() - 1) instanceof CtReturn<?>)
+					stats.remove(stats.size() - 1);
+
+				if(!stats.isEmpty()) {
+					final CtUnaryOperator<Boolean> neg = ifStat.getFactory().Core().createUnaryOperator();
+					neg.setKind(UnaryOperatorKind.NEG);
+					neg.setOperand(ifStat.getCondition());
+					cmds.add(new Command(stats, Collections.singletonList(neg)));
+				}
+			}
+		}
 	}
 
 
