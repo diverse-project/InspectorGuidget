@@ -5,10 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtExecutable;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 public final class SpoonHelper {
@@ -26,11 +23,6 @@ public final class SpoonHelper {
 
 		return "in " + position.getFile().getName()+":L"+position.getLine()+":"+position.getEndLine()
 				+",C"+position.getColumn()+":"+position.getEndColumn();
-	}
-
-
-	public @NotNull List<CtStatement> getConditionalStatements(final @Nullable CtExecutable<?> exec) {
-		return exec==null || exec.getBody()==null ? Collections.emptyList() : exec.getBody().getElements(new ConditionalFilter());
 	}
 
 

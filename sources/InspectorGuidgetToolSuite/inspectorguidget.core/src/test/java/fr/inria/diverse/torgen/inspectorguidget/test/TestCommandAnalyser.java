@@ -102,4 +102,16 @@ public class TestCommandAnalyser {
 		assertEquals(25, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineStart());
 		assertEquals(26, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
 	}
+
+	@Test
+	public void testClassListenerSimpleDelegation() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerSimpleDelegation.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(27, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
+		assertEquals(27, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
+		assertEquals(12, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
+		assertEquals(12, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+	}
 }

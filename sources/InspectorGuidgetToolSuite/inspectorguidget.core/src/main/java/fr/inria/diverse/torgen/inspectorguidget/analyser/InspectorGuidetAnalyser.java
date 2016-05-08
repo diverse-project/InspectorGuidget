@@ -54,7 +54,7 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	}
 
 
-	public SpoonCompiler getModelBuilder() {
+	public @NotNull SpoonCompiler getModelBuilder() {
 		return modelBuilder;
 	}
 

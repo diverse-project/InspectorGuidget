@@ -1,11 +1,17 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.ConditionalFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.VariableAccessFilter;
 
@@ -51,32 +57,6 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void analyseParameters(final @NotNull List<CtParameter<?>> params, final @NotNull CtExecutable<?> listenerMethod) {
-		params.parallelStream().forEach(par -> {
-			getConditionalThatUseVarRef(par.getReference(), listenerMethod);
-		});
-	}
-
-
-	private List<CtElement> getConditionalThatUseVarRef(final CtVariableReference<?> varRef,
-														final @NotNull CtExecutable<?> listenerMethod) {
-		final CtBlock<?> body = listenerMethod.getBody();
-		final List<CtVariableAccess<?>> use = body.getElements(new VariableAccessFilter<>(varRef));
-
-		use.forEach(varAcc -> {
-			// Two cases:
-			// 1/ the parameter is used in a conditional statement;
-			SpoonHelper.INSTANCE.getConditionalParent(varAcc, body).ifPresent(cond -> {
-				extractCommandsFromConditionalStatements(cond, listenerMethod);
-			});
-			// 2/ The parameter is given as argument to a method of the listener class (dispatch of the event process)
-			//TODO
-		});
-
-		return Collections.emptyList();
-	}
-
-
 	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod) {
 		//TODO analyse nested conditional statements
 		//TODO analyse local variables used in the conditions and that use GUI event parameters.
@@ -111,12 +91,22 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void analyseSingleListenerMethod(final Optional<CtClass<?>> listenerClass, final @NotNull CtExecutable<?> listenerMethod) {
+	private List<CtElement> getConditionalThatUseVarRef(final CtVariableReference<?> varRef,
+														final @NotNull CtExecutable<?> listenerMethod) {
+		final CtBlock<?> body = listenerMethod.getBody();
+		return body.getElements(new VariableAccessFilter<>(varRef)).stream().
+				map(varAcc -> SpoonHelper.INSTANCE.getConditionalParent(varAcc, body)).
+				filter(cond -> cond.isPresent()).map(cond -> cond.get()).collect(Collectors.toList());
+	}
+
+
+	private void analyseSingleListenerMethod(final @NotNull  Optional<CtClass<?>> listenerClass,
+											 final @NotNull CtExecutable<?> listenerMethod) {
 		if(listenerMethod.getBody()==null || listenerMethod.getBody().getStatements().isEmpty()) {
 			// Empty so no command
 			synchronized(commands) { commands.put(listenerMethod, Collections.emptyList()); }
 		}else {
-			final List<CtStatement> conds = SpoonHelper.INSTANCE.getConditionalStatements(listenerMethod);
+			final List<CtElement> conds = getConditionalStatements(listenerMethod, listenerClass);
 
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
@@ -125,9 +115,39 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 							new Command(listenerMethod.getBody().getStatements(), Collections.emptyList())));
 				}
 			}else {
-				analyseParameters(listenerMethod.getParameters(), listenerMethod);
+				// For each conditional statements found in the listener method or in its dispatched methods,
+				// a command is extracted.
+				conds.forEach(cond -> extractCommandsFromConditionalStatements(cond, listenerMethod));
 			}
 		}
+	}
+
+
+	private @NotNull List<CtElement> getConditionalStatements(final @Nullable CtExecutable<?> exec,
+																final @NotNull Optional<CtClass<?>> listenerClass) {
+		if(exec==null || exec.getBody()==null)
+			return Collections.emptyList();
+
+		final List<CtElement> conds = new ArrayList<>();
+
+		if(listenerClass.isPresent()) { // Searching for dispatched methods is not performed on lambdas.
+			conds.addAll(
+					// Getting all the methods called in the current method that use a parameter of this last.
+					// The goal is to identify the dispatched methods, recursively.
+					exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get())).stream().
+					// For each dispatched methods, looking for conditional statements.
+					map(dispatchM -> getConditionalStatements(dispatchM.getExecutable().getDeclaration(), listenerClass)).
+					flatMap(c -> c.stream()).collect(Collectors.toList()));
+		}
+
+		conds.addAll(
+				// Filtering out the conditional statements that do not use a GUI event.
+				exec.getBody().getElements(new ConditionalFilter()).stream().
+				// For each conditional statements, looking whether a parameter is used in the condition.
+				map(cond -> exec.getParameters().stream().map(par -> getConditionalThatUseVarRef(par.getReference(), exec)).
+						collect(Collectors.toList())).flatMap(c -> c.stream()).flatMap(c -> c.stream()).distinct().collect(Collectors.toList()));
+
+		return conds;
 	}
 
 
