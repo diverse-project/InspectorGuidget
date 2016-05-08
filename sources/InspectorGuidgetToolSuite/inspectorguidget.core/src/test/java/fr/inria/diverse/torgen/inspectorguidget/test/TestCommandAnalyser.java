@@ -5,6 +5,7 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -156,5 +157,20 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	@Ignore
+	public void testClassListenerCondInstanceOfLocalVar() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfLocalVar.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
+		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
+		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
+		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineStart());
+		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
 	}
 }
