@@ -65,12 +65,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		if(condStat instanceof CtIf) {
-			extractCommandsFromIf((CtIf) condStat, listenerMethod, cmds);
+			extractCommandsFromIf((CtIf) condStat, cmds);
 			return;
 		}
 
 		if(condStat instanceof CtSwitch<?>) {
-			extractCommandsFromSwitch((CtSwitch<?>) condStat, listenerMethod, cmds);
+			extractCommandsFromSwitch((CtSwitch<?>) condStat, cmds);
 			return;
 		}
 
@@ -78,8 +78,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromSwitch(final @NotNull CtSwitch<?> switchStat, final @NotNull CtExecutable<?> listenerMethod,
-										   final @NotNull List<Command> cmds) {
+	private void extractCommandsFromSwitch(final @NotNull CtSwitch<?> switchStat, final @NotNull List<Command> cmds) {
 		final CtExpression<?> selector = switchStat.getSelector();
 
 		cmds.addAll(switchStat.getCases().stream().
@@ -87,7 +86,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
 			map(cas -> {
 				//For each case, a condition is created using the case value.
-				final CtBinaryOperator<Boolean> testCondition = listenerMethod.getFactory().Core().createBinaryOperator();
+				final CtBinaryOperator<Boolean> testCondition = switchStat.getFactory().Core().createBinaryOperator();
 				// A switch is an equality test against values
 				testCondition.setKind(BinaryOperatorKind.EQ);
 				// The tested object
@@ -108,8 +107,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull CtExecutable<?> listenerMethod,
-									   final @NotNull List<Command> cmds) {
+	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds) {
 		final CtBlock<?> elseStat =  ifStat.getElseStatement();
 		List<CtStatement> stats = new ArrayList<>(((CtBlock<?>) ifStat.getThenStatement()).getStatements());
 
@@ -141,8 +139,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private List<CtElement> getConditionalThatUseVarRef(final CtVariableReference<?> varRef,
-														final @NotNull CtExecutable<?> listenerMethod) {
+	private List<CtElement> getConditionalThatUseVarRef(final CtVariableReference<?> varRef, final @NotNull CtExecutable<?> listenerMethod) {
 		final CtBlock<?> body = listenerMethod.getBody();
 		return body.getElements(new VariableAccessFilter<>(varRef)).stream().
 				map(varAcc -> SpoonHelper.INSTANCE.getConditionalParent(varAcc, body)).
