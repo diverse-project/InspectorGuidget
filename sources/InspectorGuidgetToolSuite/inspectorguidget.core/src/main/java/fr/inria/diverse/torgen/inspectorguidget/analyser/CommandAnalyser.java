@@ -53,15 +53,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		});
 
 		lambdaProc.getAllListenerLambdas().parallelStream().forEach(l -> analyseSingleListenerMethod(Optional.empty(), l));
-		//TODO support methods of the class called in listener methods.
 	}
 
 
 	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod) {
-		//TODO analyse nested conditional statements
-		//TODO analyse local variables used in the conditions and that use GUI event parameters.
-		// Object foo = e.getSource();
-		// if(foo instance JButton) {}
 		List<Command> cmds = commands.get(listenerMethod);
 
 		if(cmds==null) {
@@ -79,7 +74,6 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			return;
 		}
 
-		//TODO ternary
 		LOG.log(Level.SEVERE, "Unsupported conditional blocks: " + condStat);
 	}
 

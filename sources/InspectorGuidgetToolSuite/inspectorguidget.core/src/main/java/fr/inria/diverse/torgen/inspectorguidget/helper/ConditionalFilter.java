@@ -23,6 +23,6 @@ public class ConditionalFilter extends AbstractFilter<CtStatement>{
 	 * @return True if the given element is a conditional statement (if, switch, ternary).
 	 */
 	public static boolean isConditional(final @Nullable CtElement stat) {
-		return stat instanceof CtIf || stat instanceof CtSwitch<?> || stat instanceof CtConditional;
+		return stat instanceof CtIf || stat instanceof CtSwitch<?>;
 	}
 }
