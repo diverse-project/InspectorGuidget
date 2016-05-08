@@ -27,6 +27,15 @@ public final class SpoonHelper {
 
 
 	/**
+	 * @param elt The element to test. May be null.
+	 * @return True if the given element is a break or a return statement.
+	 */
+	public boolean isReturnBreakStatement(final @Nullable CtElement elt) {
+		return elt instanceof CtBreak || elt instanceof CtReturn;
+	}
+
+
+	/**
 	 * @param var The variable access to analyse.
 	 * @param blockParent The max root element to consider when going up the AST.
 	 * @return The conditional statement in which the given variable access is part of the condition. Nothing otherwise.

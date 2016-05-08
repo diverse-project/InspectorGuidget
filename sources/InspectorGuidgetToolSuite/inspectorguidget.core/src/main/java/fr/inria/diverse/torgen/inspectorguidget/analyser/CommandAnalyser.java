@@ -86,7 +86,38 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			return;
 		}
 
-		//TODO switch, ternary
+		if(condStat instanceof CtSwitch<?>) {
+			final CtSwitch<?> swStat = (CtSwitch<?>) condStat;
+			final CtExpression<?> selector = swStat.getSelector();
+
+			cmds.addAll(swStat.getCases().stream().
+				// Ignoring the case statements that are empty
+				filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
+				map(cas -> {
+					//For each case, a condition is created using the case value.
+					final CtBinaryOperator<Boolean> testCondition = listenerMethod.getFactory().Core().createBinaryOperator();
+					// A switch is an equality test against values
+					testCondition.setKind(BinaryOperatorKind.EQ);
+					// The tested object
+					testCondition.setLeftHandOperand(selector);
+					// The tested constant
+					testCondition.setRightHandOperand(cas.getCaseExpression());
+
+					// Creating the body of the command.
+					final List<CtStatement> stats = new ArrayList<>(cas.getStatements());
+
+					// Removing the last 'return' or 'break' statement from the command.
+					if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
+						stats.remove(stats.size() - 1);
+					}
+
+					return new Command(stats, Collections.singletonList(testCondition));
+				}).collect(Collectors.toList()));
+
+			return;
+		}
+
+		//TODO ternary
 		LOG.log(Level.SEVERE, "Unsupported conditional blocks: " + condStat);
 	}
 
