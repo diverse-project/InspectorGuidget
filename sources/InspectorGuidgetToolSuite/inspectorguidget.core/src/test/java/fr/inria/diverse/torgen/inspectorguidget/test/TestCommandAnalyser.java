@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static spoon.testing.Assert.assertThat;
 
 public class TestCommandAnalyser {
 	CommandAnalyser analyser;
@@ -140,15 +141,23 @@ public class TestCommandAnalyser {
 
 		Command cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(0);
 
-		assertEquals(20, cmd.getLineStart());
-		assertEquals(20, cmd.getLineEnd());
-		assertEquals(2, cmd.getConditions().size());
+		assertEquals(25, cmd.getLineStart());
+		assertEquals(25, cmd.getLineEnd());
+		assertEquals(3, cmd.getConditions().size());
+
+		assertThat(cmd.getConditions().get(0)).isEqualTo("(e.getSource()) instanceof javax.swing.JButton");
+		assertThat(cmd.getConditions().get(1)).isEqualTo("\"test\".equals(foo)");
+		assertThat(cmd.getConditions().get(2)).isEqualTo("isItOkForYou()");
 
 		cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(1);
 
-		assertEquals(24, cmd.getLineStart());
-		assertEquals(24, cmd.getLineEnd());
-		assertEquals(2, cmd.getConditions().size());
+		assertEquals(29, cmd.getLineStart());
+		assertEquals(29, cmd.getLineEnd());
+		assertEquals(3, cmd.getConditions().size());
+
+		assertThat(cmd.getConditions().get(0)).isEqualTo("(e.getSource()) instanceof javax.swing.JMenuBar");
+		assertThat(cmd.getConditions().get(1)).isEqualTo("\"test\".equals(foo)");
+		assertThat(cmd.getConditions().get(2)).isEqualTo("isItOkForYou()");
 	}
 
 	@Test

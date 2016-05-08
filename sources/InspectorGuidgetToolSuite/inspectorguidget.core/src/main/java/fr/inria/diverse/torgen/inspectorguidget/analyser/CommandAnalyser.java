@@ -79,21 +79,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private void extractCommandsFromSwitch(final @NotNull CtSwitch<?> switchStat, final @NotNull List<Command> cmds) {
-		final CtExpression<?> selector = switchStat.getSelector();
-
 		cmds.addAll(switchStat.getCases().stream().
 		// Ignoring the case statements that are empty
 			filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
 			map(cas -> {
-				//For each case, a condition is created using the case value.
-				final CtBinaryOperator<Boolean> testCondition = switchStat.getFactory().Core().createBinaryOperator();
-				// A switch is an equality test against values
-				testCondition.setKind(BinaryOperatorKind.EQ);
-				// The tested object
-				testCondition.setLeftHandOperand(selector);
-				// The tested constant
-				testCondition.setRightHandOperand(cas.getCaseExpression());
-
 				// Creating the body of the command.
 				final List<CtStatement> stats = new ArrayList<>(cas.getStatements());
 
@@ -102,7 +91,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					stats.remove(stats.size() - 1);
 				}
 
-				return new Command(stats, Collections.singletonList(testCondition));
+				final List<CtExpression<Boolean>> conds = getsuperConditionalStatements(switchStat);
+				conds.add(0, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas));
+				//For each case, a condition is created using the case value.
+				return new Command(stats, conds);
 			}).collect(Collectors.toList()));
 	}
 
@@ -115,8 +107,11 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			if(stats.get(stats.size() - 1) instanceof CtReturn<?>)
 				stats.remove(stats.size() - 1);
 
-			if(!stats.isEmpty())
-				cmds.add(new Command(stats, Collections.singletonList(ifStat.getCondition())));
+			if(!stats.isEmpty()) {
+				final List<CtExpression<Boolean>> conds = getsuperConditionalStatements(ifStat);
+				conds.add(0, ifStat.getCondition());
+				cmds.add(new Command(stats, conds));
+			}
 		}
 
 		if(elseStat!=null) {
@@ -129,13 +124,61 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					stats.remove(stats.size() - 1);
 
 				if(!stats.isEmpty()) {
-					final CtUnaryOperator<Boolean> neg = ifStat.getFactory().Core().createUnaryOperator();
-					neg.setKind(UnaryOperatorKind.NEG);
-					neg.setOperand(ifStat.getCondition());
-					cmds.add(new Command(stats, Collections.singletonList(neg)));
+					final List<CtExpression<Boolean>> conds = getsuperConditionalStatements(ifStat);
+					conds.add(0, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition()));
+					cmds.add(new Command(stats, conds));
 				}
 			}
 		}
+	}
+
+
+	/**
+	 * Explores the parent of the given statement up to the method definition to identify all the conditional statements that
+	 * lead to the given one.
+	 * @param condStat The conditional statement to use.
+	 * @return The list of all the conditional statements.
+	 */
+	private List<CtExpression<Boolean>> getsuperConditionalStatements(final @NotNull CtElement condStat) {
+		CtElement currElt = condStat;
+		CtElement parent = currElt.getParent();
+		List<CtExpression<Boolean>> conds = new ArrayList<>();
+
+		// Exploring the parents to identify the conditional statements
+		while(parent!=null) {
+			if(parent instanceof CtIf) {
+				CtIf ctif = (CtIf) parent;
+				CtExpression<Boolean> condition = ctif.getCondition();
+
+				// Identifying the block of the if used and adding a condition.
+				if(ctif.getThenStatement()==currElt) {
+					conds.add(condition);
+				}else if(ctif.getElseStatement()==currElt) {
+					conds.add(SpoonHelper.INSTANCE.negBoolExpression(condition));
+				}else {
+					LOG.log(Level.SEVERE, "Cannot find the origin of the statement in the if statement " +
+							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
+				}
+			}else if(parent instanceof CtSwitch<?>) {
+				final CtElement elt = parent;
+				CtSwitch<?> ctswitch = (CtSwitch<?>) parent;
+				// Identifying the case statement used and creating a condition.
+				// The use of orElse(null) is mandatory here (berk!) to avoid a strange compilation bug with generics and casting.
+				CtCase<?> caz = ctswitch.getCases().stream().filter(cas -> cas == elt).findFirst().orElse(null);
+
+				if(caz==null) {
+					LOG.log(Level.SEVERE, "Cannot find the origin of the statement in the switch statement " +
+							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
+				}else {
+					conds.add(SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(ctswitch, caz));
+				}
+			}
+
+			currElt = parent;
+			parent = parent.getParent();
+		}
+
+		return conds;
 	}
 
 

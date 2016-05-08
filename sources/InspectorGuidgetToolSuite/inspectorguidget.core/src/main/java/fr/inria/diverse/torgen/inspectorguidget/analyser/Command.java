@@ -10,9 +10,9 @@ import java.util.List;
 public class Command {
 	private final @NotNull List<CtStatement> statements;
 
-	private final @NotNull List<CtExpression<?>> conditions;
+	private final @NotNull List<CtExpression<Boolean>> conditions;
 
-	public Command(final @NotNull List<CtStatement> stats, final @NotNull List<CtExpression<?>> conds) {
+	public Command(final @NotNull List<CtStatement> stats, final @NotNull List<CtExpression<Boolean>> conds) {
 		super();
 		statements = stats;
 		conditions = conds;
@@ -26,7 +26,7 @@ public class Command {
 		return statements.stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
 	}
 
-	public List<CtExpression<?>> getConditions() {
+	public List<CtExpression<Boolean>> getConditions() {
 		return Collections.unmodifiableList(conditions);
 	}
 
