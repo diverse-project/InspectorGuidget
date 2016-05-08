@@ -1,7 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import org.jetbrains.annotations.Nullable;
-import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtSwitch;

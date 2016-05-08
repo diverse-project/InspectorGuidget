@@ -7,9 +7,7 @@ import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 
 public abstract class ListenerProcessor<T extends CtElement> extends InspectorGuidgetProcessor<T> {
@@ -20,15 +18,15 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 	//	List<CtTypeReference<?>> swtListenersRef;
 	protected CtTypeReference<?> eventListenerRef;
 
-	// Event interface
-	protected CtTypeReference<?> eventRef;
-
-	protected final @NotNull Set<CtTypeReference<?>> events;
+//	 Event interface
+//	protected CtTypeReference<?> eventRef;
+//
+//	protected final @NotNull Set<CtTypeReference<?>> events;
 
 
 	public ListenerProcessor() {
 		super();
-		events = new HashSet<>();
+//		events = new HashSet<>();
 	}
 
 	@Override
@@ -151,7 +149,7 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 		//		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.events.VerifyListener.class));
 		//		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.browser.VisibilityWindowListener.class));
 
-		eventRef = getFactory().Type().createReference(java.util.EventObject.class);
+//		eventRef = getFactory().Type().createReference(java.util.EventObject.class);
 	}
 
 
