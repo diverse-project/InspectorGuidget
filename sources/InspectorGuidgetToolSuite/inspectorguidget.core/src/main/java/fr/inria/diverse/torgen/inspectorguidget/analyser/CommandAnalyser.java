@@ -72,16 +72,31 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		if(condStat instanceof CtIf) {
 			final CtIf ifStat = (CtIf) condStat;
 			final CtBlock<?> elseStat =  ifStat.getElseStatement();
-			cmds.add(new Command(((CtBlock<?>)ifStat.getThenStatement()).getStatements(),
-									Collections.singletonList(ifStat.getCondition())));
+			final List<CtStatement> stats = new ArrayList<>();
+
+			stats.addAll(((CtBlock<?>)ifStat.getThenStatement()).getStatements());
+
+			if(stats.get(stats.size()-1) instanceof CtReturn<?>) {
+				stats.remove(stats.size() - 1);
+			}
+
+			cmds.add(new Command(stats, Collections.singletonList(ifStat.getCondition())));
 
 			if(elseStat!=null) {
 				//TODO create a command if it does not contain any other GUI conditional statement
 				// For the else block, creating a negation of the condition.
+				final List<CtStatement> statsElse = new ArrayList<>();
+
+				statsElse.addAll(elseStat.getStatements());
+
+				if(statsElse.get(stats.size()-1) instanceof CtReturn<?>) {
+					statsElse.remove(stats.size() - 1);
+				}
+
 				final CtUnaryOperator<Boolean> neg = ifStat.getFactory().Core().createUnaryOperator();
 				neg.setKind(UnaryOperatorKind.NEG);
 				neg.setOperand(ifStat.getCondition());
-				cmds.add(new Command(elseStat.getStatements(), Collections.singletonList(neg)));
+				cmds.add(new Command(statsElse, Collections.singletonList(neg)));
 			}
 			return;
 		}
