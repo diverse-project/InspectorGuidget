@@ -60,4 +60,13 @@
           <scope>compile</scope>
       </dependency>
   </dependencies>
+
+    <repositories>
+        <repository>
+            <id>gforge.inria.fr-snapshot</id>
+            <name>Maven Repository for Spoon Snapshot</name>
+            <url>http://spoon.gforge.inria.fr/repositories/snapshots/</url>
+            <snapshots />
+        </repository>
+    </repositories>
 </project>
