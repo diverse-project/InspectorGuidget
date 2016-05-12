@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -197,6 +198,7 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 			Object element = ((IStructuredSelection) selection).getFirstElement();
 			if(element instanceof IProject) return (IProject) element;
 			if(element instanceof IJavaProject) return ((IJavaProject)element).getProject();
+			if(element instanceof IResource) return ((IResource)element).getProject();
 		}
 
 		return null;
