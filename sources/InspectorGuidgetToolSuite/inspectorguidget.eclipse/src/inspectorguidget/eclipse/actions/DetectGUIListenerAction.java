@@ -13,11 +13,13 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.GUIListenerAnalyser;
 import inspectorguidget.eclipse.views.ListenerView;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.CtTypeMember;
 
 public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser> {
 	/** Link Markers to their methods */
-	static Map<IMarker, CtMethod<?>> infoMapping;
+	static Map<IMarker, CtExecutable<?>> infoMapping;
 
 	public DetectGUIListenerAction() {
 		super();
@@ -34,67 +36,74 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 	protected void addMarkers(final IProject project) {
 		infoMapping = new HashMap<>();
 
-		String projectName = project.getName();
-		// IJavaProject jProject = JavaCore.create(project);
-
 		try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ListenerView.ID);
-		} catch (PartInitException e1) {
+		}catch(PartInitException e1) {
 			e1.printStackTrace();
 		}
 
-		//TODO lambdas
-		analyser.getClassListeners().values().stream().flatMap(s -> s.stream()).forEach(method -> {
-			System.out.println(method.getSimpleName());
-			File source = method.getPosition().getFile();
-
-			// FIXME: little hack here
-			String absPath = source.getAbsolutePath();
-			int begin = absPath.indexOf(projectName) + projectName.length() + 1; 
-			String path = absPath.substring(begin);
-			IResource r = project.findMember(path);
-			
-			if(r==null) {
-				int i = path.indexOf('/');
-				if(i!=-1)
-					path = path.substring(i);
-				r = project.findMember(path);
-			}
-			
-			if(r==null && path.startsWith("/"+project.getName())) {
-				path = path.replaceFirst("/"+project.getName(), "");
-				r = project.findMember(path);
-			}
-			
-			if(r!=null) {
-				IMarker m;
-				try {
-					m = r.createMarker(IMarker.PROBLEM);
-					m.setAttribute(IMarker.MESSAGE, "Listener spotted here!");
-					m.setAttribute(IMarker.LINE_NUMBER, method.getPosition().getLine());
-					m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-	
-					infoMapping.put(m, method); // store mapping
-	
-					ListenerView.getSingleton().addMarker(m); // update the view
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		
+		analyser.getLambdaListeners().forEach(lambda -> markCtElement(lambda, project));
+		analyser.getClassListeners().values().stream().flatMap(s -> s.stream()).forEach(method -> markCtElement(method, project));
 	}
+	
+	
+	private void markCtElement(final CtExecutable<?> elt, final IProject project) {
+		final String projectName = project.getName();
+		final File source = elt.getPosition().getFile();
+		// FIXME: little hack here
+		final String absPath = source.getAbsolutePath();
+		final int begin = absPath.indexOf(projectName) + projectName.length() + 1; 
+		String path = absPath.substring(begin);
+		IResource r = project.findMember(path);
+		
+		if(r==null) {
+			int i = path.indexOf('/');
+			if(i!=-1)
+				path = path.substring(i);
+			r = project.findMember(path);
+		}
+		
+		if(r==null && path.startsWith("/"+project.getName())) {
+			path = path.replaceFirst("/"+project.getName(), "");
+			r = project.findMember(path);
+		}
+		
+		if(r!=null) {
+			IMarker m;
+			try {
+				m = r.createMarker(IMarker.PROBLEM);
+				m.setAttribute(IMarker.MESSAGE, "GUI listener");
+				m.setAttribute(IMarker.LINE_NUMBER, elt.getPosition().getLine());
+				m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+				infoMapping.put(m, elt); // store mapping
+				ListenerView.getSingleton().addMarker(m); // update the view
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
 
 	/**
 	 * Convert the marker to String "methodName;sourceFile;line"
 	 */
 	public static String getInfo(final IMarker marker) {
 		String res = "";
-
-		CtMethod<?> method = infoMapping.get(marker);
-		if (method != null) {
+		CtExecutable<?> method = infoMapping.get(marker);
+		
+		if(method != null) {
 			String sourceFile = method.getPosition().getFile().getName();
 			int line = method.getPosition().getLine();
-			String name = method.getDeclaringType().getQualifiedName() + "." + method.getSimpleName();
+			String name;
+			CtType<?> parentType = method.getParent(CtType.class);
+			
+			if(parentType==null)
+				name = method.getSimpleName();
+			else
+				name = ((CtTypeMember)method).getDeclaringType().getQualifiedName() + "." + method.getSimpleName();
+			
 			res = name + ";" + sourceFile + ";" + line;
 		}
 

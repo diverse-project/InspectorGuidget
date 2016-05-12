@@ -5,9 +5,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -38,7 +43,8 @@ import spoon.reflect.factory.Factory;
 public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActionDelegate {
 //	private Shell	shell;
 //	public Factory factory;
-	long spoonloading;
+	protected long spoonloading;
+	protected long startTime;
 	protected T analyser;
 
 
@@ -132,6 +138,7 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 
 	protected void initAction(final IProgressMonitor monitor, final IProject project) {
 		monitor.subTask("Collect source files");
+		startTime = System.currentTimeMillis();
 
 		Set<String> classpath = new HashSet<>();
 		Set<File> libs = new HashSet<>();
@@ -154,7 +161,6 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 	 * @return Spoon model
 	 */
 	protected Factory spoonBuild(Set<String> classpath, Set<File> libs) {
-
 		ClassLoader libLoader = new URLClassLoader(getDependencies(libs), Thread.currentThread().getContextClassLoader());
 		Thread.currentThread().setContextClassLoader(libLoader);
 
@@ -165,7 +171,7 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 
 		try {
 			analyser.buildModel();
-		} catch (Exception e) {
+		}catch(Exception e) {
 			e.printStackTrace();
 		}
 //		env.setInputClassLoader(ClassLoader.getSystemClassLoader());
@@ -177,92 +183,19 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 	protected abstract T createAnalyser();
 	
 
-	private static URL[] getDependencies(Set<File> libs) {
-		// List<URL[]> urls = new ArrayList<URL[]>();
-		// for(String folder : folders){
-		// urls.add(getDependencies(folder));
-		// }
-
-		List<URL[]> urls = new ArrayList<>();
-		// for(String folder : folders){
-		for (File file : libs) {
-			urls.add(getDependencies(file));
-		}
-
-		int size = 0;
-		for (URL[] url : urls) {
-			size += url.length;
-		}
-
-		URL[] res = new URL[size];
-		size = 0;
-		for (int i = 0; i < urls.size(); i++) {
-			URL[] url = urls.get(i);
-			for (int j = 0; j < url.length; j++) {
-				res[size + j] = url[j];
+	private static URL[] getDependencies(final Set<File> libs) {
+		return libs.stream().map(file -> {
+			try { return file.toURI().toURL(); } 
+			catch (Exception e) {
+				e.printStackTrace();
+				return null;
 			}
-			size += url.length;
-		}
-
-		for (URL url : res) {
-			System.out.println(url);
-		}
-
-		return res;
+		}).filter(dep -> dep!=null).toArray(URL[]::new);
 	}
 
-	// private static URL[] getDependencies(String folder){
-	// TODO: check for errors :)
-	private static URL[] getDependencies(File file) {
-		// try {
-		// URL path;
-		// File folderDir;
-		//
-		// path = new URL("file://"+ folder);
-		// folderDir = new File(path.toURI());
-		//
-		// File[] libs = folderDir.listFiles();
-
-		List<URL> urls = new ArrayList<>();
-		// for(File file : libs){
-		// if(file.isDirectory()){
-		// //URL[] deeperFolders = getDependencies(file.getAbsolutePath());
-		// URL[] deeperFolders = getDependencies(file);//FIXME infinite loop!
-		// for(URL r : deeperFolders){
-		// urls.add(r);
-		// }
-		// }
-		// else{
-		try {
-			// if(file.getName().endsWith(".jar")){
-			urls.add(file.toURI().toURL());
-			// }
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		// }
-		// }
-		return urls.toArray(new URL[urls.size()]);
-
-		// } catch (MalformedURLException | URISyntaxException e2) {
-		// // TODO Auto-generated catch block
-		// e2.printStackTrace();
-		//
-		// }
-		// return null;
-	}
-
-//	/**
-//	 * Find listeners in @factory and store them in @listeners
-//	 */
-//	protected void spoonProcess(Factory facto, List<AbstractProcessor<?>> processors) {
-//
-//		ProcessingManager processorManager = new QueueProcessingManager(facto);
-//		processors.forEach(proc -> processorManager.addProcessor(proc));
-//		processorManager.process();
-//	}
 
 	abstract protected void addMarkers(IProject project);
+
 
 	/**
 	 * Get the selected poject. Can return null
