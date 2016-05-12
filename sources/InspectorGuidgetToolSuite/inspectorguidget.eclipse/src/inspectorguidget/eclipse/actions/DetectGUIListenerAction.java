@@ -44,15 +44,12 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 	/** Attach a warning marker for each listeners */
 	@Override
 	protected void addMarkers(final IProject project) {
-		clearMarkers();
-		
 		try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ListenerView.ID);
 		}catch(PartInitException e1) {
 			e1.printStackTrace();
 		}
 
-		
 		analyser.getLambdaListeners().forEach(lambda -> markCtElement(lambda, project));
 		analyser.getClassListeners().values().stream().flatMap(s -> s.stream()).forEach(method -> markCtElement(method, project));
 	}
@@ -83,6 +80,7 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 			IMarker m;
 			try {
 				m = r.createMarker(IMarker.PROBLEM);
+				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
 				m.setAttribute(IMarker.MESSAGE, "GUI listener");
 				m.setAttribute(IMarker.LINE_NUMBER, elt.getPosition().getLine());
 				m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);

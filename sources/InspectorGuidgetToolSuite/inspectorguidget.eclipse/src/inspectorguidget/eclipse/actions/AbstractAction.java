@@ -188,10 +188,8 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 	abstract protected void addMarkers(IProject project);
 
 
-	/**
-	 * Get the selected poject. Can return null
-	 */
-	protected static IProject getCurrentProject() {
+	/** Get the selected project. Can return null */
+	public static IProject getCurrentProject() {
 		ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
 		ISelection selection = selectionService.getSelection();
 

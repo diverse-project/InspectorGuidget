@@ -5,8 +5,9 @@
          point="org.eclipse.ui.menus">
          <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=additions">
          	<separator name="autotoolsGroup" visible="true" />
-			<menu label="InspectorGuidget2">
+			<menu label="InspectorGuidget">
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener" style="push" />
+	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers" style="push" />
 	        </menu>
 	    </menuContribution> 
    </extension>
@@ -16,11 +17,16 @@
             class="inspectorguidget.eclipse.actions.DetectGUIListenerHandler"
             commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener">
       </handler>
+      
+      <handler
+            class="inspectorguidget.eclipse.actions.ClearMarkersHandler"
+            commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers">
+      </handler>
    </extension>
    
    <extension
          id="org.eclipse.cdt.autotools.ui.commands"
-         name="Autoconf"
+         name="inspectorguidgetCmds"
          point="org.eclipse.ui.commands">
       <category
             id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
@@ -32,13 +38,20 @@
             id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener"
             name="Detect GUI listeners">
       </command>
+      
+      <command
+            categoryId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
+            description="Clear the markers added by InspectorGuidget"
+            id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers"
+            name="Clear markers">
+      </command>
  	</extension>
    
    <extension point = "org.eclipse.ui.preferencePages">
        <page 
-       		id="InspectorGuidget2.preferences"
+       		id="InspectorGuidget.preferences"
 	    	class="inspectorguidget.eclipse.preferences.PreferencePage"
-            name="InspectorGuidget2">
+            name="InspectorGuidget">
        </page>
    </extension>
    
