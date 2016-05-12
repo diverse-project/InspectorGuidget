@@ -15,7 +15,6 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.GUIListenerAnalyser;
 import inspectorguidget.eclipse.views.ListenerView;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtType;
-import spoon.reflect.declaration.CtTypeMember;
 
 public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser> {
 	/** Link Markers to their methods */
@@ -110,7 +109,7 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 			if(parentType==null)
 				name = method.getSimpleName();
 			else
-				name = ((CtTypeMember)method).getDeclaringType().getQualifiedName() + "." + method.getSimpleName();
+				name = parentType.getQualifiedName() + "." + method.getSimpleName();
 			
 			res = name + ";" + sourceFile + ";" + line;
 		}
