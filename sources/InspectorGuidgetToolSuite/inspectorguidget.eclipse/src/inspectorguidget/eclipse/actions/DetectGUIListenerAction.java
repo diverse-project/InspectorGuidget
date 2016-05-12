@@ -1,11 +1,7 @@
-package inspectorguidgetplugin.popup.actions;
+package inspectorguidget.eclipse.actions;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
@@ -15,16 +11,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
-import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
-import spoon.processing.AbstractProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.GUIListenerAnalyser;
+import inspectorguidget.eclipse.views.ListenerView;
 import spoon.reflect.declaration.CtMethod;
-import views.ListenerView;
 
-public class DetectGUIListenerAction extends AbstractAction {
-	private ClassListenerProcessor classProc;
-	private LambdaListenerProcessor lambdaProc;
-
+public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser> {
 	/**
 	 * Link Markers to their methods
 	 */
@@ -36,6 +27,11 @@ public class DetectGUIListenerAction extends AbstractAction {
 	 */
 	public DetectGUIListenerAction() {
 		super();
+	}
+	
+	
+	protected GUIListenerAnalyser createAnalyser() {
+		return new GUIListenerAnalyser();
 	}
 
 	//
@@ -51,13 +47,14 @@ public class DetectGUIListenerAction extends AbstractAction {
 		// IJavaProject jProject = JavaCore.create(project);
 
 		try {
-			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("views.ListenerView");
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ListenerView.ID);
 		} catch (PartInitException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
-		classProc.getAllListenerMethods().values().stream().flatMap(s -> s.stream()).forEach(method -> {
+		//TODO lambdas
+		analyser.getClassListeners().values().stream().flatMap(s -> s.stream()).forEach(method -> {
+			System.out.println(method.getSimpleName());
 			File source = method.getPosition().getFile();
 
 			// FIXME: little hack here
@@ -95,13 +92,6 @@ public class DetectGUIListenerAction extends AbstractAction {
 				}
 			}
 		});
-	}
-
-	@Override
-	protected List<AbstractProcessor<?>> buildProcessors() {
-		classProc = new ClassListenerProcessor();
-		lambdaProc = new LambdaListenerProcessor();
-		return Arrays.asList(classProc, lambdaProc);
 	}
 
 	/**

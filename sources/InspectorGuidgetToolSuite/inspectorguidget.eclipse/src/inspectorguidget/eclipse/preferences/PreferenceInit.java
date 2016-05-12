@@ -1,9 +1,9 @@
-package inspectorguidgetplugin.preferences;
-
-import inspectorguidgetplugin.Activator;
+package inspectorguidget.eclipse.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
+
+import inspectorguidget.eclipse.Activator;
 
 public class PreferenceInit extends AbstractPreferenceInitializer {
 

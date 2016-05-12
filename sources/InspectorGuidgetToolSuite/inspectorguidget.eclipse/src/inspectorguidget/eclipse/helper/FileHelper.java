@@ -1,4 +1,4 @@
-package helper;
+package inspectorguidget.eclipse.helper;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

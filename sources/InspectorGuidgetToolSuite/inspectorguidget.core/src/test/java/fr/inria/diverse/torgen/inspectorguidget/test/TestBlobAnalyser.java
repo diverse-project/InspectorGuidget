@@ -19,7 +19,7 @@ public class TestBlobAnalyser {
 
 	@Test
 	public void testStdBlob() {
-		analyser.getCmdAnalyser().addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfReturn.java");
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfReturn.java");
 		analyser.run();
 
 		assertEquals(1, analyser.getBlobs().entrySet().size());
@@ -37,7 +37,7 @@ public class TestBlobAnalyser {
 	@Test
 	public void testStdBlobSetNBCMD2() {
 		BlobListenerAnalyser.setNbCmdBlobs(2);
-		analyser.getCmdAnalyser().addInputResource("src/test/resources/java/analysers/ActionListenerCondFragmentedCommand.java");
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondFragmentedCommand.java");
 		analyser.run();
 
 		assertEquals(1, analyser.getBlobs().entrySet().size());
@@ -47,7 +47,7 @@ public class TestBlobAnalyser {
 	@Test
 	public void testNotABlobSetNBCMD2() {
 		BlobListenerAnalyser.setNbCmdBlobs(2);
-		analyser.getCmdAnalyser().addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOf.java");
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOf.java");
 		analyser.run();
 
 		assertTrue(analyser.getBlobs().entrySet().isEmpty());
@@ -56,7 +56,7 @@ public class TestBlobAnalyser {
 	@Test
 	public void testNbCmdCannotBeZero() {
 		BlobListenerAnalyser.setNbCmdBlobs(0);
-		analyser.getCmdAnalyser().addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfReturn.java");
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfReturn.java");
 		analyser.run();
 
 		assertEquals(1, analyser.getBlobs().entrySet().size());

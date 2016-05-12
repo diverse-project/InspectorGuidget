@@ -1,11 +1,11 @@
-package inspectorguidgetplugin.preferences;
-
-import inspectorguidgetplugin.Activator;
+package inspectorguidget.eclipse.preferences;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+
+import inspectorguidget.eclipse.Activator;
 
 public class PreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 

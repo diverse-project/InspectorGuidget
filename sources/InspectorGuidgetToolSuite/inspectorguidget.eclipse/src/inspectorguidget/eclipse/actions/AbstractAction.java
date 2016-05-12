@@ -1,4 +1,4 @@
-package inspectorguidgetplugin.popup.actions;
+package inspectorguidget.eclipse.actions;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -34,20 +34,19 @@ import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.progress.UIJob;
 
+import spoon.SpoonAPI;
 import spoon.compiler.SpoonCompiler;
-import spoon.processing.AbstractProcessor;
-import spoon.processing.ProcessingManager;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.factory.FactoryImpl;
 import spoon.support.DefaultCoreFactory;
-import spoon.support.QueueProcessingManager;
 import spoon.support.StandardEnvironment;
 import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 
-public abstract class AbstractAction implements IObjectActionDelegate {
+public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActionDelegate {
 	private Shell	shell;
 	public Factory	factory;
 	long			spoonloading;
+	protected T analyser;
 
 	/**
 	 * @see IActionDelegate#run(IAction)
@@ -57,11 +56,11 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 
 		final IProject project = getCurrentProject();
 
-		Job job = new Job("InspectorGuidget") {
+		Job job = new Job("InspectorGuidget.eclipse") {
 			@Override
 			public IStatus run(IProgressMonitor monitor) {
 				// set total number of work units
-				monitor.beginTask("Spoon analyze", 2);
+				monitor.beginTask("Spoon analysis", 2);
 				// Measuring the time for InspectorWidget
 				// final long startTime = System.currentTimeMillis();
 				initAction(monitor, project);
@@ -91,7 +90,7 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 		job.schedule();
 	}
 
-	protected void loadProjectDeps(final Set<File> classpath, final Set<File> libs, final Set<String> projects,
+	protected void loadProjectDeps(final Set<String> classpath, final Set<File> libs, final Set<String> projects,
 			final IProject project, final boolean mainProject) {
 		try {
 			if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
@@ -99,50 +98,49 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 
 				for (IClasspathEntry entry : jProject.getRawClasspath()) {
 					switch (entry.getEntryKind()) {
-					case IClasspathEntry.CPE_SOURCE:
-						IPath rel;
-
-						if(project.getFullPath().toOSString().equals("/"+project.getName()))
-							rel = project.getFullPath();
-						else
+						case IClasspathEntry.CPE_SOURCE:
+							IPath rel;
+	
+//							if(project.getFullPath().toOSString().equals("/"+project.getName()))
+//								rel = project.getFullPath();
+//							else
+//								rel = entry.getPath().makeRelativeTo(project.getFullPath());
+							
+							String path;// = project.getFile(rel).getLocation().toString();
+							// if(mainProject)
+							classpath.add(ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()+entry.getPath());
+							// else
+							// libs.add(file);
+							break;
+						case IClasspathEntry.CPE_LIBRARY:
 							rel = entry.getPath().makeRelativeTo(project.getFullPath());
-						
-						String path = project.getFile(rel).getLocation().toString();
-						File file = new File(path);
-						// if(mainProject)
-						classpath.add(file);
-						// else
-						// libs.add(file);
-						break;
-					case IClasspathEntry.CPE_LIBRARY:
-						rel = entry.getPath().makeRelativeTo(project.getFullPath());
-						path = project.getFile(rel).getLocation().toString();
-						file = new File(path);
-						libs.add(file);
-						break;
-					case IClasspathEntry.CPE_PROJECT:
-						IProject proj = ResourcesPlugin.getWorkspace().getRoot()
-								.getProject(entry.getPath().toOSString());
-						if (proj != null && !projects.contains(proj.getName())) {
-							projects.add(proj.getName());
-							loadProjectDeps(classpath, libs, projects, proj, false);
-						}
-						break;
-					case IClasspathEntry.CPE_CONTAINER:
-						try {
-							final IClasspathContainer container = JavaCore.getClasspathContainer(entry.getPath(),
-									jProject);
-							if (container != null) {
-								for (IClasspathEntry en : container.getClasspathEntries()) {
-									libs.add(en.getPath().toFile());
-								}
+							path = project.getFile(rel).getLocation().toString();
+							File file = new File(path);
+							libs.add(file);
+							break;
+						case IClasspathEntry.CPE_PROJECT:
+							IProject proj = ResourcesPlugin.getWorkspace().getRoot()
+									.getProject(entry.getPath().toOSString());
+							if (proj != null && !projects.contains(proj.getName())) {
+								projects.add(proj.getName());
+								loadProjectDeps(classpath, libs, projects, proj, false);
 							}
-						} catch (JavaModelException e) {
-							e.printStackTrace();
-						}
-						break;
-					default:
-						// TODO
+							break;
+						case IClasspathEntry.CPE_CONTAINER:
+							try {
+								final IClasspathContainer container = JavaCore.getClasspathContainer(entry.getPath(),
+										jProject);
+								if (container != null) {
+									for (IClasspathEntry en : container.getClasspathEntries()) {
+										libs.add(en.getPath().toFile());
+									}
+								}
+							} catch (JavaModelException e) {
+								e.printStackTrace();
+							}
+							break;
+						default:
+							// TODO
 					}
 				}
 			}
@@ -154,7 +152,7 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 	protected void initAction(final IProgressMonitor monitor, final IProject project) {
 		monitor.subTask("Collect source files");
 
-		Set<File> classpath = new HashSet<>();
+		Set<String> classpath = new HashSet<>();
 		Set<File> libs = new HashSet<>();
 		Set<String> projects = new HashSet<>();
 
@@ -163,11 +161,16 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 
 		monitor.worked(1);
 		monitor.subTask("Spoon build");
-		spoonProcess(spoonBuild(classpath, libs), buildProcessors());
+		Factory fac = spoonBuild(classpath, libs);
+		analyser.process();
+//		spoonProcess(spoonBuild(classpath, libs), buildProcessors());
+//		List<AbstractProcessor<?>> procs = buildProcessors();
+//		procs.forEach(proc -> {
+//			proc.
+//		});
 		monitor.worked(2);
 	}
 
-	protected abstract List<AbstractProcessor<?>> buildProcessors();
 
 	/**
 	 * Build the Spoon AST for the classes in @classpath
@@ -175,30 +178,38 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 	 * @param libs
 	 * @return Spoon model
 	 */
-	protected Factory spoonBuild(Set<File> classpath, Set<File> libs) {
+	protected Factory spoonBuild(Set<String> classpath, Set<File> libs) {
 
 		ClassLoader libLoader = new URLClassLoader(getDependencies(libs), Thread.currentThread().getContextClassLoader());
 		Thread.currentThread().setContextClassLoader(libLoader);
 
-		StandardEnvironment env = new StandardEnvironment();
-		DefaultCoreFactory f = new DefaultCoreFactory();
-		factory = new FactoryImpl(f, env);
-		SpoonCompiler comp = new JDTBasedSpoonCompiler(factory);
+		
+//		StandardEnvironment env = new StandardEnvironment();
+//		DefaultCoreFactory f = new DefaultCoreFactory();
+//		env.setComplianceLevel(8);
+//		factory = new FactoryImpl(f, env);
+//		SpoonCompiler comp = new JDTBasedSpoonCompiler(factory);
 //		CfgBuilder.factory = factory;
 
 		// SpoonCompiler comp = new Launcher().createCompiler();
-		classpath.forEach(file -> comp.addInputSource(file));
+		analyser = createAnalyser();
+		System.out.println(classpath);
+		System.out.println(libs);
+		classpath.forEach(file -> analyser.addInputResource(file));
 
 		try {
-			comp.build();
+			analyser.buildModel();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		env.setInputClassLoader(ClassLoader.getSystemClassLoader());
+//		env.setInputClassLoader(ClassLoader.getSystemClassLoader());
 		spoonloading = System.currentTimeMillis();// Measuring the time of Spoon to load the classes
-		return comp.getFactory();
+		return analyser.getFactory();
 	}
+	
+	
+	protected abstract T createAnalyser();
+	
 
 	// private static URL[] getDependencies(List<String> folders){
 	private static URL[] getDependencies(Set<File> libs) {
@@ -276,15 +287,15 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 		// return null;
 	}
 
-	/**
-	 * Find listeners in @factory and store them in @listeners
-	 */
-	protected void spoonProcess(Factory facto, List<AbstractProcessor<?>> processors) {
-
-		ProcessingManager processorManager = new QueueProcessingManager(facto);
-		processors.forEach(proc -> processorManager.addProcessor(proc));
+//	/**
+//	 * Find listeners in @factory and store them in @listeners
+//	 */
+//	protected void spoonProcess(Factory facto, List<AbstractProcessor<?>> processors) {
+//
+//		ProcessingManager processorManager = new QueueProcessingManager(facto);
+//		processors.forEach(proc -> processorManager.addProcessor(proc));
 //		processorManager.process();
-	}
+//	}
 
 	abstract protected void addMarkers(IProject project);
 
@@ -298,9 +309,10 @@ public abstract class AbstractAction implements IObjectActionDelegate {
 
 		if (selection instanceof IStructuredSelection) {
 			Object element = ((IStructuredSelection) selection).getFirstElement();
-			return (IProject) element;
-
+			if(element instanceof IProject) return (IProject) element;
+			if(element instanceof IJavaProject) return ((IJavaProject)element).getProject();
 		}
+
 		return null;
 	}
 

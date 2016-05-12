@@ -1,4 +1,4 @@
-package views;
+package inspectorguidget.eclipse.views;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +22,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 
-import helper.FileHelper;
-import inspectorguidgetplugin.Activator;
-import inspectorguidgetplugin.popup.actions.DetectGUIListenerAction;
+import inspectorguidget.eclipse.Activator;
+import inspectorguidget.eclipse.actions.DetectGUIListenerAction;
+import inspectorguidget.eclipse.helper.FileHelper;
 
 public class ListenerView extends ViewPart {
 
@@ -36,7 +36,7 @@ public class ListenerView extends ViewPart {
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
-	public static final String	ID			= "views.ListenerView";
+	public static final String	ID			= "inspectorguidget.eclipse.views.ListenerView";
 
 	private List<IMarker>		markerList	= new ArrayList<>();
 

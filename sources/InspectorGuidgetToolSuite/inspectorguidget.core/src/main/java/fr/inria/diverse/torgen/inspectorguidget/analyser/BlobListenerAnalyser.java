@@ -1,13 +1,22 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import org.jetbrains.annotations.NotNull;
+import spoon.SpoonAPI;
+import spoon.compiler.Environment;
+import spoon.compiler.SpoonCompiler;
+import spoon.processing.Processor;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.factory.Factory;
+import spoon.reflect.visitor.Filter;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class BlobListenerAnalyser {
+public class BlobListenerAnalyser implements SpoonAPI {
 	private static int NB_CMDS = 3;
 
 	private final @NotNull CommandAnalyser cmdAnalyser;
@@ -19,11 +28,102 @@ public class BlobListenerAnalyser {
 	}
 
 
-	public void run() {
+	@Override
+	public void run(final String[] args) {
 		cmdAnalyser.run();
 		blobs = cmdAnalyser.getCommands().entrySet().parallelStream().
-					filter(entry -> entry.getValue().size()>= NB_CMDS).
-					collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+				filter(entry -> entry.getValue().size()>= NB_CMDS).
+				collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+	}
+
+	@Override
+	public void addInputResource(final String file) {
+		cmdAnalyser.addInputResource(file);
+	}
+
+	@Override
+	public void setSourceOutputDirectory(final String path) {
+		cmdAnalyser.setSourceOutputDirectory(path);
+	}
+
+	@Override
+	public void setSourceOutputDirectory(final File outputDirectory) {
+		cmdAnalyser.setSourceOutputDirectory(outputDirectory);
+	}
+
+	@Override
+	public void setOutputFilter(final Filter<CtType<?>> typeFilter) {
+		cmdAnalyser.setOutputFilter(typeFilter);
+	}
+
+	@Override
+	public void setOutputFilter(final String... qualifedNames) {
+		cmdAnalyser.setOutputFilter(qualifedNames);
+	}
+
+	@Override
+	public void setBinaryOutputDirectory(final String path) {
+		cmdAnalyser.setBinaryOutputDirectory(path);
+	}
+
+	@Override
+	public void setBinaryOutputDirectory(final File outputDirectory) {
+		cmdAnalyser.setBinaryOutputDirectory(outputDirectory);
+	}
+
+	@Override
+	public void addProcessor(final String name) {
+		cmdAnalyser.addProcessor(name);
+	}
+
+	@Override
+	public <T extends CtElement> void addProcessor(final Processor<T> processor) {
+		cmdAnalyser.addProcessor(processor);
+	}
+
+	@Override
+	public void buildModel() {
+		cmdAnalyser.buildModel();
+	}
+
+	@Override
+	public void process() {
+		cmdAnalyser.process();
+	}
+
+	@Override
+	public void prettyprint() {
+		cmdAnalyser.prettyprint();
+	}
+
+	@Override
+	public void run() {
+		run(null);
+	}
+
+	@Override
+	public Factory getFactory() {
+		return cmdAnalyser.getFactory();
+	}
+
+	@Override
+	public Environment getEnvironment() {
+		return cmdAnalyser.getEnvironment();
+	}
+
+	@Override
+	public Factory createFactory() {
+		return cmdAnalyser.createFactory();
+	}
+
+	@Override
+	public Environment createEnvironment() {
+		return cmdAnalyser.createEnvironment();
+	}
+
+	@Override
+	public SpoonCompiler createCompiler() {
+		return cmdAnalyser.createCompiler();
 	}
 
 	public CommandAnalyser getCmdAnalyser() {
