@@ -22,6 +22,8 @@ import inspectorguidget.eclipse.helper.FileHelper;
 
 public class ListenerView extends ViewPart {
 	private static ListenerView	INSTANCE;
+	
+	public static final String VIEW_TITLE = "GUI listeners";
 
 	/** The ID of the view as specified by the extension. */
 	public static final String ID = "inspectorguidget.eclipse.views.ListenerView";
@@ -80,13 +82,8 @@ public class ListenerView extends ViewPart {
 			String file = Activator.getDefault().getPreferenceStore().getString("pathListeners");
 			boolean checked = event.getChecked();
 			String info = DetectGUIListenerAction.getInfo((IMarker) event.getElement());
-
 			FileHelper.appendFile(file, info + ";" + checked);
-
-			// MessageDialog.openInformation(
-			// viewer.getControl().getShell(),
-			// "My new View",
-			// ""+event.getChecked());
+			// MessageDialog.openInformation( viewer.getControl().getShell(), "My new View", ""+event.getChecked());
 		});
 
 		return tableViewer;
@@ -102,7 +99,7 @@ public class ListenerView extends ViewPart {
 
 
 	public static ListenerView getSingleton() {
-		if (INSTANCE == null) {
+		if(INSTANCE == null) {
 			INSTANCE = new ListenerView();
 		}
 		return INSTANCE;
@@ -110,14 +107,23 @@ public class ListenerView extends ViewPart {
 
 	
 	public void clearMarkers() {
+		markerList.forEach(marker -> {
+			try {
+				marker.delete();
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+		});
 		markerList.clear();
+		viewer.refresh();
+		setPartName(VIEW_TITLE);
 	}
 	
 	
 	public void addMarker(final IMarker marker) {
 		markerList.add(marker);
 		int size = markerList.size();
-		setPartName(size + " GUI listeners");
+		setPartName(size + " " + VIEW_TITLE);
 		viewer.refresh();
 	}
 }
