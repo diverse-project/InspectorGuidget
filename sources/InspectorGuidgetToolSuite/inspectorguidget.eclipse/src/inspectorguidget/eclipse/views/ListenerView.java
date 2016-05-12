@@ -108,6 +108,12 @@ public class ListenerView extends ViewPart {
 		return INSTANCE;
 	}
 
+	
+	public void clearMarkers() {
+		markerList.clear();
+	}
+	
+	
 	public void addMarker(final IMarker marker) {
 		markerList.add(marker);
 		int size = markerList.size();

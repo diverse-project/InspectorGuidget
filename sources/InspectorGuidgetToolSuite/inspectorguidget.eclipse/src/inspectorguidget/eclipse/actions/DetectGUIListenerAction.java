@@ -19,7 +19,7 @@ import spoon.reflect.declaration.CtTypeMember;
 
 public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser> {
 	/** Link Markers to their methods */
-	static Map<IMarker, CtExecutable<?>> infoMapping;
+	static final Map<IMarker, CtExecutable<?>> infoMapping = new HashMap<>();
 
 	public DetectGUIListenerAction() {
 		super();
@@ -31,11 +31,21 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 	}
 
 
+	public static void clearMarkers() {
+		ListenerView.getSingleton().clearMarkers();
+		infoMapping.keySet().forEach(marker -> {
+			try { marker.delete(); } 
+			catch(Exception e) { e.printStackTrace();}
+		});
+		infoMapping.clear();
+	}
+	
+	
 	/** Attach a warning marker for each listeners */
 	@Override
 	protected void addMarkers(final IProject project) {
-		infoMapping = new HashMap<>();
-
+		clearMarkers();
+		
 		try {
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ListenerView.ID);
 		}catch(PartInitException e1) {
@@ -111,6 +121,7 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 	}
 
 	public static String getMethod(final IMarker marker) {
-		return infoMapping.get(marker).getSimpleName();
+		CtExecutable<?> exec = infoMapping.get(marker);
+		return exec==null ? "" : exec.getSimpleName();
 	}
 }

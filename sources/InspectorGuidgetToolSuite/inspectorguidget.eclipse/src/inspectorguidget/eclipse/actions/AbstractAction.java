@@ -1,18 +1,10 @@
 package inspectorguidget.eclipse.actions;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -34,17 +26,15 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-//import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.progress.UIJob;
 
 import spoon.SpoonAPI;
 import spoon.reflect.factory.Factory;
 
 public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActionDelegate {
-//	private Shell	shell;
-//	public Factory factory;
 	protected long spoonloading;
 	protected long startTime;
+	protected long analysisTime;
 	protected T analyser;
 
 
@@ -151,6 +141,7 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		monitor.subTask("Spoon build");
 		spoonBuild(classpath, libs);
 		analyser.process();
+		analysisTime = System.currentTimeMillis();
 		monitor.worked(2);
 	}
 
@@ -215,7 +206,6 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 
 	@Override
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-//		shell = targetPart.getSite().getShell();
 	}
 
 	@Override
