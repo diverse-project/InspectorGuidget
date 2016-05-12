@@ -12,12 +12,12 @@ public class PreferencePage extends FieldEditorPreferencePage implements IWorkbe
 	public PreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-		setDescription("Files to store results of the InspectorGuidget views");
+		setDescription("Files where results of InspectorGuidget analyses are stored");
 	}
 
 	@Override
 	public void init(IWorkbench workbench) {
-		// TODO Auto-generated method stub
+		// Nothing to do.
 	}
 
 	@Override

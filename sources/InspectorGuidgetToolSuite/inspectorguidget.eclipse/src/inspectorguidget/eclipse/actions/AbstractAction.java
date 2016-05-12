@@ -25,8 +25,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPart;
@@ -35,25 +33,17 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 
 import spoon.SpoonAPI;
-import spoon.compiler.SpoonCompiler;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.factory.FactoryImpl;
-import spoon.support.DefaultCoreFactory;
-import spoon.support.StandardEnvironment;
-import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 
 public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActionDelegate {
-	private Shell	shell;
-	public Factory	factory;
-	long			spoonloading;
+//	private Shell	shell;
+//	public Factory factory;
+	long spoonloading;
 	protected T analyser;
 
-	/**
-	 * @see IActionDelegate#run(IAction)
-	 */
+
 	@Override
 	public void run(IAction action) {
-
 		final IProject project = getCurrentProject();
 
 		Job job = new Job("InspectorGuidget.eclipse") {
@@ -64,8 +54,7 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 				// Measuring the time for InspectorWidget
 				// final long startTime = System.currentTimeMillis();
 				initAction(monitor, project);
-				Job job2 = new UIJob("Add markers") {// To switch to the UI
-														// thread
+				Job job2 = new UIJob("Add markers") {// To switch to the UI thread
 					@Override
 					public IStatus runInUIThread(IProgressMonitor monit) {
 						addMarkers(project);
@@ -90,8 +79,9 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		job.schedule();
 	}
 
+	
 	protected void loadProjectDeps(final Set<String> classpath, final Set<File> libs, final Set<String> projects,
-			final IProject project, final boolean mainProject) {
+									final IProject project, final boolean mainProject) {
 		try {
 			if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
 				IJavaProject jProject = JavaCore.create(project);
@@ -99,22 +89,12 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 				for (IClasspathEntry entry : jProject.getRawClasspath()) {
 					switch (entry.getEntryKind()) {
 						case IClasspathEntry.CPE_SOURCE:
-							IPath rel;
-	
-//							if(project.getFullPath().toOSString().equals("/"+project.getName()))
-//								rel = project.getFullPath();
-//							else
-//								rel = entry.getPath().makeRelativeTo(project.getFullPath());
-							
-							String path;// = project.getFile(rel).getLocation().toString();
-							// if(mainProject)
 							classpath.add(ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()+entry.getPath());
-							// else
-							// libs.add(file);
 							break;
+							
 						case IClasspathEntry.CPE_LIBRARY:
-							rel = entry.getPath().makeRelativeTo(project.getFullPath());
-							path = project.getFile(rel).getLocation().toString();
+							IPath rel = entry.getPath().makeRelativeTo(project.getFullPath());
+							String path = project.getFile(rel).getLocation().toString();
 							File file = new File(path);
 							libs.add(file);
 							break;
@@ -149,6 +129,7 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		}
 	}
 
+
 	protected void initAction(final IProgressMonitor monitor, final IProject project) {
 		monitor.subTask("Collect source files");
 
@@ -161,20 +142,14 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 
 		monitor.worked(1);
 		monitor.subTask("Spoon build");
-		Factory fac = spoonBuild(classpath, libs);
+		spoonBuild(classpath, libs);
 		analyser.process();
-//		spoonProcess(spoonBuild(classpath, libs), buildProcessors());
-//		List<AbstractProcessor<?>> procs = buildProcessors();
-//		procs.forEach(proc -> {
-//			proc.
-//		});
 		monitor.worked(2);
 	}
 
 
 	/**
 	 * Build the Spoon AST for the classes in @classpath
-	 * 
 	 * @param libs
 	 * @return Spoon model
 	 */
@@ -183,15 +158,6 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		ClassLoader libLoader = new URLClassLoader(getDependencies(libs), Thread.currentThread().getContextClassLoader());
 		Thread.currentThread().setContextClassLoader(libLoader);
 
-		
-//		StandardEnvironment env = new StandardEnvironment();
-//		DefaultCoreFactory f = new DefaultCoreFactory();
-//		env.setComplianceLevel(8);
-//		factory = new FactoryImpl(f, env);
-//		SpoonCompiler comp = new JDTBasedSpoonCompiler(factory);
-//		CfgBuilder.factory = factory;
-
-		// SpoonCompiler comp = new Launcher().createCompiler();
 		analyser = createAnalyser();
 		System.out.println(classpath);
 		System.out.println(libs);
@@ -211,7 +177,6 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 	protected abstract T createAnalyser();
 	
 
-	// private static URL[] getDependencies(List<String> folders){
 	private static URL[] getDependencies(Set<File> libs) {
 		// List<URL[]> urls = new ArrayList<URL[]>();
 		// for(String folder : folders){
@@ -304,10 +269,9 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 	 */
 	protected static IProject getCurrentProject() {
 		ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
-
 		ISelection selection = selectionService.getSelection();
 
-		if (selection instanceof IStructuredSelection) {
+		if(selection instanceof IStructuredSelection) {
 			Object element = ((IStructuredSelection) selection).getFirstElement();
 			if(element instanceof IProject) return (IProject) element;
 			if(element instanceof IJavaProject) return ((IJavaProject)element).getProject();
@@ -316,17 +280,11 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		return null;
 	}
 
-	/**
-	 * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
-	 */
 	@Override
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		shell = targetPart.getSite().getShell();
+//		shell = targetPart.getSite().getShell();
 	}
 
-	/**
-	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
-	 */
 	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
 	}

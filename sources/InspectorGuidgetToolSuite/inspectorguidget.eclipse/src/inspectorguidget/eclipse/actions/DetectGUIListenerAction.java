@@ -16,31 +16,22 @@ import inspectorguidget.eclipse.views.ListenerView;
 import spoon.reflect.declaration.CtMethod;
 
 public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser> {
-	/**
-	 * Link Markers to their methods
-	 */
+	/** Link Markers to their methods */
 	static Map<IMarker, CtMethod<?>> infoMapping;
 
-
-	/**
-	 * Constructor for Action1.
-	 */
 	public DetectGUIListenerAction() {
 		super();
 	}
 	
-	
+	@Override
 	protected GUIListenerAnalyser createAnalyser() {
 		return new GUIListenerAnalyser();
 	}
 
-	//
-	/**
-	 * Attach a warning marker for each listeners
-	 */
-	@Override
-	protected void addMarkers(IProject project) {
 
+	/** Attach a warning marker for each listeners */
+	@Override
+	protected void addMarkers(final IProject project) {
 		infoMapping = new HashMap<>();
 
 		String projectName = project.getName();
@@ -85,9 +76,8 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 	
 					infoMapping.put(m, method); // store mapping
 	
-					ListenerView.addMarker(m); // update the view
+					ListenerView.getSingleton().addMarker(m); // update the view
 				} catch (CoreException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -97,7 +87,7 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 	/**
 	 * Convert the marker to String "methodName;sourceFile;line"
 	 */
-	public static String getInfo(IMarker marker) {
+	public static String getInfo(final IMarker marker) {
 		String res = "";
 
 		CtMethod<?> method = infoMapping.get(marker);
@@ -111,7 +101,7 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 		return res;
 	}
 
-	public static String getMethod(IMarker marker) {
+	public static String getMethod(final IMarker marker) {
 		return infoMapping.get(marker).getSimpleName();
 	}
 }
