@@ -3,8 +3,10 @@ package inspectorguidget.eclipse.actions;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -20,6 +22,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.launching.JREContainer;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -80,44 +83,40 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 	protected void loadProjectDeps(final Set<String> classpath, final Set<File> libs, final Set<String> projects,
 									final IProject project, final boolean mainProject) {
 		try {
-			if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
+			if(project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
 				IJavaProject jProject = JavaCore.create(project);
 
-				for (IClasspathEntry entry : jProject.getRawClasspath()) {
-					switch (entry.getEntryKind()) {
+				for(IClasspathEntry entry : jProject.getRawClasspath()) {
+					switch(entry.getEntryKind()) {
 						case IClasspathEntry.CPE_SOURCE:
-							classpath.add(ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()+entry.getPath());
-							break;
-							
-						case IClasspathEntry.CPE_LIBRARY:
 							IPath rel = entry.getPath().makeRelativeTo(project.getFullPath());
-							String path = project.getFile(rel).getLocation().toString();
-							File file = new File(path);
-							libs.add(file);
+
+							if(rel.isEmpty()) {
+								classpath.add(project.getLocation().toString());
+							}else {
+								classpath.add(project.getFile(rel).getLocation().toString());								
+							}
+							break;
+						case IClasspathEntry.CPE_LIBRARY:
+							libs.add(new File(project.getFile(entry.getPath().makeRelativeTo(project.getFullPath())).getLocation().toString()));
 							break;
 						case IClasspathEntry.CPE_PROJECT:
-							IProject proj = ResourcesPlugin.getWorkspace().getRoot()
-									.getProject(entry.getPath().toOSString());
-							if (proj != null && !projects.contains(proj.getName())) {
+							IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(entry.getPath().toOSString());
+							if(proj != null && !projects.contains(proj.getName())) {
 								projects.add(proj.getName());
 								loadProjectDeps(classpath, libs, projects, proj, false);
 							}
 							break;
 						case IClasspathEntry.CPE_CONTAINER:
-							try {
-								final IClasspathContainer container = JavaCore.getClasspathContainer(entry.getPath(),
-										jProject);
-								if (container != null) {
-									for (IClasspathEntry en : container.getClasspathEntries()) {
-										libs.add(en.getPath().toFile());
-									}
+							try{
+								final IClasspathContainer container = JavaCore.getClasspathContainer(entry.getPath(), jProject);
+								
+								if(container != null && !(container instanceof JREContainer)) {
+									libs.addAll(Arrays.stream(container.getClasspathEntries()).map(en -> en.getPath().toFile()).collect(Collectors.toList()));
 								}
-							} catch (JavaModelException e) {
-								e.printStackTrace();
-							}
+							}catch(JavaModelException e) { e.printStackTrace(); }
 							break;
 						default:
-							// TODO
 					}
 				}
 			}
