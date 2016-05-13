@@ -115,7 +115,8 @@ public class ListenerView extends ViewPart {
 			}
 		});
 		markerList.clear();
-		viewer.refresh();
+		if(viewer!=null)
+			viewer.refresh();
 		setPartName(VIEW_TITLE);
 	}
 	
@@ -124,6 +125,7 @@ public class ListenerView extends ViewPart {
 		markerList.add(marker);
 		int size = markerList.size();
 		setPartName(size + " " + VIEW_TITLE);
-		viewer.refresh();
+		if(viewer!=null)
+			viewer.refresh();
 	}
 }
