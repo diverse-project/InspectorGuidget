@@ -140,9 +140,11 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		monitor.worked(1);
 		monitor.subTask("Spoon build");
 		spoonBuild(classpath, libs);
+		monitor.subTask("InspectorGuidget analysis");
+		monitor.worked(2);
 		analyser.process();
 		analysisTime = System.currentTimeMillis();
-		monitor.worked(2);
+		monitor.worked(3);
 	}
 
 
