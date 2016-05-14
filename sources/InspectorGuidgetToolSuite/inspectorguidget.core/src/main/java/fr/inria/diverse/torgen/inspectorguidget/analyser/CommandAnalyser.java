@@ -1,17 +1,16 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
-import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.ConditionalFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.LocalVariableAccessFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.helper.*;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtVariableReference;
-import spoon.reflect.visitor.filter.VariableAccessFilter;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -108,8 +107,14 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds) {
-		final CtBlock<?> elseStat =  ifStat.getElseStatement();
-		List<CtStatement> stats = new ArrayList<>(((CtBlock<?>) ifStat.getThenStatement()).getStatements());
+		final CtStatement elseStat =  ifStat.getElseStatement();
+		final CtStatement thenStat = ifStat.getThenStatement();
+		List<CtStatement> stats = new ArrayList<>();
+
+		if(thenStat instanceof CtStatementList)
+			stats.addAll(((CtStatementList)thenStat).getStatements());
+		else
+			stats.add(thenStat);
 
 		if(!stats.isEmpty()) {
 			if(stats.get(stats.size() - 1) instanceof CtReturn<?>)
@@ -125,7 +130,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		if(elseStat!=null) {
 			//TODO create a command if it does not contain any other GUI conditional statement
 			// For the else block, creating a negation of the condition.
-			stats = new ArrayList<>(elseStat.getStatements());
+			stats = new ArrayList<>();
+
+			if(elseStat instanceof CtStatementList)
+				stats.addAll(((CtStatementList)elseStat).getStatements());
+			else
+				stats.add(elseStat);
 
 			if(!stats.isEmpty()) {
 				if(stats.get(stats.size() - 1) instanceof CtReturn<?>)
@@ -192,7 +202,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 	private List<CtElement> getConditionalThatUseVarRef(final CtVariableReference<?> varRef, final @NotNull CtExecutable<?> listenerMethod) {
 		final CtBlock<?> body = listenerMethod.getBody();
-		return body.getElements(new VariableAccessFilter<>(varRef)).stream().
+		return body.getElements(new MyVariableAccessFilter<>(varRef)).stream().
 				map(varAcc -> SpoonHelper.INSTANCE.getConditionalParent(varAcc, body)).
 				filter(cond -> cond.isPresent()).map(cond -> cond.get()).collect(Collectors.toList());
 	}
