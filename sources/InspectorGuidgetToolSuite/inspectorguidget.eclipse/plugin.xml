@@ -1,74 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
+	<extension
          point="org.eclipse.ui.menus">
-         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=additions">
-         	<separator name="autotoolsGroup" visible="true" />
+		<menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=additions">
+			<separator name="autotoolsGroup" visible="true" />
 			<menu label="InspectorGuidget">
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener" style="push" />
+	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiCommand" style="push" />
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers" style="push" />
 	        </menu>
-	    </menuContribution> 
-   </extension>
+		</menuContribution> 
+	</extension>
    
-   <extension point="org.eclipse.ui.handlers">
-      <handler
-            class="inspectorguidget.eclipse.actions.DetectGUIListenerHandler"
-            commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener">
-      </handler>
+	<extension point="org.eclipse.ui.handlers">
+		<handler
+			class="inspectorguidget.eclipse.actions.DetectGUIListenerHandler"
+			commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener">
+		</handler>
       
-      <handler
+    	<handler
+            class="inspectorguidget.eclipse.actions.DetectGUICommandHandler"
+            commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiCommand">
+		</handler>
+      
+		<handler
             class="inspectorguidget.eclipse.actions.ClearMarkersHandler"
             commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers">
-      </handler>
-   </extension>
+		</handler>
+	</extension>
    
-   <extension
+	<extension
          id="org.eclipse.cdt.autotools.ui.commands"
          name="inspectorguidgetCmds"
          point="org.eclipse.ui.commands">
-      <category
+		<category
             id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
-            name="Inspectoooor">
-      </category>
-      <command
+            name="InspectorGuidget">
+		</category>
+
+		<command
             categoryId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
             description="Detect GUI listeners"
             id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener"
             name="Detect GUI listeners">
-      </command>
-      
-      <command
+		</command>
+
+		<command
+            categoryId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
+            description="Detect GUI commands"
+            id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiCommand"
+            name="Detect GUI commands">
+		</command>
+
+		<command
             categoryId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
             description="Clear the markers added by InspectorGuidget"
             id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers"
             name="Clear markers">
-      </command>
- 	</extension>
+		</command>
+	</extension>
    
-   <extension point = "org.eclipse.ui.preferencePages">
+	<extension point = "org.eclipse.ui.preferencePages">
        <page 
        		id="InspectorGuidget.preferences"
 	    	class="inspectorguidget.eclipse.preferences.PreferencePage"
             name="InspectorGuidget">
        </page>
-   </extension>
+	</extension>
    
-   <extension point="org.eclipse.core.runtime.preferences">
+	<extension point="org.eclipse.core.runtime.preferences">
       <initializer
             class="inspectorguidget.eclipse.preferences.PreferenceInit">
       </initializer>
-   </extension>
+	</extension>
     
-   <extension point="org.eclipse.ui.views">
-      <category name="InspectorGuidget" id="inspectorguidget.eclipse.views.ListenerViewCategory" />
-      <view
+	<extension point="org.eclipse.ui.views">
+		<category name="InspectorGuidget" id="inspectorguidget.eclipse.views.InspectorGuidgetViewCategory" />
+		<view
             name="GUI Listeners view"
             icon="icons/sample.gif"
-            category="inspectorguidget.eclipse.views.ListenerViewCategory"
+            category="inspectorguidget.eclipse.views.InspectorGuidgetViewCategory"
             class="inspectorguidget.eclipse.views.ListenerView"
             id="inspectorguidget.eclipse.views.ListenerView">
-      </view>
-   </extension>
+		</view>
+		<view
+            name="GUI Command view"
+            icon="icons/sample.gif"
+            category="inspectorguidget.eclipse.views.InspectorGuidgetViewCategory"
+            class="inspectorguidget.eclipse.views.CommandView"
+            id="inspectorguidget.eclipse.views.CommandView">
+		</view>
+	</extension>
 </plugin>
