@@ -14,6 +14,22 @@ public final class SpoonHelper {
 		super();
 	}
 
+	public int getLinePosition(final CtElement elt) {
+		if(elt==null)
+			return -1;
+
+		SourcePosition pos = elt.getPosition();
+		CtElement parent = elt.isParentInitialized() ? elt.getParent() : null;
+
+		while(pos==null && parent!=null) {
+			pos = parent.getPosition();
+			parent = parent.isParentInitialized() ? parent.getParent() : null;
+		}
+
+		if(pos==null)
+			return -1;
+		return pos.getLine();
+	}
 
 	public @NotNull String formatPosition(final @Nullable SourcePosition position) {
 		if(position==null)

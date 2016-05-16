@@ -99,7 +99,8 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 				m = cl.getMethodsByName(interfM.getName()).get(0);
 			}
 			if(m==null && !cl.hasModifier(ModifierKind.ABSTRACT))
-				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfM + " from the interface: " + interf);
+				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfM + " from the interface: " + interf + " "  +
+						SpoonHelper.INSTANCE.formatPosition(cl.getPosition()));
 			return m;
 		}).filter(m -> m!=null).collect(Collectors.toList());
 	}
