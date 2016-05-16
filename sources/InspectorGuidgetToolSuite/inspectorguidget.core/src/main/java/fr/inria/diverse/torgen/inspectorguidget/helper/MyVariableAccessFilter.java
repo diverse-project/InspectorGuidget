@@ -40,9 +40,9 @@ public class MyVariableAccessFilter<T extends CtVariableAccess<?>> implements Fi
 	public boolean matches(T variableAccess) {
 		CtVariableReference<?> varAc = variableAccess.getVariable();
 
-//		if(varAc==null){
-//			System.err.println("NULLLLLL>>>" + variableAccess);
-//		}
+		if(varAc==null){
+			System.err.println("NULLLLLL>>>" + variableAccess + " " + variableAccess.getPosition());
+		}
 
 		return varAc!=null && varAc.equals(variable);
 	}

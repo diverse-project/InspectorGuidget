@@ -53,6 +53,7 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
+	@Ignore
 	public void testLambdaListenerMethodNoConditional() {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditLambda.java");
 		analyser.run();
@@ -169,15 +170,14 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
 	public void testClassListenerCondInstanceOfLocalVar() {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfLocalVar.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
-		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
+		assertEquals(16, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
-		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
+		assertEquals(12, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
 		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
 		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineStart());
 		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
@@ -193,5 +193,13 @@ public class TestCommandAnalyser {
 		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(15, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
 		assertEquals(26, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+	}
+
+	@Test
+	@Ignore
+	public void testRealComplexCommandExample1() {
+		analyser.addInputResource("src/test/resources/java/analysers/RealComplexCommandExample1.java");
+		analyser.run();
+		assertEquals(4, analyser.getCommands().values().size());
 	}
 }

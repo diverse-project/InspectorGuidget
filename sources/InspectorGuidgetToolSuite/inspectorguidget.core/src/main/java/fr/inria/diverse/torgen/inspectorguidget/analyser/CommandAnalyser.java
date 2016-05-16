@@ -1,6 +1,9 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
-import fr.inria.diverse.torgen.inspectorguidget.helper.*;
+import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.ConditionalFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.LocalVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +13,8 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.reference.CtVariableReference;
+import spoon.reflect.reference.CtParameterReference;
+import spoon.reflect.visitor.filter.DirectReferenceFilter;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -200,14 +204,6 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private List<CtElement> getConditionalThatUseVarRef(final CtVariableReference<?> varRef, final @NotNull CtExecutable<?> listenerMethod) {
-		final CtBlock<?> body = listenerMethod.getBody();
-		return body.getElements(new MyVariableAccessFilter<>(varRef)).stream().
-				map(varAcc -> SpoonHelper.INSTANCE.getConditionalParent(varAcc, body)).
-				filter(cond -> cond.isPresent()).map(cond -> cond.get()).collect(Collectors.toList());
-	}
-
-
 	private void analyseSingleListenerMethod(final @NotNull  Optional<CtClass<?>> listenerClass,
 											 final @NotNull CtExecutable<?> listenerMethod) {
 		if(listenerMethod.getBody()==null || listenerMethod.getBody().getStatements().isEmpty()) {
@@ -248,14 +244,43 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					flatMap(c -> c.stream()).collect(Collectors.toList()));
 		}
 
-		conds.addAll(
-				// Filtering out the conditional statements that do not use a GUI event.
-				exec.getBody().getElements(new ConditionalFilter()).stream().
-				// For each conditional statements, looking whether a parameter is used in the condition.
-				map(cond -> exec.getParameters().stream().map(par -> getConditionalThatUseVarRef(par.getReference(), exec)).
-						collect(Collectors.toList())).flatMap(c -> c.stream()).flatMap(c -> c.stream()).distinct().collect(Collectors.toList()));
+		final List<CtParameterReference<?>> guiParams = exec.getParameters().stream().map(param -> param.getReference()).collect(Collectors.toList());
+
+		// Getting all the conditional statements
+		conds.addAll(exec.getBody().getElements(new ConditionalFilter()).stream().
+						// Keeping those making use of a GUI parameter.
+						filter(cond -> conditionalUsesGUIParam(cond, guiParams)).
+						collect(Collectors.toList()));
 
 		return conds;
+	}
+
+
+	private boolean conditionalUsesGUIParam(final CtStatement stat, final List<CtParameterReference<?>> guiParams) {
+		CtExpression<?> condition;
+
+		if(stat instanceof CtIf)
+			condition = ((CtIf)stat).getCondition();
+		else if(stat instanceof CtSwitch<?>)
+			condition = ((CtSwitch<?>)stat).getSelector();
+		else condition = null;
+
+		if(condition==null)
+			return false;
+
+		return elementUsesGUIParam(condition, guiParams);
+	}
+
+
+	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams) {
+		// Check whether a GUI parameter is directly used in the statement.
+		if(guiParams.stream().filter(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty()).findFirst().isPresent())
+			return true;
+
+		// Otherwise, looking for local variables that use a GUI parameter.
+		return elt.getElements(new LocalVariableAccessFilter()).stream().
+				filter(var -> elementUsesGUIParam(var.getDeclaration(), guiParams)).
+				findFirst().isPresent();
 	}
 
 
