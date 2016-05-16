@@ -196,10 +196,10 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
 	public void testRealComplexCommandExample1() {
 		analyser.addInputResource("src/test/resources/java/analysers/RealComplexCommandExample1.java");
 		analyser.run();
-		assertEquals(4, analyser.getCommands().values().size());
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(4L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 }

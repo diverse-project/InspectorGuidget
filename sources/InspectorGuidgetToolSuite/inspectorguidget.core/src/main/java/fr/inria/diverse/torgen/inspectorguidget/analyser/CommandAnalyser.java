@@ -252,6 +252,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						filter(cond -> conditionalUsesGUIParam(cond, guiParams)).
 						collect(Collectors.toList()));
 
+		// Removing the GUI conditional statements that contain other GUI conditional statements.
+		conds.removeAll(conds.stream().filter(cond -> {
+			List<CtStatement> elements = cond.getElements(new ConditionalFilter());
+			// By default 'elements' contains the condition 'cond'.
+			return elements.size()>1 &&
+					// Ignoring 'cond'
+					elements.stream().filter(cond2 -> cond!=cond2).
+					anyMatch(cond2 -> conds.contains(cond2));
+		}).collect(Collectors.toList()));
+
 		return conds;
 	}
 
