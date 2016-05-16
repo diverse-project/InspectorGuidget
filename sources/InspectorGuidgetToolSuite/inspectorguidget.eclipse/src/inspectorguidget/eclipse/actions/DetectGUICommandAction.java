@@ -13,6 +13,7 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import inspectorguidget.eclipse.views.CommandView;
 
 public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
@@ -79,7 +80,16 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 				m = r.createMarker(IMarker.PROBLEM);
 				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
 				m.setAttribute(IMarker.MESSAGE, "GUI command");
-				m.setAttribute(IMarker.LINE_NUMBER, cmd.getLineStart());
+				
+				int line;
+				
+				if(cmd.getConditions().isEmpty()) {
+					System.err.println("NO CONDITION in command: " + cmd.getStatements());
+					line = cmd.getLineEnd();
+				}
+				else line = SpoonHelper.INSTANCE.getLinePosition(cmd.getConditions().get(0));
+				
+				m.setAttribute(IMarker.LINE_NUMBER, line);
 				m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 				INFO_MARKERS.put(m, cmd); // store mapping
 				CommandView.getSingleton().addMarker(m); // update the view
