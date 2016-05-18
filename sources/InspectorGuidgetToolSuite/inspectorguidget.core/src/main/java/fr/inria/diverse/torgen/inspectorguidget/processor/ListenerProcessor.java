@@ -11,22 +11,13 @@ import java.util.List;
 import java.util.logging.Level;
 
 public abstract class ListenerProcessor<T extends CtElement> extends InspectorGuidgetProcessor<T> {
-	// Listener interfaces targeted
 	protected List<CtTypeReference<?>> swingListenersRef;
 	protected List<CtTypeReference<?>> awtListenersRef;
 	protected List<CtTypeReference<?>> jfxListenersRef;
-	//	List<CtTypeReference<?>> swtListenersRef;
 	protected CtTypeReference<?> eventListenerRef;
-
-//	 Event interface
-//	protected CtTypeReference<?> eventRef;
-//
-//	protected final @NotNull Set<CtTypeReference<?>> events;
-
 
 	public ListenerProcessor() {
 		super();
-//		events = new HashSet<>();
 	}
 
 	@Override
@@ -41,7 +32,6 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 
 		// Swing listeners
 		swingListenersRef = new ArrayList<>();
-		//		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.AncestorListener.class));
 		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.CaretListener.class));
 		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.CellEditorListener.class));
 		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.ChangeListener.class));
@@ -62,7 +52,6 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.TreeSelectionListener.class));
 		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.TreeWillExpandListener.class));
 		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.UndoableEditListener.class));
-		// Added
 		swingListenersRef.add(getFactory().Type().createReference(javax.swing.event.MenuDragMouseEvent.class));
 
 		// Awt listeners
@@ -73,8 +62,6 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.ComponentListener.class));
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.ContainerListener.class));
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.FocusListener.class));
-		//		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.HierarchyBoundsListener.class));
-		//		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.HierarchyListener.class));
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.InputMethodListener.class));
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.ItemListener.class));
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.KeyListener.class));
@@ -84,7 +71,6 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.TextListener.class));
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.WindowFocusListener.class));
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.WindowStateListener.class));
-		// Added
 		awtListenersRef.add(getFactory().Type().createReference(java.awt.event.WindowListener.class));
 
 		//SWT
@@ -148,8 +134,6 @@ public abstract class ListenerProcessor<T extends CtElement> extends InspectorGu
 		//		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.custom.VerifyKeyListener.class));
 		//		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.events.VerifyListener.class));
 		//		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.browser.VisibilityWindowListener.class));
-
-//		eventRef = getFactory().Type().createReference(java.util.EventObject.class);
 	}
 
 
