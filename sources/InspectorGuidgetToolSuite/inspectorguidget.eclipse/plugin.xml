@@ -8,6 +8,7 @@
 			<menu label="InspectorGuidget">
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener" style="push" />
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiCommand" style="push" />
+	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.blobListener" style="push" />
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers" style="push" />
 	        </menu>
 		</menuContribution> 
@@ -22,6 +23,11 @@
     	<handler
             class="inspectorguidget.eclipse.actions.DetectGUICommandHandler"
             commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiCommand">
+		</handler>
+		
+    	<handler
+            class="inspectorguidget.eclipse.actions.DetectBlobListenerHandler"
+            commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.blobListener">
 		</handler>
       
 		<handler
@@ -51,6 +57,13 @@
             description="Detect GUI commands"
             id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiCommand"
             name="Detect GUI commands">
+		</command>
+		
+		<command
+            categoryId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
+            description="Detect Blob listeners"
+            id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.blobListener"
+            name="Detect Blob listeners">
 		</command>
 
 		<command
@@ -90,6 +103,13 @@
             category="inspectorguidget.eclipse.views.InspectorGuidgetViewCategory"
             class="inspectorguidget.eclipse.views.CommandView"
             id="inspectorguidget.eclipse.views.CommandView">
+		</view>
+		<view
+            name="Blob listener view"
+            icon="icons/sample.gif"
+            category="inspectorguidget.eclipse.views.InspectorGuidgetViewCategory"
+            class="inspectorguidget.eclipse.views.BlobView"
+            id="inspectorguidget.eclipse.views.BlobView">
 		</view>
 	</extension>
 </plugin>
