@@ -30,10 +30,8 @@ public class BlobListenerAnalyser implements SpoonAPI {
 
 	@Override
 	public void run(final String[] args) {
-		cmdAnalyser.run();
-		blobs = cmdAnalyser.getCommands().entrySet().parallelStream().
-				filter(entry -> entry.getValue().size()>= NB_CMDS).
-				collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+		buildModel();
+		process();
 	}
 
 	@Override
@@ -89,6 +87,9 @@ public class BlobListenerAnalyser implements SpoonAPI {
 	@Override
 	public void process() {
 		cmdAnalyser.process();
+		blobs = cmdAnalyser.getCommands().entrySet().parallelStream().
+				filter(entry -> entry.getValue().size()>= NB_CMDS).
+				collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 	}
 
 	@Override
