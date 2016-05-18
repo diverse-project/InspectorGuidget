@@ -140,7 +140,6 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	public @NotNull Environment createEnvironment() {
 		StandardEnvironment evt = new StandardEnvironment();
 		evt.setComplianceLevel(8);
-		evt.setPreserveLineNumbers(true);
 		return evt;
 	}
 
