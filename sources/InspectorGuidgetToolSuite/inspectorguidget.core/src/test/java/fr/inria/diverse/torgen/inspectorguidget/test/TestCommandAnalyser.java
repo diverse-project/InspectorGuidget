@@ -146,9 +146,9 @@ public class TestCommandAnalyser {
 		assertEquals(25, cmd.getLineEnd());
 		assertEquals(3, cmd.getConditions().size());
 
-		assertThat(cmd.getConditions().get(0)).isEqualTo("(e.getSource()) instanceof javax.swing.JButton");
-		assertThat(cmd.getConditions().get(1)).isEqualTo("\"test\".equals(foo)");
-		assertThat(cmd.getConditions().get(2)).isEqualTo("isItOkForYou()");
+		assertThat(cmd.getConditions().get(0).getEffectiveStatmt()).isEqualTo("(e.getSource()) instanceof javax.swing.JButton");
+		assertThat(cmd.getConditions().get(1).getEffectiveStatmt()).isEqualTo("\"test\".equals(foo)");
+		assertThat(cmd.getConditions().get(2).getEffectiveStatmt()).isEqualTo("isItOkForYou()");
 
 		cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(1);
 
@@ -156,9 +156,9 @@ public class TestCommandAnalyser {
 		assertEquals(29, cmd.getLineEnd());
 		assertEquals(3, cmd.getConditions().size());
 
-		assertThat(cmd.getConditions().get(0)).isEqualTo("(e.getSource()) instanceof javax.swing.JMenuBar");
-		assertThat(cmd.getConditions().get(1)).isEqualTo("\"test\".equals(foo)");
-		assertThat(cmd.getConditions().get(2)).isEqualTo("isItOkForYou()");
+		assertThat(cmd.getConditions().get(0).getEffectiveStatmt()).isEqualTo("(e.getSource()) instanceof javax.swing.JMenuBar");
+		assertThat(cmd.getConditions().get(1).getEffectiveStatmt()).isEqualTo("\"test\".equals(foo)");
+		assertThat(cmd.getConditions().get(2).getEffectiveStatmt()).isEqualTo("isItOkForYou()");
 	}
 
 	@Test

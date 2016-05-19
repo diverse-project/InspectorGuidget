@@ -1,7 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import org.jetbrains.annotations.NotNull;
-import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtStatement;
 
 import java.util.List;
@@ -9,9 +8,9 @@ import java.util.List;
 public class Command {
 	private final @NotNull List<CtStatement> statements;
 
-	private final @NotNull List<CtExpression<Boolean>> conditions;
+	private final @NotNull List<CommandConditionEntry> conditions;
 
-	public Command(final @NotNull List<CtStatement> stats, final @NotNull List<CtExpression<Boolean>> conds) {
+	public Command(final @NotNull List<CtStatement> stats, final @NotNull List<CommandConditionEntry> conds) {
 		super();
 		statements = stats;
 		conditions = conds;
@@ -25,7 +24,7 @@ public class Command {
 		return statements.stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
 	}
 
-	public List<CtExpression<Boolean>> getConditions() {
+	public List<CommandConditionEntry> getConditions() {
 		return conditions;
 	}
 

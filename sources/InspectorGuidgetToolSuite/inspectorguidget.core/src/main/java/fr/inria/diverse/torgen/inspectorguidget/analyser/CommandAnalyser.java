@@ -102,8 +102,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					stats.remove(stats.size() - 1);
 				}
 
-				final List<CtExpression<Boolean>> conds = getsuperConditionalStatements(switchStat);
-				conds.add(0, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas));
+				final List<CommandConditionEntry> conds = getsuperConditionalStatements(switchStat);
+				conds.add(0, new CommandConditionEntry(SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas)));
 				//For each case, a condition is created using the case value.
 				return new Command(stats, conds);
 			}).collect(Collectors.toList()));
@@ -125,8 +125,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				stats.remove(stats.size() - 1);
 
 			if(!stats.isEmpty()) {
-				final List<CtExpression<Boolean>> conds = getsuperConditionalStatements(ifStat);
-				conds.add(0, ifStat.getCondition());
+				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
+				conds.add(0, new CommandConditionEntry(ifStat.getCondition()));
 				cmds.add(new Command(stats, conds));
 			}
 		}
@@ -146,8 +146,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					stats.remove(stats.size() - 1);
 
 				if(!stats.isEmpty()) {
-					final List<CtExpression<Boolean>> conds = getsuperConditionalStatements(ifStat);
-					conds.add(0, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition()));
+					final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
+					conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
 					cmds.add(new Command(stats, conds));
 				}
 			}
@@ -161,10 +161,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	 * @param condStat The conditional statement to use.
 	 * @return The list of all the conditional statements.
 	 */
-	private List<CtExpression<Boolean>> getsuperConditionalStatements(final @NotNull CtElement condStat) {
+	private List<CommandConditionEntry> getsuperConditionalStatements(final @NotNull CtElement condStat) {
 		CtElement currElt = condStat;
 		CtElement parent = currElt.getParent();
-		List<CtExpression<Boolean>> conds = new ArrayList<>();
+		List<CommandConditionEntry> conds = new ArrayList<>();
 
 		// Exploring the parents to identify the conditional statements
 		while(parent!=null) {
@@ -174,9 +174,9 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 				// Identifying the block of the if used and adding a condition.
 				if(ctif.getThenStatement()==currElt) {
-					conds.add(condition);
+					conds.add(new CommandConditionEntry(condition));
 				}else if(ctif.getElseStatement()==currElt) {
-					conds.add(SpoonHelper.INSTANCE.negBoolExpression(condition));
+					conds.add(new CommandConditionEntry(condition, SpoonHelper.INSTANCE.negBoolExpression(condition)));
 				}else {
 					LOG.log(Level.SEVERE, "Cannot find the origin of the statement in the if statement " +
 							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
@@ -192,7 +192,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					LOG.log(Level.SEVERE, "Cannot find the origin of the statement in the switch statement " +
 							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
 				}else {
-					conds.add(SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(ctswitch, caz));
+					conds.add(new CommandConditionEntry(caz.getCaseExpression(),
+														SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(ctswitch, caz)));
 				}
 			}
 
