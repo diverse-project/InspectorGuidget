@@ -51,7 +51,7 @@ public final class SpoonHelper {
 
 	public CtExpression<Boolean> negBoolExpression(final @NotNull CtExpression<Boolean> exp) {
 		final CtUnaryOperator<Boolean> neg = exp.getFactory().Core().createUnaryOperator();
-		neg.setKind(UnaryOperatorKind.NEG);
+		neg.setKind(UnaryOperatorKind.NOT);
 		neg.setOperand(exp);
 		return neg;
 	}
