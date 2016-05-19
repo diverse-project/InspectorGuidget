@@ -3,6 +3,7 @@ package inspectorguidget.eclipse.actions;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -14,6 +15,7 @@ import org.eclipse.ui.PlatformUI;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandStatmtEntry;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import inspectorguidget.eclipse.views.CommandView;
 import spoon.reflect.code.CtCodeElement;
@@ -57,7 +59,14 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	
 	private void markCtElement(final Command cmd, final IProject project) {
 		final String projectName = project.getName();
-		final File source = cmd.getStatements().get(0).getPosition().getFile();
+		Optional<CommandStatmtEntry> mainStatmtEntry = cmd.getMainStatmtEntry();
+		File source;
+		if(mainStatmtEntry.isPresent())
+			source = mainStatmtEntry.get().getStatmts().get(0).getPosition().getFile();
+		else {
+			System.err.println("NO MAIN STATEMENT ENTRY: " + " " + cmd.getAllStatmts());
+			return;
+		}
 		// FIXME: little hack here
 		final String absPath = source.getAbsolutePath();
 		final int begin = absPath.indexOf(projectName) + projectName.length() + 1; 
