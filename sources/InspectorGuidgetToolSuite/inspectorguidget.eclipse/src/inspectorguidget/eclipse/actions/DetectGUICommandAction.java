@@ -13,8 +13,10 @@ import org.eclipse.ui.PlatformUI;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import inspectorguidget.eclipse.views.CommandView;
+import spoon.reflect.code.CtCodeElement;
 
 public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	/** Link Markers to their methods */
@@ -78,17 +80,22 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 			IMarker m;
 			try {
 				m = r.createMarker(IMarker.PROBLEM);
-//				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
-				m.setAttribute(IMarker.MESSAGE, "GUI command");
+				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
 				
 				int line;
+				String message;
 				
 				if(cmd.getConditions().isEmpty()) {
-					System.err.println("NO CONDITION in command: " + cmd.getStatements());
-					line = cmd.getLineEnd();
+					line = cmd.getLineStart();
+					message = cmd.getStatements().get(0).toString();
 				}
-				else line = SpoonHelper.INSTANCE.getLinePosition(cmd.getConditions().get(0));
+				else {
+					CtCodeElement stat = cmd.getConditions().get(0).getRealStatmt();
+					line = SpoonHelper.INSTANCE.getLinePosition(stat);
+					message = stat.toString();
+				}
 				
+				m.setAttribute(IMarker.MESSAGE, "GUI command: " + message);
 				m.setAttribute(IMarker.LINE_NUMBER, line);
 				m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 				INFO_MARKERS.put(m, cmd); // store mapping
@@ -108,7 +115,10 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	public static String getLabel(final IMarker marker) {
 		Command cmd = INFO_MARKERS.get(marker);
 		if(cmd==null || cmd.getConditions().isEmpty()) return "Command";
-		return cmd.getConditions().get(0).toString();
+		CommandConditionEntry entry = cmd.getConditions().get(0);
+		if(entry.isSameCondition())
+			return entry.getRealStatmt().toString();
+		return entry.getRealStatmt() + " -> " + entry.getEffectiveStatmt();
 	}
 	
 
