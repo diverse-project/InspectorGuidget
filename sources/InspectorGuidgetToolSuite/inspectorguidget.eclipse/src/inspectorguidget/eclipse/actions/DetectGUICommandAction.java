@@ -15,6 +15,7 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import inspectorguidget.eclipse.views.CommandView;
+import spoon.reflect.code.CtExpression;
 
 public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	/** Link Markers to their methods */
@@ -78,7 +79,7 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 			IMarker m;
 			try {
 				m = r.createMarker(IMarker.PROBLEM);
-				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
+//				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
 				m.setAttribute(IMarker.MESSAGE, "GUI command");
 				
 				int line;
@@ -99,6 +100,21 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 		}
 	}
 	
+	
+	public static Command getCommand(final IMarker marker) {
+		return INFO_MARKERS.get(marker);
+	}
+	
+	
+	public static String getLabel(IMarker marker) {
+		Command cmd = INFO_MARKERS.get(marker);
+		if(cmd==null)
+			return "Command";
+		CtExpression<?> cond = cmd.getConditions().get(0);
+		if(cond==null)
+			return "Command";
+		return cond.toString();
+	}
 	
 
 	/**

@@ -2,7 +2,9 @@ package inspectorguidget.eclipse.actions;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -12,13 +14,14 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.BlobListenerAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import inspectorguidget.eclipse.views.BlobView;
 import spoon.reflect.declaration.CtExecutable;
 
 public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyser> {
 	/** Link Markers to their methods */
-	private static final Map<IMarker, CtExecutable<?>> INFO_MARKERS = new HashMap<>();
+	private static final Map<IMarker, Entry<CtExecutable<?>, List<Command>>> INFO_MARKERS = new HashMap<>();
 
 	public DetectBlobListenerAction() {
 		super();
@@ -49,13 +52,13 @@ public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyse
 			e1.printStackTrace();
 		}
 
-		analyser.getBlobs().keySet().forEach(exec -> markCtElement(exec, project));
+		analyser.getBlobs().entrySet().forEach(entry -> markCtElement(entry, project));
 	}
 	
 	
-	private void markCtElement(final CtExecutable<?> exec, final IProject project) {
+	private void markCtElement(final Entry<CtExecutable<?>, List<Command>> entry, final IProject project) {
 		final String projectName = project.getName();
-		final File source = exec.getPosition().getFile();
+		final File source = entry.getKey().getPosition().getFile();
 		// FIXME: little hack here
 		final String absPath = source.getAbsolutePath();
 		final int begin = absPath.indexOf(projectName) + projectName.length() + 1; 
@@ -79,17 +82,23 @@ public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyse
 			try {
 				m = r.createMarker(IMarker.PROBLEM);
 				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
-				m.setAttribute(IMarker.MESSAGE, "GUI command");
-				m.setAttribute(IMarker.LINE_NUMBER, SpoonHelper.INSTANCE.getLinePosition(exec));
+				m.setAttribute(IMarker.MESSAGE, "Blob Listener detected here with " + entry.getValue().size() + " commands");
+				m.setAttribute(IMarker.LINE_NUMBER, SpoonHelper.INSTANCE.getLinePosition(entry.getKey()));
 				m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-				INFO_MARKERS.put(m, exec); // store mapping
+				INFO_MARKERS.put(m, entry); // store mapping
 				BlobView.getSingleton().addMarker(m); // update the view
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
 		}
 	}
+
 	
+	public static String getMethod(IMarker marker) {
+		Entry<CtExecutable<?>, List<Command>> entry = INFO_MARKERS.get(marker);
+		if(entry==null) return "Blob listener";
+		return entry.getKey().getSimpleName();
+	}
 	
 
 	/**
@@ -97,9 +106,13 @@ public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyse
 	 */
 	public static String getInfo(final IMarker marker) {
 		String res = "";
-		CtExecutable<?> exec = INFO_MARKERS.get(marker);
+		Entry<CtExecutable<?>, List<Command>> entry = INFO_MARKERS.get(marker);
 		
-		if(exec != null) {
+		if(entry != null) {
+			String sourceFile = entry.getKey().getPosition().getFile().getName();
+			int line = entry.getKey().getPosition().getLine();
+			String name = entry.getKey().getSignature();
+			res = name + ";" + sourceFile + ";" + line;
 		}
 
 		return res;

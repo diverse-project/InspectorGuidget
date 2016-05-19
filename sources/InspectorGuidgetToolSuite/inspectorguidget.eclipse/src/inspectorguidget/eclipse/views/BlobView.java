@@ -1,5 +1,14 @@
 package inspectorguidget.eclipse.views;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.LabelProvider;
+
+import inspectorguidget.eclipse.Activator;
+import inspectorguidget.eclipse.actions.DetectBlobListenerAction;
+import inspectorguidget.eclipse.helper.FileHelper;
+import inspectorguidget.eclipse.preferences.PreferencePage;
+
 public class BlobView extends InspectorGuidgetView {
 	private static BlobView	INSTANCE;
 	
@@ -25,5 +34,26 @@ public class BlobView extends InspectorGuidgetView {
 	@Override
 	public String getViewTitle() {
 		return VIEW_TITLE;
+	}
+
+
+	@Override
+	protected LabelProvider getLabelProvider() {
+		return new LabelProvider() {
+			@Override
+			public String getText(final Object element) {
+				return DetectBlobListenerAction.getMethod((IMarker) element);
+			}
+		};
+	}
+
+
+	@Override
+	protected ICheckStateListener getCheckStateListener() {
+		return event -> {
+			String file = Activator.getDefault().getPreferenceStore().getString(PreferencePage.PATH_STORE);
+			String info = DetectBlobListenerAction.getInfo((IMarker) event.getElement());
+			FileHelper.appendFile(file, info + ";" + event.getChecked());
+		};
 	}
 }

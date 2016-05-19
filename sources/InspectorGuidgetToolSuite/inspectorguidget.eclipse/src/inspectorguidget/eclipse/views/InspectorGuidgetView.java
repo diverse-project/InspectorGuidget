@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -15,10 +16,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
-
-import inspectorguidget.eclipse.Activator;
-import inspectorguidget.eclipse.actions.DetectGUIListenerAction;
-import inspectorguidget.eclipse.helper.FileHelper;
 
 public abstract class InspectorGuidgetView extends ViewPart {
 	protected List<IMarker> markerList = new ArrayList<>();
@@ -44,20 +41,16 @@ public abstract class InspectorGuidgetView extends ViewPart {
 		viewer.getControl().setFocus();
 	}
 
+	protected abstract LabelProvider getLabelProvider();
+	
+	protected abstract ICheckStateListener getCheckStateListener();
 	
 	protected TableViewer makeTable(final Composite parent) {
 		CheckboxTableViewer tableViewer = CheckboxTableViewer.newCheckList(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CHECK);
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		tableViewer.setInput(markerList);
 
-		tableViewer.setLabelProvider(new LabelProvider() {
-			@Override
-			public String getText(final Object element) {
-				String label = DetectGUIListenerAction.getMethod((IMarker) element);
-				if(label != null) return label;
-				return element.toString();
-			}
-		});
+		tableViewer.setLabelProvider(getLabelProvider());
 
 		tableViewer.addSelectionChangedListener(event -> {
 			Object marker = ((StructuredSelection) event.getSelection()).getFirstElement();
@@ -66,13 +59,7 @@ public abstract class InspectorGuidgetView extends ViewPart {
 			}
 		});
 
-		tableViewer.addCheckStateListener(event -> {
-			String file = Activator.getDefault().getPreferenceStore().getString("pathListeners");
-			boolean checked = event.getChecked();
-			String info = DetectGUIListenerAction.getInfo((IMarker) event.getElement());
-			FileHelper.appendFile(file, info + ";" + checked);
-			// MessageDialog.openInformation( viewer.getControl().getShell(), "My new View", ""+event.getChecked());
-		});
+		tableViewer.addCheckStateListener(getCheckStateListener());
 
 		return tableViewer;
 	}
