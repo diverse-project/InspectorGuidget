@@ -15,7 +15,6 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import inspectorguidget.eclipse.views.CommandView;
-import spoon.reflect.code.CtExpression;
 
 public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	/** Link Markers to their methods */
@@ -106,14 +105,10 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	}
 	
 	
-	public static String getLabel(IMarker marker) {
+	public static String getLabel(final IMarker marker) {
 		Command cmd = INFO_MARKERS.get(marker);
-		if(cmd==null)
-			return "Command";
-		CtExpression<?> cond = cmd.getConditions().get(0);
-		if(cond==null)
-			return "Command";
-		return cond.toString();
+		if(cmd==null || cmd.getConditions().isEmpty()) return "Command";
+		return cmd.getConditions().get(0).toString();
 	}
 	
 
