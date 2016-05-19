@@ -1,34 +1,51 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import org.jetbrains.annotations.NotNull;
-import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtCodeElement;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Command {
-	private final @NotNull List<CtStatement> statements;
+	private final @NotNull CommandStatmtEntry EMPTY_CMD_ENTRY = new CommandStatmtEntry(false);
+
+	private final @NotNull List<CommandStatmtEntry> statements;
 
 	private final @NotNull List<CommandConditionEntry> conditions;
 
-	public Command(final @NotNull List<CtStatement> stats, final @NotNull List<CommandConditionEntry> conds) {
+	public Command(final @NotNull CommandStatmtEntry stat, final @NotNull List<CommandConditionEntry> conds) {
 		super();
-		statements = stats;
+		statements = new ArrayList<>();
 		conditions = conds;
+		statements.add(stat);
+	}
+
+	public Optional<CommandStatmtEntry> getMainStatmtEntry() {
+		return statements.stream().filter(entry -> entry.isMainEntry()).findFirst();
 	}
 
 	public int getLineStart() {
-		return statements.stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getLine()).min().orElse(-1);
+		return getMainStatmtEntry().orElse(EMPTY_CMD_ENTRY).
+				getStatmts().stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getLine()).min().orElse(-1);
 	}
 
 	public int getLineEnd() {
-		return statements.stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
+		return getMainStatmtEntry().orElse(EMPTY_CMD_ENTRY).
+				getStatmts().stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
 	}
 
 	public List<CommandConditionEntry> getConditions() {
 		return conditions;
 	}
 
-	public List<CtStatement> getStatements() {
+	public List<CommandStatmtEntry> getStatements() {
 		return statements;
+	}
+
+	public Set<CtCodeElement> getAllStatmts() {
+		return statements.stream().map(entry -> entry.getAllStatmts()).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}
 }

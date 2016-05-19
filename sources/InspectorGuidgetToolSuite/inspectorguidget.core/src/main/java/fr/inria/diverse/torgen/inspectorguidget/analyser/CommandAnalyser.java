@@ -55,15 +55,17 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		lambdaProc.getAllListenerLambdas().parallelStream().forEach(l -> analyseSingleListenerMethod(Optional.empty(), l));
 
-		// Post-process to add statements (e.g. var def) used in commands bu not present in the current command (because defined before or after)
+		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
 		commands.values().parallelStream().flatMap(s -> s.stream()).forEach(cmd ->
 			// For each command, adding the required local variable definitions.
 			cmd.getStatements().addAll(0,
 				// Looking for local variable accesses in the command
-				cmd.getStatements().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
+				cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
 					// Selecting the local variable definitions not already contained in the command
 					map(v -> v.getDeclaration()).filter(v -> !cmd.getStatements().contains(v)).
-					collect(Collectors.toList())).flatMap(s -> s.stream()).map(elt -> (CtStatement)elt).collect(Collectors.toList())));
+					collect(Collectors.toList())).flatMap(s -> s.stream()).
+					// For each var def, creating a command statement entry that will be added to the list of entries of the command.
+					map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList())));
 	}
 
 
@@ -95,7 +97,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
 			map(cas -> {
 				// Creating the body of the command.
-				final List<CtStatement> stats = new ArrayList<>(cas.getStatements());
+				final List<CtCodeElement> stats = new ArrayList<>(cas.getStatements());
 
 				// Removing the last 'return' or 'break' statement from the command.
 				if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
@@ -105,7 +107,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(switchStat);
 				conds.add(0, new CommandConditionEntry(SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas)));
 				//For each case, a condition is created using the case value.
-				return new Command(stats, conds);
+				return new Command(new CommandStatmtEntry(true, stats), conds);
 			}).collect(Collectors.toList()));
 	}
 
@@ -113,7 +115,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds) {
 		final CtStatement elseStat =  ifStat.getElseStatement();
 		final CtStatement thenStat = ifStat.getThenStatement();
-		List<CtStatement> stats = new ArrayList<>();
+		List<CtCodeElement> stats = new ArrayList<>();
 
 		if(thenStat instanceof CtStatementList)
 			stats.addAll(((CtStatementList)thenStat).getStatements());
@@ -127,7 +129,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			if(!stats.isEmpty()) {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 				conds.add(0, new CommandConditionEntry(ifStat.getCondition()));
-				cmds.add(new Command(stats, conds));
+				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds));
 			}
 		}
 
@@ -148,7 +150,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				if(!stats.isEmpty()) {
 					final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 					conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
-					cmds.add(new Command(stats, conds));
+					cmds.add(new Command(new CommandStatmtEntry(true, stats), conds));
 				}
 			}
 		}
@@ -217,7 +219,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				// when no conditional, the content of the method forms a command.
 				synchronized(commands) {
 					commands.put(listenerMethod, Collections.singletonList(
-							new Command(listenerMethod.getBody().getStatements(), Collections.emptyList())));
+							new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList())));
 				}
 			}else {
 				// For each conditional statements found in the listener method or in its dispatched methods,

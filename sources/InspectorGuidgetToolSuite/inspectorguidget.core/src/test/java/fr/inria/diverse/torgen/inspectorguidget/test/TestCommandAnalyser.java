@@ -175,9 +175,9 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
-		assertEquals(16, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
+		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
-		assertEquals(12, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
+		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
 		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
 		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineStart());
 		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
@@ -189,9 +189,9 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
-		assertEquals(15, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
+		assertEquals(18, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
-		assertEquals(15, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
+		assertEquals(25, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
 		assertEquals(26, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
 	}
 
