@@ -173,10 +173,19 @@ public class TestCommandAnalyser {
 		List<CodeBlockPos> blocks = cmd.getOptimalCodeBlocks();
 
 		assertEquals(2, blocks.size());
-		assertEquals(21, (int)blocks.get(0).y);
-		assertEquals(22, (int)blocks.get(0).z);
-		assertEquals(24, (int)blocks.get(1).y);
-		assertEquals(25, (int)blocks.get(1).z);
+		assertEquals(21, blocks.get(0).y);
+		assertEquals(22, blocks.get(0).z);
+		assertEquals(24, blocks.get(1).y);
+		assertEquals(25, blocks.get(1).z);
+	}
+
+	@Test
+	public void testNbLinesCommand() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSimpleNestedIf.java");
+		analyser.run();
+
+		Command cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(0);
+		assertEquals(4, cmd.getNbLines());
 	}
 
 	@Test

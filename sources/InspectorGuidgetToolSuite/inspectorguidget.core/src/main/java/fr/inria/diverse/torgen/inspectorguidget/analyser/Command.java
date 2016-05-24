@@ -121,7 +121,7 @@ public class Command {
 
 	public int getNbLines() {
 		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
-				conditions.stream().map(stat -> stat.getRealStatmt().getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()).sum();
+				conditions.stream().map(stat -> stat.getRealStatmt().getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()+1).sum();
 	}
 
 	@Override
