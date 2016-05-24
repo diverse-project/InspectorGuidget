@@ -3,6 +3,7 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -161,6 +162,21 @@ public class TestCommandAnalyser {
 		assertThat(cmd.getConditions().get(0).getEffectiveStatmt()).isEqualTo("(e.getSource()) instanceof javax.swing.JMenuBar");
 		assertThat(cmd.getConditions().get(1).getEffectiveStatmt()).isEqualTo("\"test\".equals(foo)");
 		assertThat(cmd.getConditions().get(2).getEffectiveStatmt()).isEqualTo("isItOkForYou()");
+	}
+
+	@Test
+	public void testGetOptimalCodeBlocks() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSimpleNestedIf.java");
+		analyser.run();
+
+		Command cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(0);
+		List<CodeBlockPos> blocks = cmd.getOptimalCodeBlocks();
+
+		assertEquals(2, blocks.size());
+		assertEquals(21, (int)blocks.get(0).y);
+		assertEquals(22, (int)blocks.get(0).z);
+		assertEquals(24, (int)blocks.get(1).y);
+		assertEquals(25, (int)blocks.get(1).z);
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.NonAnonymClassFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtInvocation;
@@ -9,11 +10,9 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtParameter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Command {
 	private final @NotNull CtExecutable<?> executable;
@@ -85,5 +84,38 @@ public class Command {
 						new CommandStatmtEntry(false, inv.getExecutable().getDeclaration().getBody().getStatements())));
 			}
 		});
+	}
+
+	public @NotNull List<CodeBlockPos> getOptimalCodeBlocks() {
+		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
+							conditions.stream().map(stat -> stat.getRealStatmt().getPosition())).
+				map(pos -> new CodeBlockPos(pos.getCompilationUnit().getFile().toString(), pos.getLine(), pos.getEndLine())).
+				collect(Collectors.groupingBy(triple -> triple.x)).values().parallelStream().
+				map(triples -> triples.stream().sorted((o1, o2) -> o1.y < o2.y ? -1 : o1.y == o2.y ? 0 : -1).collect(Collectors.toList())).
+				map(triples -> {
+			int i = 0;
+			CodeBlockPos ti;
+			CodeBlockPos tj;
+
+			while(i < triples.size() - 1) {
+				int j = i + 1;
+				ti = triples.get(i);
+				while(j < triples.size()) {
+					tj = triples.get(j);
+					if(ti.z + 1 == tj.y) {
+						triples.remove(j);
+						triples.remove(i);
+						ti = new CodeBlockPos(ti.x, ti.y, tj.z);
+						if(triples.isEmpty()) triples.add(ti);
+						else triples.add(i, ti);
+						j = i + 1;
+					}
+					else j++;
+				}
+				i++;
+			}
+
+			return triples.stream().sorted((o1, o2) -> o1.y < o2.y ? -1 : o1.y == o2.y ? 0 : 1);
+		}).flatMap(s -> s).collect(Collectors.toList());
 	}
 }
