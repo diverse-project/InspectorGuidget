@@ -48,10 +48,6 @@ public class CommandStatmtEntry {
 		return mainEntry;
 	}
 
-	public List<CtCodeElement> getAllStatmts() {
-		return statmts;
-	}
-
 	public List<CtCodeElement> getStatmts() {
 		return Collections.unmodifiableList(statmts);
 	}

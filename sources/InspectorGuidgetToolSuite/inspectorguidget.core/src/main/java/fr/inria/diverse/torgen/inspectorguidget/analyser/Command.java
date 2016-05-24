@@ -56,7 +56,7 @@ public class Command {
 	}
 
 	public @NotNull Set<CtCodeElement> getAllStatmts() {
-		return statements.stream().map(entry -> entry.getAllStatmts()).flatMap(s -> s.stream()).collect(Collectors.toSet());
+		return statements.stream().map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}
 
 	public @NotNull CtExecutable<?> getExecutable() {
