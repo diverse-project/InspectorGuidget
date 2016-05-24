@@ -4,6 +4,7 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.NonAnonymClassFilter;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;
+import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtParameter;
@@ -72,8 +73,17 @@ public class Command {
 			final List<CtParameter<?>> params = executable.getParameters();
 
 			// Getting all the statements that are invocation of a local method without GUI parameter.
-			main.getStatmts().stream().map(stat -> stat.getElements(new ClassMethodCallFilter(params, parent, false))).flatMap(s -> s.stream()).
-				forEach(stat -> main.addMethodCallStatements(stat, new CommandStatmtEntry(false, stat.getExecutable().getDeclaration().getBody().getStatements())));
+			List<CtInvocation<?>> invoks = main.getStatmts().stream().
+											map(stat -> stat.getElements(new ClassMethodCallFilter(params, parent, false))).
+											flatMap(s -> s.stream()).collect(Collectors.toList());
+
+			if(invoks.size()==1 && main.getStatmts().size()==1) {
+				statements.add(new CommandStatmtEntry(true, invoks.get(0).getExecutable().getDeclaration().getBody().getStatements()));
+				statements.remove(main);
+			}else {
+				invoks.forEach(inv -> statements.add(
+						new CommandStatmtEntry(false, inv.getExecutable().getDeclaration().getBody().getStatements())));
+			}
 		});
 	}
 }

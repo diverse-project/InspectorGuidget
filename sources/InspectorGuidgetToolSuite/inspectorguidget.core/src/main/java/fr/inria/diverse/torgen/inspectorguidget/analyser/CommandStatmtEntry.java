@@ -4,21 +4,21 @@ import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtStatement;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An entry class used in the Command class to represent a statement that composed the code of the command.
  */
 public class CommandStatmtEntry {
 	final List<CtCodeElement> statmts;
-	final Map<CtCodeElement, CommandStatmtEntry> methodCalls;
 	final boolean mainEntry;
 
 	public CommandStatmtEntry(final boolean main) {
 		super();
 		statmts = new ArrayList<>();
-		methodCalls = new HashMap<>();
 		mainEntry = main;
 	}
 
@@ -44,26 +44,15 @@ public class CommandStatmtEntry {
 		statmts.add(position, statmt);
 	}
 
-	public void addMethodCallStatements(final @NotNull CtCodeElement statmt, final @NotNull CommandStatmtEntry method) {
-		if(!statmts.contains(statmt)) return;
-		methodCalls.put(statmt, method);
-	}
-
 	public boolean isMainEntry() {
 		return mainEntry;
 	}
 
 	public List<CtCodeElement> getAllStatmts() {
-		List<CtCodeElement> stats = new ArrayList<>(statmts);
-		stats.addAll(methodCalls.values().stream().map(m -> m.getAllStatmts()).flatMap(s -> s.stream()).collect(Collectors.toList()));
-		return stats;
+		return statmts;
 	}
 
 	public List<CtCodeElement> getStatmts() {
 		return Collections.unmodifiableList(statmts);
-	}
-
-	public Optional<CommandStatmtEntry> getMethodCallStats(final CtCodeElement stat) {
-		return Optional.ofNullable(methodCalls.get(stat));
 	}
 }
