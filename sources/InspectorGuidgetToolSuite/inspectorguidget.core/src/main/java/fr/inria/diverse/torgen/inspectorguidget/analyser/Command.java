@@ -118,4 +118,14 @@ public class Command {
 			return triples.stream().sorted((o1, o2) -> o1.y < o2.y ? -1 : o1.y == o2.y ? 0 : 1);
 		}).flatMap(s -> s).collect(Collectors.toList());
 	}
+
+	public int getNbLines() {
+		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
+				conditions.stream().map(stat -> stat.getRealStatmt().getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()).sum();
+	}
+
+	@Override
+	public String toString() {
+		return executable.getSignature()+";"+getNbLines()+";"+getOptimalCodeBlocks().stream().map(b -> b.toString()).collect(Collectors.joining(";"));
+	}
 }
