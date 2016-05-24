@@ -1,18 +1,12 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
-import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.ConditionalFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.LocalVariableAccessFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.helper.*;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtParameterReference;
 import spoon.reflect.visitor.filter.DirectReferenceFilter;
 
@@ -56,7 +50,9 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		lambdaProc.getAllListenerLambdas().parallelStream().forEach(l -> analyseSingleListenerMethod(Optional.empty(), l));
 
 		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
-		commands.values().parallelStream().flatMap(s -> s.stream()).forEach(cmd ->
+		commands.values().parallelStream().flatMap(s -> s.stream()).forEach(cmd -> {
+			cmd.extractLocalDispatchCallWithoutGUIParam();
+
 			// For each command, adding the required local variable definitions.
 			cmd.getStatements().addAll(0,
 				// Looking for local variable accesses in the command
@@ -65,7 +61,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					map(v -> v.getDeclaration()).filter(v -> !cmd.getStatements().contains(v)).
 					collect(Collectors.toList())).flatMap(s -> s.stream()).
 					// For each var def, creating a command statement entry that will be added to the list of entries of the command.
-					map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList())));
+					map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
+		});
 	}
 
 
@@ -78,12 +75,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		if(condStat instanceof CtIf) {
-			extractCommandsFromIf((CtIf) condStat, cmds);
+			extractCommandsFromIf((CtIf) condStat, cmds, listenerMethod);
 			return;
 		}
 
 		if(condStat instanceof CtSwitch<?>) {
-			extractCommandsFromSwitch((CtSwitch<?>) condStat, cmds);
+			extractCommandsFromSwitch((CtSwitch<?>) condStat, cmds, listenerMethod);
 			return;
 		}
 
@@ -91,7 +88,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromSwitch(final @NotNull CtSwitch<?> switchStat, final @NotNull List<Command> cmds) {
+	private void extractCommandsFromSwitch(final @NotNull CtSwitch<?> switchStat, final @NotNull List<Command> cmds,
+										   final @NotNull CtExecutable<?> exec) {
 		cmds.addAll(switchStat.getCases().stream().
 		// Ignoring the case statements that are empty
 			filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
@@ -107,12 +105,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(switchStat);
 				conds.add(0, new CommandConditionEntry(SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas)));
 				//For each case, a condition is created using the case value.
-				return new Command(new CommandStatmtEntry(true, stats), conds);
+				return new Command(new CommandStatmtEntry(true, stats), conds, exec);
 			}).collect(Collectors.toList()));
 	}
 
 
-	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds) {
+	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec) {
 		final CtStatement elseStat =  ifStat.getElseStatement();
 		final CtStatement thenStat = ifStat.getThenStatement();
 		List<CtCodeElement> stats = new ArrayList<>();
@@ -129,7 +127,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			if(!stats.isEmpty()) {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 				conds.add(0, new CommandConditionEntry(ifStat.getCondition()));
-				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds));
+				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 			}
 		}
 
@@ -150,7 +148,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				if(!stats.isEmpty()) {
 					final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 					conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
-					cmds.add(new Command(new CommandStatmtEntry(true, stats), conds));
+					cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 				}
 			}
 		}
@@ -219,7 +217,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				// when no conditional, the content of the method forms a command.
 				synchronized(commands) {
 					commands.put(listenerMethod, Collections.singletonList(
-							new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList())));
+						new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod)));
 				}
 			}else {
 				// For each conditional statements found in the listener method or in its dispatched methods,
@@ -241,7 +239,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			conds.addAll(
 					// Getting all the methods called in the current method that use a parameter of this last.
 					// The goal is to identify the dispatched methods, recursively.
-					exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get())).stream().
+					exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get(), true)).stream().
 					// For each dispatched methods, looking for conditional statements.
 					map(dispatchM -> getConditionalStatements(dispatchM.getExecutable().getDeclaration(), listenerClass)).
 					flatMap(c -> c.stream()).collect(Collectors.toList()));

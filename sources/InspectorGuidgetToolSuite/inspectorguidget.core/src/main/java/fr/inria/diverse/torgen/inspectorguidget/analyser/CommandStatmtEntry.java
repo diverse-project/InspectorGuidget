@@ -44,9 +44,9 @@ public class CommandStatmtEntry {
 		statmts.add(position, statmt);
 	}
 
-	public void addMethodCallStatements(final @NotNull CtCodeElement statmt, final List<CtCodeElement> method) {
+	public void addMethodCallStatements(final @NotNull CtCodeElement statmt, final @NotNull CommandStatmtEntry method) {
 		if(!statmts.contains(statmt)) return;
-		methodCalls.put(statmt, new CommandStatmtEntry(false, method));
+		methodCalls.put(statmt, method);
 	}
 
 	public boolean isMainEntry() {
@@ -61,5 +61,9 @@ public class CommandStatmtEntry {
 
 	public List<CtCodeElement> getStatmts() {
 		return Collections.unmodifiableList(statmts);
+	}
+
+	public Optional<CommandStatmtEntry> getMethodCallStats(final CtCodeElement stat) {
+		return Optional.ofNullable(methodCalls.get(stat));
 	}
 }

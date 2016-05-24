@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandStatmtEntry;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
 import org.junit.Before;
@@ -10,8 +11,12 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static spoon.testing.Assert.assertThat;
 
 public class TestCommandAnalyser {
@@ -201,5 +206,20 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(4L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testSimpleDispatch() {
+		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatch.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
+		assertEquals(1L, cmds.size());
+		Command cmd = cmds.get(0);
+		assertEquals(1, cmd.getStatements().size());
+		assertEquals(1, cmd.getStatements().get(0).getStatmts().size());
+		Optional<CommandStatmtEntry> method = cmd.getStatements().get(0).getMethodCallStats(cmd.getStatements().get(0).getStatmts().get(0));
+		assertTrue(method.isPresent());
+		assertEquals(19, method.get().getStatmts().get(0).getPosition().getLine());
 	}
 }
