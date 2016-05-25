@@ -1,18 +1,18 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 public class CodeBlockPos {
-	public final String x;
-	public final int y;
-	public final int z;
+	public final String file;
+	public final int startLine;
+	public final int endLine;
 
-	public CodeBlockPos(String x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	public CodeBlockPos(String file, int startLine, int endLine) {
+		this.file = file;
+		this.startLine = startLine;
+		this.endLine = endLine;
 	}
 
 	@Override
 	public String toString() {
-		return x + ";" + y + ";" + z;
+		return file + ";" + startLine + ";" + endLine;
 	}
 }

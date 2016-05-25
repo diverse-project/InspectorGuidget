@@ -173,10 +173,10 @@ public class TestCommandAnalyser {
 		List<CodeBlockPos> blocks = cmd.getOptimalCodeBlocks();
 
 		assertEquals(2, blocks.size());
-		assertEquals(21, blocks.get(0).y);
-		assertEquals(22, blocks.get(0).z);
-		assertEquals(24, blocks.get(1).y);
-		assertEquals(25, blocks.get(1).z);
+		assertEquals(21, blocks.get(0).startLine);
+		assertEquals(22, blocks.get(0).endLine);
+		assertEquals(24, blocks.get(1).startLine);
+		assertEquals(25, blocks.get(1).endLine);
 	}
 
 	@Test
@@ -236,8 +236,8 @@ public class TestCommandAnalyser {
 		analyser.run();
 		List<Command> cmds = new ArrayList<>(analyser.getCommands().values()).get(0);
 		List<CodeBlockPos> blocks = cmds.get(0).getOptimalCodeBlocks();
-		assertEquals(32, blocks.get(0).y);
-//		assertEquals(33, blocks.get(1).y);
+		assertEquals(32, blocks.get(0).startLine);
+//		assertEquals(33, blocks.get(1).startLine);
 	}
 
 	@Test
