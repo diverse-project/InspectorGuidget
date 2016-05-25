@@ -101,7 +101,7 @@ public class Command {
 
 	public @NotNull List<CodeBlockPos> getOptimalCodeBlocks() {
 		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
-							conditions.stream().map(stat -> stat.getRealStatmt().getPosition())).
+							conditions.stream().map(stat -> stat.realStatmt.getPosition())).
 				map(pos -> new CodeBlockPos(pos.getCompilationUnit().getFile().toString(), pos.getLine(), pos.getEndLine())).
 				collect(Collectors.groupingBy(triple -> triple.file)).values().parallelStream().
 				map(triples -> triples.stream().sorted((o1, o2) -> o1.startLine < o2.startLine ? -1 : o1.startLine == o2.startLine ? 0 : 1).
@@ -134,7 +134,7 @@ public class Command {
 
 	public int getNbLines() {
 		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
-				conditions.stream().map(stat -> stat.getRealStatmt().getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()+1).sum();
+				conditions.stream().map(stat -> stat.realStatmt.getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()+1).sum();
 	}
 
 	@Override
