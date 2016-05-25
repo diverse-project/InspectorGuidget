@@ -52,6 +52,8 @@ public class BlobView extends InspectorGuidgetView {
 	protected ICheckStateListener getCheckStateListener() {
 		return event -> {
 			String file = Activator.getDefault().getPreferenceStore().getString(PreferencePage.PATH_STORE);
+			if(!file.endsWith("/")) file +="/";
+			file+="blobs.log";
 			String info = DetectBlobListenerAction.getInfo((IMarker) event.getElement());
 			FileHelper.appendFile(file, info + ";" + event.getChecked());
 		};

@@ -135,23 +135,10 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	 * Convert the marker to String "methodName;sourceFile;line"
 	 */
 	public static String getInfo(final IMarker marker) {
-		String res = "";
 		Command cmd = INFO_MARKERS.get(marker);
-		
 		if(cmd != null) {
-//			String sourceFile = method.getPosition().getFile().getName();
-//			int line = method.getPosition().getLine();
-//			String name;
-//			CtType<?> parentType = method.getParent(CtType.class);
-//			
-//			if(parentType==null)
-//				name = method.getSimpleName();
-//			else
-//				name = parentType.getQualifiedName() + "." + method.getSimpleName();
-//			
-//			res = name + ";" + sourceFile + ";" + line;
+			return  marker.getResource().getProject().getName()+";"+cmd.toString();
 		}
-
-		return res;
+		return "";
 	}
 }

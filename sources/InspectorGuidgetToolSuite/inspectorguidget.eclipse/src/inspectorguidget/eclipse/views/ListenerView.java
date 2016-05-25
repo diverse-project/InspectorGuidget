@@ -54,6 +54,8 @@ public class ListenerView extends InspectorGuidgetView {
 	protected ICheckStateListener getCheckStateListener() {
 		return event -> {
 			String file = Activator.getDefault().getPreferenceStore().getString(PreferencePage.PATH_STORE);
+			if(!file.endsWith("/")) file +="/";
+			file+="listeners.log";
 			String info = DetectGUIListenerAction.getInfo((IMarker) event.getElement());
 			FileHelper.appendFile(file, info + ";" + event.getChecked());
 			// MessageDialog.openInformation( viewer.getControl().getShell(), "My new View", ""+event.getChecked());
