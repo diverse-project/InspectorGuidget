@@ -54,7 +54,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			cmd.extractLocalDispatchCallWithoutGUIParam();
 
 			// For each command, adding the required local variable definitions.
-			cmd.getStatements().addAll(0,
+			cmd.addAllStatements(0,
 				// Looking for local variable accesses in the command
 				cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
 					// Selecting the local variable definitions not already contained in the command

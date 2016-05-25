@@ -24,7 +24,7 @@ public class Command {
 	private final @NotNull List<CommandConditionEntry> conditions;
 
 	public Command(final @NotNull CommandStatmtEntry stat, final @NotNull List<CommandConditionEntry> conds,
-				   final CtExecutable<?> exec) {
+				   final @NotNull CtExecutable<?> exec) {
 		super();
 		statements = new ArrayList<>();
 		conditions = conds;
@@ -47,11 +47,24 @@ public class Command {
 	}
 
 	public @NotNull List<CommandConditionEntry> getConditions() {
-		return conditions;
+		return Collections.unmodifiableList(conditions);
 	}
 
 	public @NotNull List<CommandStatmtEntry> getStatements() {
-		return statements;
+		return Collections.unmodifiableList(statements);
+	}
+
+	public void addAllStatements(final int index, final @NotNull Collection<CommandStatmtEntry> entries) {
+		statements.addAll(index, entries);
+		optimiseStatementEntries();
+	}
+
+	private void optimiseStatementEntries() {
+		statements.removeAll(
+			statements.parallelStream().filter(stat -> statements.parallelStream().
+					filter(stat2 -> stat!=stat2 && stat2.contains(stat)).findFirst().isPresent()).
+					collect(Collectors.toList())
+		);
 	}
 
 	public @NotNull Set<CtCodeElement> getAllStatmts() {
@@ -68,7 +81,7 @@ public class Command {
 	 */
 	public void extractLocalDispatchCallWithoutGUIParam() {
 		getMainStatmtEntry().ifPresent(main -> {
-			final CtClass parent = executable.getParent(new NonAnonymClassFilter());
+			final CtClass<?> parent = executable.getParent(new NonAnonymClassFilter());
 			final List<CtParameter<?>> params = executable.getParameters();
 
 			// Getting all the statements that are invocation of a local method without GUI parameter.

@@ -51,4 +51,16 @@ public class CommandStatmtEntry {
 	public List<CtCodeElement> getStatmts() {
 		return Collections.unmodifiableList(statmts);
 	}
+
+	public int getLineStart() {
+		return getStatmts().stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getLine()).min().orElse(-1);
+	}
+
+	public int getLineEnd() {
+		return getStatmts().stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
+	}
+
+	public boolean contains(final @NotNull CommandStatmtEntry entry) {
+		return getLineStart()<=entry.getLineStart() && getLineEnd()>=entry.getLineStart();
+	}
 }

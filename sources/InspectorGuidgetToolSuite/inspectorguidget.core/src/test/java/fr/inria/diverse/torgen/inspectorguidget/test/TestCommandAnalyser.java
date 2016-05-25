@@ -2,8 +2,8 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
-import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -228,6 +228,16 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(4L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testRealComplexCommandExample1CommandPositions() {
+		analyser.addInputResource("src/test/resources/java/analysers/RealComplexCommandExample1.java");
+		analyser.run();
+		List<Command> cmds = new ArrayList<>(analyser.getCommands().values()).get(0);
+		List<CodeBlockPos> blocks = cmds.get(0).getOptimalCodeBlocks();
+		assertEquals(32, blocks.get(0).y);
+//		assertEquals(33, blocks.get(1).y);
 	}
 
 	@Test
