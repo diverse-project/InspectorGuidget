@@ -91,7 +91,7 @@ public class Command {
 							conditions.stream().map(stat -> stat.getRealStatmt().getPosition())).
 				map(pos -> new CodeBlockPos(pos.getCompilationUnit().getFile().toString(), pos.getLine(), pos.getEndLine())).
 				collect(Collectors.groupingBy(triple -> triple.x)).values().parallelStream().
-				map(triples -> triples.stream().sorted((o1, o2) -> o1.y < o2.y ? -1 : o1.y == o2.y ? 0 : -1).collect(Collectors.toList())).
+				map(triples -> triples.stream().sorted((o1, o2) -> o1.y < o2.y ? -1 : o1.y == o2.y ? 0 : 1).collect(Collectors.toList())).
 				map(triples -> {
 			int i = 0;
 			CodeBlockPos ti;
@@ -102,7 +102,7 @@ public class Command {
 				ti = triples.get(i);
 				while(j < triples.size()) {
 					tj = triples.get(j);
-					if(ti.z + 1 == tj.y) {
+					if(ti.z + 1 == tj.y || ti.z>=tj.y && ti.y<=tj.y) {
 						triples.remove(j);
 						triples.remove(i);
 						ti = new CodeBlockPos(ti.x, ti.y, tj.z);
