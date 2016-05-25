@@ -127,7 +127,7 @@ public class BlobListenerAnalyser implements SpoonAPI {
 		return cmdAnalyser.createCompiler();
 	}
 
-	public CommandAnalyser getCmdAnalyser() {
+	public @NotNull CommandAnalyser getCmdAnalyser() {
 		return cmdAnalyser;
 	}
 

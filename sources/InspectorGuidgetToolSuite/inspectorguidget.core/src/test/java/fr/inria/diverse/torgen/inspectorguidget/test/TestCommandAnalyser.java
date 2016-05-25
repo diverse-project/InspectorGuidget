@@ -237,7 +237,7 @@ public class TestCommandAnalyser {
 		List<Command> cmds = new ArrayList<>(analyser.getCommands().values()).get(0);
 		List<CodeBlockPos> blocks = cmds.get(0).getOptimalCodeBlocks();
 		assertEquals(32, blocks.get(0).startLine);
-//		assertEquals(33, blocks.get(1).startLine);
+		assertEquals(33, blocks.get(0).endLine);
 	}
 
 	@Test

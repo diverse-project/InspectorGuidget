@@ -270,16 +270,11 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private boolean conditionalUsesGUIParam(final CtStatement stat, final List<CtParameterReference<?>> guiParams) {
 		CtExpression<?> condition;
 
-		if(stat instanceof CtIf)
-			condition = ((CtIf)stat).getCondition();
-		else if(stat instanceof CtSwitch<?>)
-			condition = ((CtSwitch<?>)stat).getSelector();
+		if(stat instanceof CtIf) condition = ((CtIf) stat).getCondition();
+		else if(stat instanceof CtSwitch<?>) condition = ((CtSwitch<?>) stat).getSelector();
 		else condition = null;
 
-		if(condition==null)
-			return false;
-
-		return elementUsesGUIParam(condition, guiParams);
+		return condition != null && elementUsesGUIParam(condition, guiParams);
 	}
 
 
