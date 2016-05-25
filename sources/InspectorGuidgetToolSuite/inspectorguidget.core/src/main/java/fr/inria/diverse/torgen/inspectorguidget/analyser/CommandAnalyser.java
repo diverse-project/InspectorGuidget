@@ -97,10 +97,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				// Creating the body of the command.
 				final List<CtCodeElement> stats = new ArrayList<>(cas.getStatements());
 
-				// Removing the last 'return' or 'break' statement from the command.
-				if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
-					stats.remove(stats.size() - 1);
-				}
+//				// Removing the last 'return' or 'break' statement from the command.
+//				if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
+//					stats.remove(stats.size() - 1);
+//				}
 
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(switchStat);
 				conds.add(0, new CommandConditionEntry(SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas)));
