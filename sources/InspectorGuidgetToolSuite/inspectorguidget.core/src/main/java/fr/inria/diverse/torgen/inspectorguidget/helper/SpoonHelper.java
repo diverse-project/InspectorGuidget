@@ -6,6 +6,9 @@ import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public final class SpoonHelper {
 	public static final SpoonHelper INSTANCE = new SpoonHelper();
 
@@ -37,6 +40,16 @@ public final class SpoonHelper {
 
 		return "in " + position.getFile().getName()+":L"+position.getLine()+":"+position.getEndLine()
 				+",C"+position.getColumn()+":"+position.getEndColumn();
+	}
+
+
+	public @NotNull Set<CtLocalVariable<?>> getAllLocalVarDeclaration(final @NotNull CtElement elt) {
+		return elt.getElements(new LocalVariableAccessFilter()).stream().map(varRef -> {
+			Set<CtLocalVariable<?>> localVars = getAllLocalVarDeclaration(varRef.getDeclaration());
+			if(varRef.getDeclaration() instanceof CtLocalVariable<?>)
+				localVars.add((CtLocalVariable<?>) varRef.getDeclaration());
+			return localVars;
+		}).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}
 
 

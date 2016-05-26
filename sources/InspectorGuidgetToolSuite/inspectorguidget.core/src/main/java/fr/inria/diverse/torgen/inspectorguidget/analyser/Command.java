@@ -1,8 +1,9 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.NonAnonymClassFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
+import fr.inria.diverse.torgen.inspectorguidget.helper.NonAnonymClassFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtInvocation;
@@ -30,6 +31,18 @@ public class Command {
 		conditions = conds;
 		statements.add(stat);
 		executable = exec;
+		inferConditionsDependencies();
+	}
+
+	/**
+	 * Analyses the conditions to identify the code statements that the conditions depend on (e.g. local var def).
+	 */
+	private void inferConditionsDependencies() {
+		addAllStatements(
+			conditions.stream().map(cond -> SpoonHelper.INSTANCE.getAllLocalVarDeclaration(cond.realStatmt).stream().
+				map(localVar -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) localVar)))).
+				flatMap(s -> s).collect(Collectors.toList())
+		);
 	}
 
 	public @NotNull Optional<CommandStatmtEntry> getMainStatmtEntry() {
@@ -59,12 +72,25 @@ public class Command {
 		optimiseStatementEntries();
 	}
 
+	public void addAllStatements(final @NotNull Collection<CommandStatmtEntry> entries) {
+		statements.addAll(entries);
+		optimiseStatementEntries();
+	}
+
 	private void optimiseStatementEntries() {
-		statements.removeAll(
-			statements.parallelStream().filter(stat -> statements.parallelStream().
-					filter(stat2 -> stat!=stat2 && stat2.contains(stat)).findFirst().isPresent()).
-					collect(Collectors.toList())
-		);
+		int i=0;
+		while(i<statements.size()) {
+			int j = 0;
+			CommandStatmtEntry stat1 = statements.get(i);
+			while(j<statements.size()) {
+				CommandStatmtEntry stat2 = statements.get(j);
+				if(stat1!=stat2 && stat1.contains(stat2))
+					statements.remove(j);
+				else
+					j++;
+			}
+			i++;
+		}
 	}
 
 	public @NotNull Set<CtCodeElement> getAllStatmts() {

@@ -63,4 +63,9 @@ public class CommandStatmtEntry {
 	public boolean contains(final @NotNull CommandStatmtEntry entry) {
 		return getLineStart()<=entry.getLineStart() && getLineEnd()>=entry.getLineStart();
 	}
+
+	@Override
+	public String toString() {
+		return "CommandStatmtEntry{start: " + getLineStart() + ", end: " + getLineEnd() + "}";
+	}
 }
