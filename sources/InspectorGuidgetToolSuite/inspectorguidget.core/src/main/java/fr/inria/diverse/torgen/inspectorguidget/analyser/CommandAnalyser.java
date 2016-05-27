@@ -62,6 +62,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					collect(Collectors.toList())).flatMap(s -> s.stream()).
 					// For each var def, creating a command statement entry that will be added to the list of entries of the command.
 					map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
+
+//			cmd.inferLocalVarUsages();
 		});
 	}
 
@@ -120,15 +122,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		else
 			stats.add(thenStat);
 
-		if(!stats.isEmpty()) {
-			if(stats.get(stats.size() - 1) instanceof CtReturn<?>)
-				stats.remove(stats.size() - 1);
-
-			if(!stats.isEmpty()) {
-				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
-				conds.add(0, new CommandConditionEntry(ifStat.getCondition()));
-				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
-			}
+		if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
+			final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
+			conds.add(0, new CommandConditionEntry(ifStat.getCondition()));
+			cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 		}
 
 		if(elseStat!=null) {
@@ -141,15 +138,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			else
 				stats.add(elseStat);
 
-			if(!stats.isEmpty()) {
-				if(stats.get(stats.size() - 1) instanceof CtReturn<?>)
-					stats.remove(stats.size() - 1);
-
-				if(!stats.isEmpty()) {
-					final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
-					conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
-					cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
-				}
+			if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
+				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
+				conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
+				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 			}
 		}
 	}
