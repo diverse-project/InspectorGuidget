@@ -55,6 +55,8 @@ public class RealComplexCommandExample1 implements ChangeListener {
 					p2 = s.getStartPoint();
 				}
 
+				p1.setLocation(p1.getX()*2.0, p1.getY()*2.0);
+
 				if(name.equals(LABEL_CENTER_X)) {
 					double radius = Double.valueOf(radiusField.getValue().toString());//Command 2
 					double x = Double.valueOf(centerXField.getValue().toString());
@@ -76,6 +78,8 @@ public class RealComplexCommandExample1 implements ChangeListener {
 					p1.setLocation(p2.getX(), y + radius);
 					return;
 				}
+
+				p1.setLocation(p1.getX()*3.0, p1.getY()*3.0);
 			}
 		}catch(Exception ex) {
 			ex.printStackTrace();
