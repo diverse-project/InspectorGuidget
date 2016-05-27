@@ -103,11 +103,11 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 		assertEquals(17, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
-		assertEquals(17, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
+		assertEquals(18, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
-		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+		assertEquals(22, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
 		assertEquals(25, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineStart());
-		assertEquals(25, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
+		assertEquals(26, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
 	}
 
 	@Test
@@ -146,7 +146,7 @@ public class TestCommandAnalyser {
 		Command cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(0);
 
 		assertEquals(25, cmd.getLineStart());
-		assertEquals(25, cmd.getLineEnd());
+		assertEquals(26, cmd.getLineEnd());
 		assertEquals(3, cmd.getConditions().size());
 
 		assertThat(cmd.getConditions().get(0).effectiveStatmt).isEqualTo("(e.getSource()) instanceof javax.swing.JButton");
@@ -156,7 +156,7 @@ public class TestCommandAnalyser {
 		cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(1);
 
 		assertEquals(29, cmd.getLineStart());
-		assertEquals(29, cmd.getLineEnd());
+		assertEquals(30, cmd.getLineEnd());
 		assertEquals(3, cmd.getConditions().size());
 
 		assertThat(cmd.getConditions().get(0).effectiveStatmt).isEqualTo("(e.getSource()) instanceof javax.swing.JMenuBar");
@@ -203,11 +203,11 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
-		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
+		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
-		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
+		assertEquals(25, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineEnd());
 		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineStart());
-		assertEquals(28, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
+		assertEquals(29, new ArrayList<>(analyser.getCommands().values()).get(0).get(2).getLineEnd());
 	}
 
 	@Test
@@ -242,6 +242,26 @@ public class TestCommandAnalyser {
 		assertEquals(36, blocks.get(1).endLine);
 		assertEquals(38, blocks.get(2).startLine);
 		assertEquals(42, blocks.get(2).endLine);
+	}
+
+	@Test
+	@Ignore
+	public void testRealComplexCommandExample1CommandPositions2() {
+		analyser.addInputResource("src/test/resources/java/analysers/RealComplexCommandExample1.java");
+		analyser.run();
+		List<Command> cmds = new ArrayList<>(analyser.getCommands().values()).get(0);
+		List<CodeBlockPos> blocks = cmds.get(1).getOptimalCodeBlocks();
+
+		assertEquals(32, blocks.get(0).startLine);
+		assertEquals(33, blocks.get(0).endLine);
+		assertEquals(46, blocks.get(1).startLine);
+		assertEquals(46, blocks.get(1).endLine);
+		assertEquals(48, blocks.get(2).startLine);
+		assertEquals(56, blocks.get(2).endLine);
+		assertEquals(58, blocks.get(3).startLine);
+		assertEquals(58, blocks.get(3).endLine);
+		assertEquals(60, blocks.get(3).startLine);
+		assertEquals(63, blocks.get(3).endLine);
 	}
 
 	@Test
