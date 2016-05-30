@@ -176,7 +176,7 @@ public class TestCommandAnalyser {
 		assertEquals(21, blocks.get(0).startLine);
 		assertEquals(22, blocks.get(0).endLine);
 		assertEquals(24, blocks.get(1).startLine);
-		assertEquals(25, blocks.get(1).endLine);
+		assertEquals(26, blocks.get(1).endLine);
 	}
 
 	@Test
@@ -241,7 +241,7 @@ public class TestCommandAnalyser {
 		assertEquals(35, blocks.get(1).startLine);
 		assertEquals(36, blocks.get(1).endLine);
 		assertEquals(38, blocks.get(2).startLine);
-		assertEquals(42, blocks.get(2).endLine);
+		assertEquals(43, blocks.get(2).endLine);
 	}
 
 	@Test
@@ -254,14 +254,16 @@ public class TestCommandAnalyser {
 
 		assertEquals(32, blocks.get(0).startLine);
 		assertEquals(33, blocks.get(0).endLine);
-		assertEquals(46, blocks.get(1).startLine);
-		assertEquals(46, blocks.get(1).endLine);
-		assertEquals(48, blocks.get(2).startLine);
-		assertEquals(56, blocks.get(2).endLine);
-		assertEquals(58, blocks.get(3).startLine);
-		assertEquals(58, blocks.get(3).endLine);
-		assertEquals(60, blocks.get(3).startLine);
-		assertEquals(63, blocks.get(3).endLine);
+		assertEquals(35, blocks.get(1).startLine);
+		assertEquals(36, blocks.get(1).endLine);
+		assertEquals(46, blocks.get(2).startLine);
+		assertEquals(46, blocks.get(2).endLine);
+		assertEquals(48, blocks.get(3).startLine);
+		assertEquals(56, blocks.get(3).endLine);
+		assertEquals(58, blocks.get(4).startLine);
+		assertEquals(58, blocks.get(4).endLine);
+		assertEquals(60, blocks.get(5).startLine);
+		assertEquals(64, blocks.get(5).endLine);
 	}
 
 	@Test

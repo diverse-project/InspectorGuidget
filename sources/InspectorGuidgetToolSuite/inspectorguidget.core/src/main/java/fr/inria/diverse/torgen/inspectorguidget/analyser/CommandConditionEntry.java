@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtExpression;
@@ -30,5 +31,10 @@ public class CommandConditionEntry {
 
 	public boolean isSameCondition() {
 		return realStatmt==effectiveStatmt;
+	}
+
+	@Override
+	public String toString() {
+		return "CommandConditionEntry{line: " + SpoonHelper.INSTANCE.getLinePosition(realStatmt) + "}";
 	}
 }

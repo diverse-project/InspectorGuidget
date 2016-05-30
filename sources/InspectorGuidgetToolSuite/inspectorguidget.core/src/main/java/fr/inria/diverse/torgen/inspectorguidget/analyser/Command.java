@@ -1,9 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
-import fr.inria.diverse.torgen.inspectorguidget.helper.ClassMethodCallFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
-import fr.inria.diverse.torgen.inspectorguidget.helper.NonAnonymClassFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.helper.*;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtInvocation;
@@ -126,9 +123,11 @@ public class Command {
 	}
 
 	public @NotNull List<CodeBlockPos> getOptimalCodeBlocks() {
-		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
-							conditions.stream().map(stat -> stat.realStatmt.getPosition())).
-				map(pos -> new CodeBlockPos(pos.getCompilationUnit().getFile().toString(), pos.getLine(), pos.getEndLine())).
+		return Stream.concat(
+				statements.stream().map(stat -> new CodeBlockPos(stat.getStatmts().get(0).getPosition().getCompilationUnit().getFile().toString(),
+												stat.getLineStart(), stat.getLineEnd())),
+				conditions.stream().map(stat -> new CodeBlockPos(stat.realStatmt.getPosition().getCompilationUnit().getFile().toString(),
+												stat.realStatmt.getPosition().getLine(), stat.realStatmt.getPosition().getEndLine()))).
 				collect(Collectors.groupingBy(triple -> triple.file)).values().parallelStream().
 				map(triples -> triples.stream().sorted((o1, o2) -> o1.startLine < o2.startLine ? -1 : o1.startLine == o2.startLine ? 0 : 1).
 				collect(Collectors.toList())).map(triples -> {
