@@ -66,6 +66,6 @@ public class CommandStatmtEntry {
 
 	@Override
 	public String toString() {
-		return "CommandStatmtEntry{start: " + getLineStart() + ", end: " + getLineEnd() + "}";
+		return "CommandStatmtEntry{start: " + getLineStart() + ", end: " + getLineEnd() + ", main: " + mainEntry + "}";
 	}
 }
