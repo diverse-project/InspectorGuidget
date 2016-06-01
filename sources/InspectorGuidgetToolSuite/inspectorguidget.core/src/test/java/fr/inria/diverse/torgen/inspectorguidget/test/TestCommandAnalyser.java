@@ -245,7 +245,6 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
 	public void testRealComplexCommandExample1CommandPositions2() {
 		analyser.addInputResource("src/test/resources/java/analysers/RealComplexCommandExample1.java");
 		analyser.run();
@@ -260,10 +259,12 @@ public class TestCommandAnalyser {
 		assertEquals(46, blocks.get(2).endLine);
 		assertEquals(48, blocks.get(3).startLine);
 		assertEquals(50, blocks.get(3).endLine);
-		assertEquals(58, blocks.get(4).startLine);
-		assertEquals(58, blocks.get(4).endLine);
-		assertEquals(60, blocks.get(5).startLine);
-		assertEquals(64, blocks.get(5).endLine);
+		assertEquals(53, blocks.get(4).startLine);
+		assertEquals(54, blocks.get(4).endLine);
+		assertEquals(58, blocks.get(5).startLine);
+		assertEquals(58, blocks.get(5).endLine);
+		assertEquals(60, blocks.get(6).startLine);
+		assertEquals(64, blocks.get(6).endLine);
 	}
 
 	@Test

@@ -65,7 +65,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						// For each var def, creating a command statement entry that will be added to the list of entries of the command.
 						map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
 
-				inferLocalVarUsages(cmd, entry.getValue());
+				inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
 			}
 		));
 	}
@@ -76,13 +76,17 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	 * identify all the statements that use these local variables before each use of the variables in the command.
 	 * @param cmd The command to analyse.
 	 * @param cmds The set of commands of the listener where cmd comes from.
+	 * @param listener The listener method that contains the commands.
 	 */
-	private void inferLocalVarUsages(final @NotNull Command cmd, final @NotNull List<Command> cmds) {
+	private void inferLocalVarUsages(final @NotNull Command cmd, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> listener) {
 		// Adding all the required elements.
 		cmd.addAllStatements(
-			inferLocalVarUsagesRecursive(cmd.getStatements().stream().map(stat -> stat.getStatmts().stream()).flatMap(s -> s).collect(Collectors.toSet()), new HashSet<>()).
-				parallelStream().filter(exp -> !isPartOfMainCommandBlockOrCondition(exp, cmd, cmds)).
-				map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp))).collect(Collectors.toList())
+			inferLocalVarUsagesRecursive(
+				cmd.getStatements().stream().map(stat -> stat.getStatmts().stream()).flatMap(s -> s).collect(Collectors.toSet()),
+				new HashSet<>(), listener
+			).parallelStream().filter(exp -> !isPartOfMainCommandBlockOrCondition(exp, cmd, cmds)).
+			map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp))).
+			collect(Collectors.toList())
 		);
 	}
 
@@ -91,22 +95,28 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	 * Recusion method for inferLocalVarUsages.
 	 * @param stats The set of statements to analyse.
 	 * @param analysedStats The set of statements already analysed.
+	 * @param listener The listener method that contains the commands.
 	 * @return The set of statements that the 'stats' statements depend on.
 	 */
-	private Set<CtElement> inferLocalVarUsagesRecursive(final @NotNull Set<CtElement> stats, final @NotNull Set<CtElement> analysedStats) {
+	private Set<CtElement> inferLocalVarUsagesRecursive(final @NotNull Set<CtElement> stats, final @NotNull Set<CtElement> analysedStats,
+														final @NotNull CtExecutable<?> listener) {
 		// For each statement of the command.
 		Set<CtElement> inferred = stats.parallelStream().map(elt ->
 			// Getting the local var used in the statement.
 			elt.getElements(new LocalVariableAccessFilter()).stream().
+				// Only the local variables defined in the listener must be considered.
+				filter(var -> var.getDeclaration().getParent(CtExecutable.class)==listener).
 				map(var ->
 					// Finding the uses of the local var in the executable
 					var.getDeclaration().getParent(CtExecutable.class).getBody().getElements(new MyVariableAccessFilter<>(var)).stream().
 						// Considering the var accesses that operate before the statement only.
-						filter(varacesss -> varacesss.getPosition().getLine() < elt.getPosition().getLine()).
+						filter(varacesss -> varacesss.getPosition().getLine() <= elt.getPosition().getLine()).
 						map(varaccess -> {
 							// Getting all the super conditional statements.
 							List<CtElement> exps = SpoonHelper.INSTANCE.getSuperConditionalExpressions(varaccess, var.getDeclaration().getParent());
-							exps.add(varaccess);
+							// Getting the main expression of the var access (or the var access itself).
+							CtExpression parent = varaccess.getParent(CtExpression.class);
+							exps.add(parent==null ? varaccess : parent);
 							exps.add(var.getDeclaration());
 							return exps;
 						}).flatMap(s -> s.stream())
@@ -115,7 +125,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		if(!inferred.isEmpty()) {
 			analysedStats.addAll(stats);
 			inferred.addAll(inferLocalVarUsagesRecursive(inferred.parallelStream().
-					filter(exp -> !analysedStats.contains(exp)).collect(Collectors.toSet()), analysedStats));
+					filter(exp -> !analysedStats.contains(exp)).collect(Collectors.toSet()), analysedStats, listener));
 		}
 
 		return inferred;
