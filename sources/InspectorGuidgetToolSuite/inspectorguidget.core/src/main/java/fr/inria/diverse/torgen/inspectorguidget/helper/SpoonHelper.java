@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;

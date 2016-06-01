@@ -1,5 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.NonAnonymClassFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.*;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;

@@ -14,7 +14,7 @@
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
-package fr.inria.diverse.torgen.inspectorguidget.helper;
+package fr.inria.diverse.torgen.inspectorguidget.filter;
 
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.reference.CtVariableReference;

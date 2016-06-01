@@ -1,4 +1,4 @@
-package fr.inria.diverse.torgen.inspectorguidget.helper;
+package fr.inria.diverse.torgen.inspectorguidget.filter;
 
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.reference.CtVariableReference;

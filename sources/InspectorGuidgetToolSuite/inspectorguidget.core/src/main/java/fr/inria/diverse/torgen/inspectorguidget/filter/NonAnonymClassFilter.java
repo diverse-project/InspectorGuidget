@@ -1,4 +1,4 @@
-package fr.inria.diverse.torgen.inspectorguidget.helper;
+package fr.inria.diverse.torgen.inspectorguidget.filter;
 
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.visitor.filter.AbstractFilter;

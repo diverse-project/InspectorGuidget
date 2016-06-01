@@ -1,4 +1,4 @@
-package fr.inria.diverse.torgen.inspectorguidget.helper;
+package fr.inria.diverse.torgen.inspectorguidget.filter;
 
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.declaration.CtElement;
