@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtParameter;
 
@@ -90,7 +91,7 @@ public class Command {
 		}
 	}
 
-	public @NotNull Set<CtCodeElement> getAllStatmts() {
+	public @NotNull Set<CtElement> getAllStatmts() {
 		return statements.stream().map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}
 

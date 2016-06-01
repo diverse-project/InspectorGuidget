@@ -259,7 +259,7 @@ public class TestCommandAnalyser {
 		assertEquals(46, blocks.get(2).startLine);
 		assertEquals(46, blocks.get(2).endLine);
 		assertEquals(48, blocks.get(3).startLine);
-		assertEquals(56, blocks.get(3).endLine);
+		assertEquals(50, blocks.get(3).endLine);
 		assertEquals(58, blocks.get(4).startLine);
 		assertEquals(58, blocks.get(4).endLine);
 		assertEquals(60, blocks.get(5).startLine);

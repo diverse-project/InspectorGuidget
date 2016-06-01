@@ -6,6 +6,8 @@ import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,42 @@ public final class SpoonHelper {
 	private SpoonHelper() {
 		super();
 	}
+
+
+	/**
+	 * @param elt The element from which the research starts.
+	 * @param topParent The top parent that stops the research.
+	 * @return All the conditional expressions from the given element 'elt' up to the given top parent.
+	 */
+	public @NotNull List<CtElement> getSuperConditionalExpressions(final @NotNull CtElement elt, final @NotNull CtElement topParent) {
+		CtElement parent = elt.isParentInitialized() ? elt.getParent() : null;
+		List<CtElement> conds = new ArrayList<>();
+
+		// Exploring the parents to identify the conditional statements
+		while(parent!=null) {
+			if(parent instanceof CtIf) {
+				conds.add(((CtIf) parent).getCondition());
+			}else if(parent instanceof CtCase<?>) {
+				conds.add(((CtCase<?>) parent).getCaseExpression());
+				CtSwitch<?> switzh = parent.getParent(CtSwitch.class);
+				if(switzh==null)
+					System.err.println("Cannot find the switch statement from the case statement: " + parent);
+				else
+					conds.add(switzh.getSelector());
+			}else if(parent instanceof CtWhile) {
+				conds.add(((CtWhile) parent).getLoopingExpression());
+			}else if(parent instanceof CtDo) {
+				conds.add(((CtDo) parent).getLoopingExpression());
+			}else if(parent instanceof CtFor) {
+				conds.add(((CtFor) parent).getExpression());
+			}
+
+			parent = parent.isParentInitialized() ? parent.getParent() : null;
+		}
+
+		return conds;
+	}
+
 
 	public int getLinePosition(final CtElement elt) {
 		if(elt==null)

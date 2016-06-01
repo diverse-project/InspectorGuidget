@@ -1,8 +1,8 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import org.jetbrains.annotations.NotNull;
-import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtStatement;
+import spoon.reflect.declaration.CtElement;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +13,7 @@ import java.util.List;
  * An entry class used in the Command class to represent a statement that composed the code of the command.
  */
 public class CommandStatmtEntry {
-	final List<CtCodeElement> statmts;
+	final List<CtElement> statmts;
 	final boolean mainEntry;
 
 	public CommandStatmtEntry(final boolean main) {
@@ -22,7 +22,7 @@ public class CommandStatmtEntry {
 		mainEntry = main;
 	}
 
-	public CommandStatmtEntry(final boolean main, final @NotNull Collection<CtCodeElement> listStatmts) {
+	public CommandStatmtEntry(final boolean main, final @NotNull Collection<CtElement> listStatmts) {
 		this(main);
 		addStatements(listStatmts);
 	}
@@ -32,15 +32,15 @@ public class CommandStatmtEntry {
 		listStatmts.forEach(s -> addStatement(s));
 	}
 
-	public void addStatement(final @NotNull CtCodeElement statmt) {
+	public void addStatement(final @NotNull CtElement statmt) {
 		statmts.add(statmt);
 	}
 
-	public void addStatements(final @NotNull Collection<CtCodeElement> listStatmts) {
+	public void addStatements(final @NotNull Collection<CtElement> listStatmts) {
 		statmts.addAll(listStatmts);
 	}
 
-	public void addStatementAt(final @NotNull CtCodeElement statmt, final int position) {
+	public void addStatementAt(final @NotNull CtElement statmt, final int position) {
 		statmts.add(position, statmt);
 	}
 
@@ -48,7 +48,7 @@ public class CommandStatmtEntry {
 		return mainEntry;
 	}
 
-	public List<CtCodeElement> getStatmts() {
+	public List<CtElement> getStatmts() {
 		return Collections.unmodifiableList(statmts);
 	}
 

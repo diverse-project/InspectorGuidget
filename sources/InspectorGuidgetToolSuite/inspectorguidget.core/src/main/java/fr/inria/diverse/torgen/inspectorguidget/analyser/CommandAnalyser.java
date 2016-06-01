@@ -6,7 +6,10 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcesso
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtParameterReference;
 import spoon.reflect.visitor.filter.DirectReferenceFilter;
 
@@ -50,21 +53,101 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		lambdaProc.getAllListenerLambdas().parallelStream().forEach(l -> analyseSingleListenerMethod(Optional.empty(), l));
 
 		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
-		commands.values().parallelStream().flatMap(s -> s.stream()).forEach(cmd -> {
-			cmd.extractLocalDispatchCallWithoutGUIParam();
+		commands.entrySet().forEach(entry -> entry.getValue().forEach(cmd -> {
+				cmd.extractLocalDispatchCallWithoutGUIParam();
+				// For each command, adding the required local variable definitions.
+				cmd.addAllStatements(0,
+					// Looking for local variable accesses in the command
+					cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
+						// Selecting the local variable definitions not already contained in the command
+						map(v -> v.getDeclaration()).filter(v -> !cmd.getStatements().contains(v)).
+						collect(Collectors.toList())).flatMap(s -> s.stream()).
+						// For each var def, creating a command statement entry that will be added to the list of entries of the command.
+						map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
 
-			// For each command, adding the required local variable definitions.
-			cmd.addAllStatements(0,
-				// Looking for local variable accesses in the command
-				cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
-					// Selecting the local variable definitions not already contained in the command
-					map(v -> v.getDeclaration()).filter(v -> !cmd.getStatements().contains(v)).
-					collect(Collectors.toList())).flatMap(s -> s.stream()).
-					// For each var def, creating a command statement entry that will be added to the list of entries of the command.
-					map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
+				inferLocalVarUsages(cmd, entry.getValue());
+			}
+		));
+	}
 
-//			cmd.inferLocalVarUsages();
-		});
+
+	/**
+	 * Local variables used in a command must be considered when extracting a command: a backward static slicing is done here to
+	 * identify all the statements that use these local variables before each use of the variables in the command.
+	 * @param cmd The command to analyse.
+	 * @param cmds The set of commands of the listener where cmd comes from.
+	 */
+	private void inferLocalVarUsages(final @NotNull Command cmd, final @NotNull List<Command> cmds) {
+		// Adding all the required elements.
+		cmd.addAllStatements(
+			inferLocalVarUsagesRecursive(cmd.getStatements().stream().map(stat -> stat.getStatmts().stream()).flatMap(s -> s).collect(Collectors.toSet()), new HashSet<>()).
+				parallelStream().filter(exp -> !isPartOfMainCommandBlockOrCondition(exp, cmd, cmds)).
+				map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp))).collect(Collectors.toList())
+		);
+	}
+
+
+	/**
+	 * Recusion method for inferLocalVarUsages.
+	 * @param stats The set of statements to analyse.
+	 * @param analysedStats The set of statements already analysed.
+	 * @return The set of statements that the 'stats' statements depend on.
+	 */
+	private Set<CtElement> inferLocalVarUsagesRecursive(final @NotNull Set<CtElement> stats, final @NotNull Set<CtElement> analysedStats) {
+		// For each statement of the command.
+		Set<CtElement> inferred = stats.parallelStream().map(elt ->
+			// Getting the local var used in the statement.
+			elt.getElements(new LocalVariableAccessFilter()).stream().
+				map(var ->
+					// Finding the uses of the local var in the executable
+					var.getDeclaration().getParent(CtExecutable.class).getBody().getElements(new MyVariableAccessFilter<>(var)).stream().
+						// Considering the var accesses that operate before the statement only.
+						filter(varacesss -> varacesss.getPosition().getLine() < elt.getPosition().getLine()).
+						map(varaccess -> {
+							// Getting all the super conditional statements.
+							List<CtElement> exps = SpoonHelper.INSTANCE.getSuperConditionalExpressions(varaccess, var.getDeclaration().getParent());
+							exps.add(varaccess);
+							exps.add(var.getDeclaration());
+							return exps;
+						}).flatMap(s -> s.stream())
+				).flatMap(s -> s)).flatMap(s -> s).distinct().collect(Collectors.toSet());
+
+		if(!inferred.isEmpty()) {
+			analysedStats.addAll(stats);
+			inferred.addAll(inferLocalVarUsagesRecursive(inferred.parallelStream().
+					filter(exp -> !analysedStats.contains(exp)).collect(Collectors.toSet()), analysedStats));
+		}
+
+		return inferred;
+	}
+
+
+	/**
+	 * Checks whether the given element 'elt' is contained in the main block or in a condition statement of a command.
+	 * @param elt The element to test.
+	 * @param currCmd The command from which the element comes from.
+	 * @param cmds The set of commands to look into.
+	 * @return True if the given element is contained in the main block or in a condition statement of a command.
+	 */
+	private boolean isPartOfMainCommandBlockOrCondition(final @NotNull CtElement elt, final @NotNull Command currCmd, final @NotNull List<Command> cmds) {
+		final FindElementFilter filter = new FindElementFilter(elt);
+
+		// First, check the main blocks
+		boolean ok = cmds.parallelStream().filter(cmd -> cmd!=currCmd). // Ignoring the current command.
+				map(cmd -> cmd.getMainStatmtEntry()). // Getting the main blocks
+				// Searching for the given element in the statements of the main blocks.
+				filter(main -> main.isPresent() && main.get().getStatmts().stream().filter(stat -> !stat.getElements(filter).isEmpty()).findFirst().isPresent()).
+				findFirst().isPresent();
+
+		// If not found, check the conditions.
+		if(!ok) {
+			ok = cmds.parallelStream().filter(cmd -> cmd!=currCmd).// Ignoring the current command.
+				// Searching for the given element in the conditions.
+				filter(cmd -> cmd.getConditions().stream().filter(cond -> !cond.realStatmt.getElements(filter).isEmpty()).findFirst().isPresent()).
+				findFirst().isPresent();
+		}
+
+		return ok;
 	}
 
 
@@ -97,7 +180,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
 			map(cas -> {
 				// Creating the body of the command.
-				final List<CtCodeElement> stats = new ArrayList<>(cas.getStatements());
+				final List<CtElement> stats = new ArrayList<>(cas.getStatements());
 
 //				// Removing the last 'return' or 'break' statement from the command.
 //				if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
@@ -115,7 +198,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec) {
 		final CtStatement elseStat =  ifStat.getElseStatement();
 		final CtStatement thenStat = ifStat.getThenStatement();
-		List<CtCodeElement> stats = new ArrayList<>();
+		List<CtElement> stats = new ArrayList<>();
 
 		if(thenStat instanceof CtStatementList)
 			stats.addAll(((CtStatementList)thenStat).getStatements());
