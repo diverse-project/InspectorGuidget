@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.reference.CtVariableReference;
 
@@ -71,6 +72,12 @@ public class CommandWidgetFinder {
 
 			if(WidgetHelper.INSTANCE.isTypeRefAWidget(fieldRead.getType())) {
 				return Optional.of(fieldRead.getVariable());
+			}
+		}else if(target instanceof CtVariableRead<?>) {
+			final CtVariableRead<?> variableRead = (CtVariableRead<?>) target;
+
+			if(WidgetHelper.INSTANCE.isTypeRefAWidget(variableRead.getType())) {
+				return Optional.of(variableRead.getVariable());
 			}
 		}else {
 			System.out.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass());

@@ -41,8 +41,17 @@ public class TestWidgetFinder {
 	}
 
 	@Test
-	public void testInstanceOfWidgetClass() {
+	public void testAnonClassOnSingleFieldWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleFieldWidgetNoCond.java");
+		Map<CtVariableReference<?>, Command> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals("b", new ArrayList<>(results.keySet()).get(0).getSimpleName());
+	}
+
+	@Test
+	public void testAnonClassOnSingleLocalVarWidgetNoCond() {
+		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleLocalVarWidgetNoCond.java");
 		Map<CtVariableReference<?>, Command> results = finder.getResults();
 
 		assertEquals(1, results.size());
