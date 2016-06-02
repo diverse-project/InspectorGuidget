@@ -38,16 +38,22 @@ public class CommandWidgetFinder {
 	}
 
 	private void process(final @NotNull Command cmd) {
-		getAssociatedListenerVariable(cmd).ifPresent(varref -> results.put(cmd, Collections.singletonList(varref)));
+		getAssociatedListenerVariable(cmd).ifPresent(varref -> {
+			synchronized(results) {
+				results.put(cmd, Collections.singletonList(varref));
+			}
+		});
 
 		List<CtVariableReference<?>> widgets = getVarWidgetInListener(cmd);
 
-		if(!widgets.isEmpty()) {
-			List<CtVariableReference<?>> vars = results.get(cmd);
-			if(vars!=null) {
-				widgets.addAll(vars);
+		synchronized(results) {
+			if(!widgets.isEmpty()) {
+				List<CtVariableReference<?>> vars = results.get(cmd);
+				if(vars != null) {
+					widgets.addAll(vars);
+				}
+				results.put(cmd, widgets);
 			}
-			results.put(cmd, widgets);
 		}
 	}
 
