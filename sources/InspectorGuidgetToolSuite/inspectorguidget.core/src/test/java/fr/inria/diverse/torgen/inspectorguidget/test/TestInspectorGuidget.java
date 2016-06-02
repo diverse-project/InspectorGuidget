@@ -19,7 +19,7 @@ public abstract class TestInspectorGuidget<T extends Processor<? extends CtEleme
 	protected Collection<T> processors;
 	protected SpoonCompiler modelBuilder;
 
-	public static final boolean SHOW_MODEL = false;
+	public static final boolean SHOW_MODEL = true;
 
 	@Before
 	public void setUp() {

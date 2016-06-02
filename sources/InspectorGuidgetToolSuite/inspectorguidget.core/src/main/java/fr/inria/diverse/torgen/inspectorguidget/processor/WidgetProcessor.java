@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.listener.WidgetListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,14 +45,8 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		fields = new IdentityHashMap<>();
 		references = new IdentityHashMap<>();
-		controlType = new ArrayList<>();
 		collectionType = getFactory().Type().createReference(Collection.class);
-
-		controlType.add(getFactory().Type().createReference(javafx.scene.Node.class));
-		controlType.add(getFactory().Type().createReference(javafx.scene.control.MenuItem.class));
-		controlType.add(getFactory().Type().createReference(javafx.scene.control.Dialog.class));
-		controlType.add(getFactory().Type().createReference(javafx.stage.Window.class));
-		controlType.add(getFactory().Type().createReference(java.awt.Component.class));
+		controlType = WidgetHelper.INSTANCE.getWidgetTypes(getFactory());
 	}
 
 	@Override

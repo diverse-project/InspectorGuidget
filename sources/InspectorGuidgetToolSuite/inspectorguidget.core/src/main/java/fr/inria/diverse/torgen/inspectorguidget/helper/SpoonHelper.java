@@ -119,4 +119,21 @@ public final class SpoonHelper {
 		exp.setRightHandOperand(caze.getCaseExpression());
 		return exp;
 	}
+
+	/**
+	 * Shows the parents' class name and the position of these parents in the code of the given element.
+	 * @param element The element to scrutinise. Can be null.
+	 */
+	public void showParentsClassName(final @Nullable CtElement element) {
+		if(element==null) return;
+		CtElement elt = element;
+		CtElement parent;
+
+		while(elt.isParentInitialized() && elt.getParent()!=null) {
+			parent = elt.getParent();
+			System.out.print(parent.getClass().getSimpleName() + " " + formatPosition(parent.getPosition()) + " -> ");
+			elt = parent;
+		}
+		System.out.println();
+	}
 }
