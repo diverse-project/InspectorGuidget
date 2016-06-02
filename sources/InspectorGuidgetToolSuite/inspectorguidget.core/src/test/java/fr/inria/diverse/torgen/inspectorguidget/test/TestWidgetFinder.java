@@ -11,6 +11,7 @@ import spoon.reflect.reference.CtVariableReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,18 +44,30 @@ public class TestWidgetFinder {
 	@Test
 	public void testAnonClassOnSingleFieldWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleFieldWidgetNoCond.java");
-		Map<CtVariableReference<?>, Command> results = finder.getResults();
+		Map<Command, List<CtVariableReference<?>>> results = finder.getResults();
 
 		assertEquals(1, results.size());
-		assertEquals("b", new ArrayList<>(results.keySet()).get(0).getSimpleName());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).get(0).getSimpleName());
 	}
 
 	@Test
 	public void testAnonClassOnSingleLocalVarWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleLocalVarWidgetNoCond.java");
-		Map<CtVariableReference<?>, Command> results = finder.getResults();
+		Map<Command, List<CtVariableReference<?>>> results = finder.getResults();
 
 		assertEquals(1, results.size());
-		assertEquals("b", new ArrayList<>(results.keySet()).get(0).getSimpleName());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).size());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).get(0).getSimpleName());
+	}
+
+	@Test
+	public void testAnonClassOnSingleFieldWidgetEqualCond() {
+		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnFieldWidgetsEqualCond.java");
+		Map<Command, List<CtVariableReference<?>>> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals(2, new ArrayList<>(results.values()).get(0).size());
+		assertEquals("a", new ArrayList<>(results.values()).get(0).get(0).getSimpleName());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).get(1).getSimpleName());
 	}
 }

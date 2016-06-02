@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.TypeRefFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtExpression;
@@ -10,13 +11,14 @@ import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.reference.CtVariableReference;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * An analyser to find the widget(s) that produce(s) a given command.
  */
 public class CommandWidgetFinder {
 	private final @NotNull List<Command> cmds;
-	private final @NotNull Map<CtVariableReference<?>, Command> results;
+	private final @NotNull Map<Command, List<CtVariableReference<?>>> results;
 
 	/**
 	 * Craetes the analyser.
@@ -32,32 +34,43 @@ public class CommandWidgetFinder {
 	 * Executes the analysis.
 	 */
 	public void process() {
-//		System.out.println("NB CMDS: " + cmds.size());
 		cmds.parallelStream().forEach(cmd -> process(cmd));
 	}
 
 	private void process(final @NotNull Command cmd) {
-		getAssociatedListenerVariable(cmd).ifPresent(varref -> {
-			results.put(varref, cmd);
-		});
+		getAssociatedListenerVariable(cmd).ifPresent(varref -> results.put(cmd, Collections.singletonList(varref)));
 
-//		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
-//
-//		cmd.getConditions().stream().forEach(cond -> {
-//			List<CtTypeReference<?>> widgets = cond.realStatmt.getElements(filter);
-//			switch(widgets.size()) {
-//				case 0:
-//					break;
-//				case 1:
-//					break;
-//				default:
-//					break;
-//			}
-//			System.out.println(widgets + " " + cmd.getConditions());
-//		});
+		List<CtVariableReference<?>> widgets = getVarWidgetInListener(cmd);
+
+		if(!widgets.isEmpty()) {
+			List<CtVariableReference<?>> vars = results.get(cmd);
+			if(vars!=null) {
+				widgets.addAll(vars);
+			}
+			results.put(cmd, widgets);
+		}
 	}
 
 
+	/**
+	 * Identifies the widgets used the conditions of the given command.
+	 * @param cmd The comand to analyse
+	 * @return The list of the references to the widgets used in the conditions.
+	 */
+	private List<CtVariableReference<?>> getVarWidgetInListener(final @NotNull Command cmd) {
+		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
+
+		return cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter).stream().
+											map(w -> w.getParent(CtVariableReference.class))).
+											flatMap(s -> s).collect(Collectors.<CtVariableReference<?>>toList());
+	}
+
+
+	/**
+	 * Identifies the widget on which the listener is added.
+	 * @param cmd The command to analyse.
+	 * @return The reference to the widget or nothing.
+	 */
 	private Optional<CtVariableReference<?>> getAssociatedListenerVariable(final @NotNull Command cmd) {
 		final CtExecutable<?> listenerMethod = cmd.getExecutable();
 		final CtInvocation<?> invok = listenerMethod.getParent(CtInvocation.class);
@@ -90,7 +103,7 @@ public class CommandWidgetFinder {
 	/**
 	 * @return A unmodifiable map of the results of the process.
 	 */
-	public @NotNull Map<CtVariableReference<?>, Command> getResults() {
+	public @NotNull Map<Command, List<CtVariableReference<?>>> getResults() {
 		return Collections.unmodifiableMap(results);
 	}
 }
