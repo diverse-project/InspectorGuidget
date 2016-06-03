@@ -21,6 +21,9 @@ public class CommandWidgetBugsDetector {
 	public void process() {
 		cmds.entrySet().parallelStream().forEach(entry -> {
 			checkOneWidgetNoCondition(entry).ifPresent(res -> results.add(res));
+			checkOneWidgetRegisteredSeveralUsed(entry).ifPresent(res -> results.add(res));
+			checkWidgetUsedAreOfRegistered(entry).ifPresent(res -> results.add(res));
+			checkAtLeastOneWidgetForOneCommand(entry).ifPresent(res -> results.add(res));
 		});
 	}
 
@@ -37,8 +40,16 @@ public class CommandWidgetBugsDetector {
 	}
 
 	private Optional<Tuple<String, Command>> checkWidgetUsedAreOfRegistered(final @NotNull Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry) {
-		if(!entry.getValue().getRegisteredWidgets().stream().filter(w -> entry.getValue().getWidgetsUsedInConditions().contains(w)).findFirst().isPresent())
+		final CommandWidgetFinder.WidgetFinderEntry value = entry.getValue();
+		if(!value.getRegisteredWidgets().stream().filter(w -> value.getWidgetsUsedInConditions().contains(w)).findFirst().isPresent())
 			return Optional.of(new Tuple<>("The widgets registered to the listener do not match the widgets used by the command.", entry.getKey()));
+		return Optional.empty();
+	}
+
+	private Optional<Tuple<String, Command>> checkAtLeastOneWidgetForOneCommand(final @NotNull Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry) {
+		final CommandWidgetFinder.WidgetFinderEntry value = entry.getValue();
+		if(value.getWidgetsUsedInConditions().isEmpty() && value.getWidgetsUsedInConditions().isEmpty())
+			return Optional.of(new Tuple<>("Cannot find any widget for this command.", entry.getKey()));
 		return Optional.empty();
 	}
 }
