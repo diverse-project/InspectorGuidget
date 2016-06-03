@@ -61,7 +61,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					// Looking for local variable accesses in the command
 					cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
 						// Selecting the local variable definitions not already contained in the command
-						map(v -> v.getDeclaration()).filter(v -> !cmd.getStatements().contains(v)).
+						map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s==v).findFirst().isPresent()).
 						collect(Collectors.toList())).flatMap(s -> s.stream()).
 						// For each var def, creating a command statement entry that will be added to the list of entries of the command.
 						map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
