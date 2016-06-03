@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.ThisAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.TypeRefFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
@@ -7,6 +8,7 @@ import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtVariableRead;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.reference.CtVariableReference;
 
@@ -46,7 +48,7 @@ public class CommandWidgetFinder {
 		}
 
 		getAssociatedListenerVariable(cmd).ifPresent(varref -> entry.setRegisteredWidgets(Collections.singletonList(varref)));
-		entry.setWidgetsUsedInConditions(getVarWidgetInListener(cmd));
+		entry.setWidgetsUsedInConditions(getVarWidgetUsedInCmdConditions(cmd));
 	}
 
 
@@ -55,7 +57,7 @@ public class CommandWidgetFinder {
 	 * @param cmd The comand to analyse
 	 * @return The list of the references to the widgets used in the conditions.
 	 */
-	private List<CtVariableReference<?>> getVarWidgetInListener(final @NotNull Command cmd) {
+	private List<CtVariableReference<?>> getVarWidgetUsedInCmdConditions(final @NotNull Command cmd) {
 		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
 
 		return cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter).stream().
@@ -73,9 +75,37 @@ public class CommandWidgetFinder {
 		final CtExecutable<?> listenerMethod = cmd.getExecutable();
 		final CtInvocation<?> invok = listenerMethod.getParent(CtInvocation.class);
 
-		if(invok==null)
+		if(invok==null) {
+			if(listenerMethod.isParentInitialized() && listenerMethod.getParent() instanceof CtClass)
+				return getAssociatedListenerVariableThroughClass((CtClass<?>)listenerMethod.getParent());
 			return Optional.empty();
+		}
 
+		return getAssociatedListenerVariableThroughInvocation(invok);
+	}
+
+
+	/**
+	 * Example: myWidget.addActionListener(this)
+	 * @param clazz The class to analyse.
+	 * @return The possible widget.
+	 */
+	private Optional<CtVariableReference<?>> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz) {
+		// Looking for 'this' usages
+		return clazz.getElements(new ThisAccessFilter(false)).stream().
+			// Keeping the 'this' usages that are parameters of a method call
+			filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
+			map(thisacc -> getAssociatedListenerVariableThroughInvocation((CtInvocation<?>)thisacc.getParent())).
+			filter(varref -> varref.isPresent()).findFirst().orElseGet(() -> Optional.empty());
+	}
+
+
+	/**
+	 * Example: myWidget.addActionListener(() ->...);
+	 * @param invok The invocation from which the widget will be retieved.
+	 * @return The possible widget.
+	 */
+	private Optional<CtVariableReference<?>> getAssociatedListenerVariableThroughInvocation(final @NotNull CtInvocation<?> invok) {
 		final CtExpression<?> target = invok.getTarget();
 
 		if(target instanceof CtFieldRead<?>) {
