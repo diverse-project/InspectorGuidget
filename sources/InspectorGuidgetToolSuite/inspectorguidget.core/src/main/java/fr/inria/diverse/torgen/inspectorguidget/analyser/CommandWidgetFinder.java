@@ -12,13 +12,14 @@ import spoon.reflect.reference.CtVariableReference;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An analyser to find the widget(s) that produce(s) a given command.
  */
 public class CommandWidgetFinder {
 	private final @NotNull List<Command> cmds;
-	private final @NotNull Map<Command, List<CtVariableReference<?>>> results;
+	private final @NotNull Map<Command, WidgetFinderEntry> results;
 
 	/**
 	 * Craetes the analyser.
@@ -38,23 +39,14 @@ public class CommandWidgetFinder {
 	}
 
 	private void process(final @NotNull Command cmd) {
-		getAssociatedListenerVariable(cmd).ifPresent(varref -> {
-			synchronized(results) {
-				results.put(cmd, Collections.singletonList(varref));
-			}
-		});
-
-		List<CtVariableReference<?>> widgets = getVarWidgetInListener(cmd);
+		final WidgetFinderEntry entry = new WidgetFinderEntry();
 
 		synchronized(results) {
-			if(!widgets.isEmpty()) {
-				List<CtVariableReference<?>> vars = results.get(cmd);
-				if(vars != null) {
-					widgets.addAll(vars);
-				}
-				results.put(cmd, widgets);
-			}
+			results.put(cmd, entry);
 		}
+
+		getAssociatedListenerVariable(cmd).ifPresent(varref -> entry.setRegisteredWidgets(Collections.singletonList(varref)));
+		entry.setWidgetsUsedInConditions(getVarWidgetInListener(cmd));
 	}
 
 
@@ -68,7 +60,7 @@ public class CommandWidgetFinder {
 
 		return cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter).stream().
 											map(w -> w.getParent(CtVariableReference.class))).
-											flatMap(s -> s).collect(Collectors.<CtVariableReference<?>>toList());
+											flatMap(s -> s).collect(Collectors.toList());
 	}
 
 
@@ -109,7 +101,39 @@ public class CommandWidgetFinder {
 	/**
 	 * @return A unmodifiable map of the results of the process.
 	 */
-	public @NotNull Map<Command, List<CtVariableReference<?>>> getResults() {
+	public @NotNull Map<Command, WidgetFinderEntry> getResults() {
 		return Collections.unmodifiableMap(results);
+	}
+
+
+	public static final class WidgetFinderEntry {
+		private List<CtVariableReference<?>> registeredWidgets;
+		private List<CtVariableReference<?>> widgetsUsedInConditions;
+
+		private WidgetFinderEntry() {
+			super();
+			registeredWidgets = Collections.emptyList();
+			widgetsUsedInConditions = Collections.emptyList();
+		}
+
+		public List<CtVariableReference<?>> getRegisteredWidgets() {
+			return Collections.unmodifiableList(registeredWidgets);
+		}
+
+		public List<CtVariableReference<?>> getWidgetsUsedInConditions() {
+			return Collections.unmodifiableList(widgetsUsedInConditions);
+		}
+
+		private void setRegisteredWidgets(final @NotNull List<CtVariableReference<?>> registeredWidgets) {
+			this.registeredWidgets = registeredWidgets;
+		}
+
+		private void setWidgetsUsedInConditions(final @NotNull List<CtVariableReference<?>> widgetsUsedInConditions) {
+			this.widgetsUsedInConditions = widgetsUsedInConditions;
+		}
+
+		public long getNbDistinctWidgets() {
+			return Stream.concat(registeredWidgets.stream(), widgetsUsedInConditions.stream()).distinct().count();
+		}
 	}
 }
