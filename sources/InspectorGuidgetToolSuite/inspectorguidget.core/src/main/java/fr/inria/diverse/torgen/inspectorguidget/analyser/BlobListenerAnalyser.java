@@ -5,6 +5,7 @@ import spoon.SpoonAPI;
 import spoon.compiler.Environment;
 import spoon.compiler.SpoonCompiler;
 import spoon.processing.Processor;
+import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtType;
@@ -125,6 +126,11 @@ public class BlobListenerAnalyser implements SpoonAPI {
 	@Override
 	public SpoonCompiler createCompiler() {
 		return cmdAnalyser.createCompiler();
+	}
+
+	@Override
+	public CtModel getModel() {
+		return null;
 	}
 
 	public @NotNull CommandAnalyser getCmdAnalyser() {

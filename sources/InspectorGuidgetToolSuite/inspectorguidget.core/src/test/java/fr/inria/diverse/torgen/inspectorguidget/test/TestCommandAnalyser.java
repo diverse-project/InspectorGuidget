@@ -6,7 +6,6 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -58,7 +57,6 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
 	public void testLambdaListenerMethodNoConditional() {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditLambda.java");
 		analyser.run();

@@ -8,6 +8,7 @@ import spoon.SpoonAPI;
 import spoon.compiler.Environment;
 import spoon.compiler.SpoonCompiler;
 import spoon.processing.Processor;
+import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.factory.Factory;
@@ -38,6 +39,11 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 		processors = new ArrayList<>();
 		procs.forEach(pr -> addProcessor(pr));
 		modelBuilder = createCompiler();
+	}
+
+	@Override
+	public CtModel getModel() {
+		return null;
 	}
 
 	@Override
@@ -139,6 +145,7 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	@Override
 	public @NotNull Environment createEnvironment() {
 		StandardEnvironment evt = new StandardEnvironment();
+		evt.setCommentEnabled(false);
 		evt.setComplianceLevel(8);
 		return evt;
 	}

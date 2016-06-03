@@ -5,6 +5,7 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor
 import fr.inria.diverse.torgen.inspectorguidget.processor.FXMLAnnotationProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
+import spoon.reflect.CtModel;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -37,4 +38,9 @@ public class Launcher extends InspectorGuidetAnalyser {
 		super(Arrays.asList(new ClassListenerProcessor(), new LambdaListenerProcessor(),
 				new FXMLAnnotationProcessor(), new WidgetProcessor()));
     }
+
+	@Override
+	public CtModel getModel() {
+		return null;
+	}
 }
