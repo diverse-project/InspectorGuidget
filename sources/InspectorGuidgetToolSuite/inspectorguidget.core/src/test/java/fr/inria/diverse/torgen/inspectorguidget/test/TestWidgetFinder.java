@@ -78,4 +78,14 @@ public class TestWidgetFinder {
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
 	}
+
+	@Test
+	public void testClassInheritanceSingleWidgetNoCond() {
+		initTest("src/test/resources/java/widgetsIdentification/ClassInheritanceSingleWidgetNoCond.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+	}
 }

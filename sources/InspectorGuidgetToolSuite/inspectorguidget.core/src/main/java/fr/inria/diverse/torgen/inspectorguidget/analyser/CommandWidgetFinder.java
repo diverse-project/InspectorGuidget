@@ -10,6 +10,7 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtVariableReference;
 
 import java.util.*;
@@ -92,11 +93,19 @@ public class CommandWidgetFinder {
 	 */
 	private Optional<CtVariableReference<?>> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz) {
 		// Looking for 'this' usages
-		return clazz.getElements(new ThisAccessFilter(false)).stream().
+		Optional<CtVariableReference<?>> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
 			// Keeping the 'this' usages that are parameters of a method call
-			filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
-			map(thisacc -> getAssociatedListenerVariableThroughInvocation((CtInvocation<?>)thisacc.getParent())).
-			filter(varref -> varref.isPresent()).findFirst().orElseGet(() -> Optional.empty());
+				filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
+				map(thisacc -> getAssociatedListenerVariableThroughInvocation((CtInvocation<?>) thisacc.getParent())).
+				filter(varref -> varref.isPresent()).findFirst().orElseGet(() -> Optional.empty());
+
+		if(!ref.isPresent()) {
+			final CtType<?> superclass = clazz.getSuperclass().getDeclaration();
+			if(superclass instanceof CtClass<?>)
+				ref = getAssociatedListenerVariableThroughClass((CtClass<?>)superclass);
+		}
+
+		return ref;
 	}
 
 
