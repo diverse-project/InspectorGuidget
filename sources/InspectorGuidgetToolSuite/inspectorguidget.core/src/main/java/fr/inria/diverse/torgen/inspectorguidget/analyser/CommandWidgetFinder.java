@@ -100,7 +100,7 @@ public class CommandWidgetFinder {
 				filter(varref -> varref.isPresent()).findFirst().orElseGet(() -> Optional.empty());
 
 		if(!ref.isPresent()) {
-			final CtType<?> superclass = clazz.getSuperclass().getDeclaration();
+			final CtType<?> superclass = clazz.getSuperclass()==null?null:clazz.getSuperclass().getDeclaration();
 			if(superclass instanceof CtClass<?>)
 				ref = getAssociatedListenerVariableThroughClass((CtClass<?>)superclass);
 		}
@@ -130,7 +130,7 @@ public class CommandWidgetFinder {
 				return Optional.of(variableRead.getVariable());
 			}
 		}else {
-			System.out.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass());
+			System.err.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok);
 		}
 
 		return Optional.empty();
