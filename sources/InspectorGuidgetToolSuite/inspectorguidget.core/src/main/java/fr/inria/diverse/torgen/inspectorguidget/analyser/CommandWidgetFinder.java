@@ -11,6 +11,7 @@ import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtVariableReference;
 
 import java.util.*;
@@ -62,7 +63,14 @@ public class CommandWidgetFinder {
 		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
 
 		return cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter).stream().
-											map(w -> (CtVariableReference<?>)w.getParent(CtVariableReference.class))).
+											map(w -> {
+												try{
+													return (CtVariableReference<?>)w.getParent(CtVariableReference.class);
+												}catch(ParentNotInitializedException ex) {
+													System.err.println("NO VAR REF IN CONDITIONS: " + w + " " + cond);
+													return null;
+												}
+											})).filter(w -> w!=null).
 											flatMap(s -> s).collect(Collectors.toList());
 	}
 
