@@ -99,7 +99,7 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 					message = cmd.getStatements().get(0).toString();
 				}
 				else {
-					CtCodeElement stat = cmd.getConditions().get(0).getRealStatmt();
+					CtCodeElement stat = cmd.getConditions().get(0).realStatmt;
 					line = SpoonHelper.INSTANCE.getLinePosition(stat);
 					message = stat.toString();
 				}
@@ -126,8 +126,8 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 		if(cmd==null || cmd.getConditions().isEmpty()) return "Command";
 		CommandConditionEntry entry = cmd.getConditions().get(0);
 		if(entry.isSameCondition())
-			return entry.getRealStatmt().toString();
-		return entry.getRealStatmt() + " -> " + entry.getEffectiveStatmt();
+			return entry.realStatmt.toString();
+		return entry.realStatmt + " -> " + entry.effectiveStatmt;
 	}
 	
 
