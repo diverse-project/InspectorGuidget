@@ -3,10 +3,7 @@ package fr.inria.diverse.torgen.inspectorguidget.analyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.Tuple;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class CommandWidgetBugsDetector {
 	private final @NotNull Map<Command, CommandWidgetFinder.WidgetFinderEntry> cmds;
@@ -16,6 +13,10 @@ public class CommandWidgetBugsDetector {
 		super();
 		cmds = commands;
 		results = new ArrayList<>();
+	}
+
+	public List<Tuple<String, Command>> getResults() {
+		return Collections.unmodifiableList(results);
 	}
 
 	public void process() {
