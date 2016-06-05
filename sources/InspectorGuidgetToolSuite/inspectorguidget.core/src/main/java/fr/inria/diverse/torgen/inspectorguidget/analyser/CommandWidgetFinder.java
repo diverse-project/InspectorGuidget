@@ -62,7 +62,7 @@ public class CommandWidgetFinder {
 		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
 
 		return cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter).stream().
-											map(w -> w.getParent(CtVariableReference.class))).
+											map(w -> (CtVariableReference<?>)w.getParent(CtVariableReference.class))).
 											flatMap(s -> s).collect(Collectors.toList());
 	}
 
