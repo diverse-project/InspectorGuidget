@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestWidgetFinder {
 	private CommandAnalyser cmdAnalyser;
@@ -87,5 +88,25 @@ public class TestWidgetFinder {
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+	}
+
+	@Test
+	public void testWidgetClassListener() {
+		initTest("src/test/resources/java/widgetsIdentification/WidgetClassListener.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertTrue(new ArrayList<>(results.values()).get(0).getWidgetClasses().isPresent());
+		assertEquals("Foo", new ArrayList<>(results.values()).get(0).getWidgetClasses().get().getSimpleName());
+	}
+
+	@Test
+	public void testFalseNegativeWidgetClassListener() {
+		initTest("src/test/resources/java/widgetsIdentification/FalsePositiveThisListener.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals(0, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 	}
 }

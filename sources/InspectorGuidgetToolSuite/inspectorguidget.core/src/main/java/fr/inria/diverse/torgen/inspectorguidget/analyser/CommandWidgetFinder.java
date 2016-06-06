@@ -2,16 +2,11 @@ package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.ThisAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.TypeRefFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
-import spoon.reflect.code.CtExpression;
-import spoon.reflect.code.CtFieldRead;
-import spoon.reflect.code.CtInvocation;
-import spoon.reflect.code.CtVariableRead;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtType;
-import spoon.reflect.declaration.ParentNotInitializedException;
+import spoon.reflect.code.*;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtVariableReference;
 
 import java.util.*;
@@ -51,6 +46,32 @@ public class CommandWidgetFinder {
 
 		getAssociatedListenerVariable(cmd).ifPresent(varref -> entry.setRegisteredWidgets(Collections.singletonList(varref)));
 		entry.setWidgetsUsedInConditions(getVarWidgetUsedInCmdConditions(cmd));
+		entry.setWidgetClasses(getWidgetClass(cmd));
+	}
+
+
+	private Optional<CtClass<?>> getWidgetClass(final @NotNull Command cmd) {
+		final CtExecutable<?> listenerMethod = cmd.getExecutable();
+		final CtInvocation<?> inv = listenerMethod.getParent(CtInvocation.class);
+
+		if(inv!=null || !listenerMethod.isParentInitialized() || !(listenerMethod.getParent() instanceof CtClass<?>))
+			return Optional.empty();
+
+		Optional<CtClass> ctClass = listenerMethod.getParent().getElements(new ThisAccessFilter(false)).stream().
+			filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
+			map(thisacc -> {
+				final CtInvocation<?> invok = (CtInvocation<?>) thisacc.getParent();
+				final CtExpression<?> target = invok.getTarget();
+				CtClass clazz;
+
+				if(target instanceof CtThisAccess<?> && WidgetHelper.INSTANCE.isTypeRefAToolkitWidget(invok.getExecutable().getDeclaringType()))
+					clazz = (CtClass) ((CtThisAccess<?>) target).getType().getDeclaration();
+				else clazz = null;
+
+				return Optional.ofNullable(clazz);
+			}).filter(clazz -> clazz.isPresent()).findFirst().orElseGet(() -> Optional.empty());
+
+		return Optional.ofNullable(ctClass.orElseGet(() -> null));
 	}
 
 
@@ -73,6 +94,14 @@ public class CommandWidgetFinder {
 											})).filter(w -> w!=null).
 											flatMap(s -> s).collect(Collectors.toList());
 	}
+
+
+//	private Optional<CtClass<?>> getWidgetClass(final @NotNull CtThisAccess<?> thisaccess) {
+//		if(WidgetHelper.INSTANCE.isTypeRefAWidget(thisaccess.getType())) {
+//			return Optional.ofNullable((CtClass<?>)thisaccess.getType().getDeclaration());
+//		}
+//		return Optional.empty();
+//	}
 
 
 	/**
@@ -123,6 +152,9 @@ public class CommandWidgetFinder {
 	 * @return The possible widget.
 	 */
 	private Optional<CtVariableReference<?>> getAssociatedListenerVariableThroughInvocation(final @NotNull CtInvocation<?> invok) {
+		if(!WidgetHelper.INSTANCE.isTypeRefAToolkitWidget(invok.getExecutable().getDeclaringType()))
+			return Optional.empty();
+
 		final CtExpression<?> target = invok.getTarget();
 
 		if(target instanceof CtFieldRead<?>) {
@@ -137,8 +169,11 @@ public class CommandWidgetFinder {
 			if(WidgetHelper.INSTANCE.isTypeRefAWidget(variableRead.getType())) {
 				return Optional.of(variableRead.getVariable());
 			}
+		}else if(target instanceof CtThisAccess<?>) {
+			// This accesses are supported in getWidgetClass.
 		}else {
-			System.err.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok);
+			System.err.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok + " " +
+								SpoonHelper.INSTANCE.formatPosition(invok.getPosition()));
 		}
 
 		return Optional.empty();
@@ -156,11 +191,13 @@ public class CommandWidgetFinder {
 	public static final class WidgetFinderEntry {
 		private List<CtVariableReference<?>> registeredWidgets;
 		private List<CtVariableReference<?>> widgetsUsedInConditions;
+		private Optional<CtClass<?>> widgetClasses;
 
 		private WidgetFinderEntry() {
 			super();
 			registeredWidgets = Collections.emptyList();
 			widgetsUsedInConditions = Collections.emptyList();
+			widgetClasses = Optional.empty();
 		}
 
 		public List<CtVariableReference<?>> getRegisteredWidgets() {
@@ -171,6 +208,10 @@ public class CommandWidgetFinder {
 			return Collections.unmodifiableList(widgetsUsedInConditions);
 		}
 
+		public Optional<CtClass<?>> getWidgetClasses() {
+			return widgetClasses;
+		}
+
 		private void setRegisteredWidgets(final @NotNull List<CtVariableReference<?>> registeredWidgets) {
 			this.registeredWidgets = registeredWidgets;
 		}
@@ -179,8 +220,12 @@ public class CommandWidgetFinder {
 			this.widgetsUsedInConditions = widgetsUsedInConditions;
 		}
 
+		public void setWidgetClasses(final @NotNull Optional<CtClass<?>> widgetClasses) {
+			this.widgetClasses = widgetClasses;
+		}
+
 		public long getNbDistinctWidgets() {
-			return Stream.concat(registeredWidgets.stream(), widgetsUsedInConditions.stream()).distinct().count();
+			return Stream.concat(registeredWidgets.stream(), widgetsUsedInConditions.stream()).distinct().count()+(widgetClasses.isPresent()?1:0);
 		}
 	}
 }
