@@ -24,24 +24,22 @@ import spoon.reflect.visitor.Filter;
  * This simple filter matches all the accesses to a given field.
  */
 public class MyVariableAccessFilter<T extends CtVariableAccess<?>> implements Filter<T> {
-	CtVariableReference<?> variable;
+	private final CtVariableReference<?> variable;
 
 	/**
 	 * Creates a new field access filter.
-	 *
-	 * @param variable
-	 * 		the accessed variable
+	 * @param varref the accessed varref
 	 */
-	public MyVariableAccessFilter(CtVariableReference<?> variable) {
-		this.variable = variable;
+	public MyVariableAccessFilter(final CtVariableReference<?> varref) {
+		variable = varref;
 	}
 
 	@Override
-	public boolean matches(T variableAccess) {
-		CtVariableReference<?> varAc = variableAccess.getVariable();
+	public boolean matches(final T variableAccess) {
+		final CtVariableReference<?> varAc = variableAccess.getVariable();
 
 		if(varAc==null){
-			System.err.println("NULLLLLL>>>" + variableAccess + " " + variableAccess.getPosition());
+			System.err.println("NULLLLLL>>>" + variable + " " + variableAccess + " " + variableAccess.getPosition());
 		}
 
 		return varAc!=null && varAc.equals(variable);
