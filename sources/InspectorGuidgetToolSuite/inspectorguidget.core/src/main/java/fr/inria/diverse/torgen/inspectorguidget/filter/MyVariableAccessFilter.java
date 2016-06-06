@@ -39,7 +39,7 @@ public class MyVariableAccessFilter<T extends CtVariableAccess<?>> implements Fi
 		final CtVariableReference<?> varAc = variableAccess.getVariable();
 
 		if(varAc==null){
-			System.err.println("NULLLLLL>>>" + variable + " " + variableAccess + " " + variableAccess.getPosition());
+			System.err.println("NULLLLLL>>>" + variable + " " + variableAccess.getPosition() + " on " + variableAccess + " " + variableAccess.getPosition());
 		}
 
 		return varAc!=null && varAc.equals(variable);
