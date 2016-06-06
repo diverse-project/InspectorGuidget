@@ -50,6 +50,7 @@ public class CommandWidgetFinder {
 	}
 
 
+	@SuppressWarnings("rawtypes")
 	private Optional<CtClass<?>> getWidgetClass(final @NotNull Command cmd) {
 		final CtExecutable<?> listenerMethod = cmd.getExecutable();
 		final CtInvocation<?> inv = listenerMethod.getParent(CtInvocation.class);

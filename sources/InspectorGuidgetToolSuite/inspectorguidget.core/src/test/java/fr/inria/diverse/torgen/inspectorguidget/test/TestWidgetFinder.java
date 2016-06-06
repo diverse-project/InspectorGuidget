@@ -6,6 +6,7 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -50,6 +51,16 @@ public class TestWidgetFinder {
 	}
 
 	@Test
+	@Ignore
+	public void testLambdaOnSingleFieldWidgetNoCond() {
+		initTest("src/test/resources/java/widgetsIdentification/LambdaOnSingleFieldWidgetNoCond.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+	}
+
+	@Test
 	public void testAnonClassOnSingleLocalVarWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleLocalVarWidgetNoCond.java");
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
@@ -62,6 +73,17 @@ public class TestWidgetFinder {
 	@Test
 	public void testAnonClassOnSingleFieldWidgetEqualCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnFieldWidgetsEqualCond.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals(2, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals("a", new ArrayList<>(results.values()).get(0).getWidgetsUsedInConditions().get(0).getSimpleName());
+	}
+
+	@Test
+	public void testLambdaOnSingleFieldWidgetEqualCond() {
+		initTest("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java");
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
 
 		assertEquals(1, results.size());
