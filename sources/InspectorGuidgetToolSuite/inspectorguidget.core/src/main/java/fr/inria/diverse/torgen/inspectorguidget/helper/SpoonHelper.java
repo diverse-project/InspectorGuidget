@@ -1,11 +1,13 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.SuperMethodInvocationFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,14 @@ public final class SpoonHelper {
 
 	private SpoonHelper() {
 		super();
+	}
+
+
+	public @NotNull List<CtExecutable<?>> getExecUsingSuperCall(final @NotNull List<CtExecutable<?>> execs) {
+		final SuperMethodInvocationFilter filter = new SuperMethodInvocationFilter();
+		return execs.parallelStream().filter(exec -> exec.getElements(filter).stream().
+								filter(supercall -> exec.getSimpleName().equals(supercall.getExecutable().getSimpleName())).findFirst().isPresent()
+			).collect(Collectors.toList());
 	}
 
 

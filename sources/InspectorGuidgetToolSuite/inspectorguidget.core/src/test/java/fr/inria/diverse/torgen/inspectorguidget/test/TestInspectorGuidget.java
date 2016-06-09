@@ -27,6 +27,7 @@ public abstract class TestInspectorGuidget<T extends Processor<? extends CtEleme
 		evt.setComplianceLevel(8);
 		modelBuilder = new JDTBasedSpoonCompiler(new FactoryImpl(new DefaultCoreFactory(), evt));
 		processors = createProcessor();
+//		Launcher.LOGGER.setLevel(Level.OFF);
 	}
 
 	protected abstract Collection<T> createProcessor();

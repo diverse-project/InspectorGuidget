@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetBugsDetector;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -130,5 +132,29 @@ public class TestWidgetFinder {
 
 		assertEquals(1, results.size());
 		assertEquals(0, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+	}
+
+	@Test
+	@Ignore
+	public void testClassListenerInheritance() {
+		initTest("src/test/resources/java/widgetsIdentification/ClassListenerInheritance.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);
+		detector.process();
+
+		assertEquals(2, results.size());
+
+		List<Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry>> entries = results.entrySet().stream().sorted((a, b) ->
+			a.getKey().getExecutable().getPosition().getLine() < b.getKey().getExecutable().getPosition().getLine() ? -1 :
+			a.getKey().getExecutable().getPosition().getLine() == b.getKey().getExecutable().getPosition().getLine() ? 0 : 1)
+			.collect(Collectors.toList());
+
+		assertEquals(1, entries.get(1).getValue().getNbDistinctWidgets());
+		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+
+		assertEquals(2, entries.get(0).getValue().getNbDistinctWidgets());
+		assertEquals("bar", new ArrayList<>(results.values()).get(1).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals("fooo", new ArrayList<>(results.values()).get(1).getRegisteredWidgets().get(0).getSimpleName());
 	}
 }

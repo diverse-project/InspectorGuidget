@@ -1,13 +1,20 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.Tuple;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.reference.CtTypeReference;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandWidgetBugsDetector {
 	private final @NotNull Map<Command, CommandWidgetFinder.WidgetFinderEntry> cmds;
 	private final @NotNull List<Tuple<String, Command>> results;
+	private @Nullable List<CtExecutable<?>> supercalls;
 
 	public CommandWidgetBugsDetector(final @NotNull Map<Command, CommandWidgetFinder.WidgetFinderEntry> commands) {
 		super();
@@ -28,9 +35,25 @@ public class CommandWidgetBugsDetector {
 		});
 	}
 
+	private @NotNull List<CtExecutable<?>> getSuperCalls() {
+		if(supercalls==null) {
+			supercalls = SpoonHelper.INSTANCE.getExecUsingSuperCall(
+								cmds.keySet().parallelStream().map(cm -> cm.getExecutable()).collect(Collectors.toList()));
+		}
+		return supercalls;
+	}
+
 	private Optional<Tuple<String, Command>> checkOneWidgetNoCondition(final @NotNull Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry) {
-		if(entry.getValue().getNbDistinctWidgets()<2 && !entry.getKey().getConditions().isEmpty())
-			return Optional.of(new Tuple<>("A single or no widget registred to the listener, but conditions are defined.", entry.getKey()));
+		if(entry.getValue().getNbDistinctWidgets()<2 && !entry.getKey().getConditions().isEmpty()) {
+			final CtExecutable<?> exec = entry.getKey().getExecutable();
+			final CtTypeReference<?> execClass = exec.getParent(CtClass.class).getReference();
+			final List<CtExecutable<?>> subs = getSuperCalls().parallelStream().
+							filter(sup -> sup.getSimpleName().equals(exec.getSimpleName()) && sup.getParent(CtClass.class).isSubtypeOf(execClass)).
+							collect(Collectors.toList());
+
+			if(subs.isEmpty())
+				return Optional.of(new Tuple<>("A single or no widget registred to the listener, but conditions are defined.", entry.getKey()));
+		}
 		return Optional.empty();
 	}
 

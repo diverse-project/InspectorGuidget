@@ -116,7 +116,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 							// Getting all the super conditional statements.
 							List<CtElement> exps = SpoonHelper.INSTANCE.getSuperConditionalExpressions(varaccess, var.getDeclaration().getParent());
 							// Getting the main expression of the var access (or the var access itself).
-							CtExpression parent = varaccess.getParent(CtExpression.class);
+							CtExpression<?> parent = varaccess.getParent(CtExpression.class);
 							exps.add(parent==null ? varaccess : parent);
 							exps.add(var.getDeclaration());
 							return exps;
