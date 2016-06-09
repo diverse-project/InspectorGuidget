@@ -51,7 +51,7 @@ public class CommandWidgetFinder {
 
 
 	@SuppressWarnings("rawtypes")
-	private Optional<CtClass<?>> getWidgetClass(final @NotNull Command cmd) {
+	private @NotNull Optional<CtClass<?>> getWidgetClass(final @NotNull Command cmd) {
 		final CtExecutable<?> listenerMethod = cmd.getExecutable();
 		final CtInvocation<?> inv = listenerMethod.getParent(CtInvocation.class);
 
@@ -81,7 +81,7 @@ public class CommandWidgetFinder {
 	 * @param cmd The comand to analyse
 	 * @return The list of the references to the widgets used in the conditions.
 	 */
-	private List<CtVariableReference<?>> getVarWidgetUsedInCmdConditions(final @NotNull Command cmd) {
+	private @NotNull List<CtVariableReference<?>> getVarWidgetUsedInCmdConditions(final @NotNull Command cmd) {
 		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
 
 		return cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter).stream().
@@ -92,7 +92,7 @@ public class CommandWidgetFinder {
 													System.err.println("NO VAR REF IN CONDITIONS: " + w + " " + cond);
 													return null;
 												}
-											})).filter(w -> w!=null).
+											}).filter(w -> w!=null)).
 											flatMap(s -> s).collect(Collectors.toList());
 	}
 
@@ -190,9 +190,9 @@ public class CommandWidgetFinder {
 
 
 	public static final class WidgetFinderEntry {
-		private List<CtVariableReference<?>> registeredWidgets;
-		private List<CtVariableReference<?>> widgetsUsedInConditions;
-		private Optional<CtClass<?>> widgetClasses;
+		private @NotNull List<CtVariableReference<?>> registeredWidgets;
+		private @NotNull List<CtVariableReference<?>> widgetsUsedInConditions;
+		private @NotNull Optional<CtClass<?>> widgetClasses;
 
 		private WidgetFinderEntry() {
 			super();
@@ -201,15 +201,15 @@ public class CommandWidgetFinder {
 			widgetClasses = Optional.empty();
 		}
 
-		public List<CtVariableReference<?>> getRegisteredWidgets() {
+		public @NotNull List<CtVariableReference<?>> getRegisteredWidgets() {
 			return Collections.unmodifiableList(registeredWidgets);
 		}
 
-		public List<CtVariableReference<?>> getWidgetsUsedInConditions() {
+		public @NotNull List<CtVariableReference<?>> getWidgetsUsedInConditions() {
 			return Collections.unmodifiableList(widgetsUsedInConditions);
 		}
 
-		public Optional<CtClass<?>> getWidgetClasses() {
+		public @NotNull Optional<CtClass<?>> getWidgetClasses() {
 			return widgetClasses;
 		}
 
@@ -226,7 +226,9 @@ public class CommandWidgetFinder {
 		}
 
 		public long getNbDistinctWidgets() {
-			return Stream.concat(registeredWidgets.stream(), widgetsUsedInConditions.stream()).distinct().count()+(widgetClasses.isPresent()?1:0);
+			return Stream.concat(registeredWidgets.stream().map(w -> w.getDeclaration()),
+				widgetsUsedInConditions.stream().map(w -> w.getDeclaration())).
+				distinct().count()+(widgetClasses.isPresent()?1:0);
 		}
 	}
 }
