@@ -44,7 +44,7 @@ public class CommandWidgetFinder {
 			results.put(cmd, entry);
 		}
 
-		getAssociatedListenerVariable(cmd).ifPresent(varref -> entry.setRegisteredWidgets(Collections.singletonList(varref)));
+		entry.setRegisteredWidgets(getAssociatedListenerVariable(cmd));
 		entry.setWidgetsUsedInConditions(getVarWidgetUsedInCmdConditions(cmd));
 		entry.setWidgetClasses(getWidgetClass(cmd));
 	}
@@ -110,17 +110,18 @@ public class CommandWidgetFinder {
 	 * @param cmd The command to analyse.
 	 * @return The reference to the widget or nothing.
 	 */
-	private Optional<CtVariableReference<?>> getAssociatedListenerVariable(final @NotNull Command cmd) {
+	private @NotNull List<CtVariableReference<?>> getAssociatedListenerVariable(final @NotNull Command cmd) {
 		final CtExecutable<?> listenerMethod = cmd.getExecutable();
 		final CtInvocation<?> invok = listenerMethod.getParent(CtInvocation.class);
 
 		if(invok==null) {
 			if(listenerMethod.isParentInitialized() && listenerMethod.getParent() instanceof CtClass)
 				return getAssociatedListenerVariableThroughClass((CtClass<?>)listenerMethod.getParent());
-			return Optional.empty();
+			return Collections.emptyList();
 		}
 
-		return getAssociatedListenerVariableThroughInvocation(invok);
+		Optional<CtVariableReference<?>> lisVar = getAssociatedListenerVariableThroughInvocation(invok);
+		return lisVar.isPresent() ? Collections.singletonList(lisVar.get()) : Collections.emptyList();
 	}
 
 
@@ -129,19 +130,18 @@ public class CommandWidgetFinder {
 	 * @param clazz The class to analyse.
 	 * @return The possible widget.
 	 */
-	private Optional<CtVariableReference<?>> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz) {
+	private List<CtVariableReference<?>> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz) {
 		// Looking for 'this' usages
-		Optional<CtVariableReference<?>> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
+		List<CtVariableReference<?>> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
 			// Keeping the 'this' usages that are parameters of a method call
 				filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
 				map(thisacc -> getAssociatedListenerVariableThroughInvocation((CtInvocation<?>) thisacc.getParent())).
-				filter(varref -> varref.isPresent()).findFirst().orElseGet(() -> Optional.empty());
+				filter(varref -> varref.isPresent()).map(varref -> varref.get()).collect(Collectors.toList());
 
-		if(!ref.isPresent()) {
-			final CtType<?> superclass = clazz.getSuperclass()==null?null:clazz.getSuperclass().getDeclaration();
-			if(superclass instanceof CtClass<?>)
-				ref = getAssociatedListenerVariableThroughClass((CtClass<?>)superclass);
-		}
+		// Looking for associations in super classes.
+		final CtType<?> superclass = clazz.getSuperclass()==null?null:clazz.getSuperclass().getDeclaration();
+		if(superclass instanceof CtClass<?>)
+			ref.addAll(getAssociatedListenerVariableThroughClass((CtClass<?>)superclass));
 
 		return ref;
 	}

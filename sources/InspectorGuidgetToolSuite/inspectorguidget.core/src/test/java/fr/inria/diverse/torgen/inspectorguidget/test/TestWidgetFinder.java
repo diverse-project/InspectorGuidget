@@ -150,11 +150,12 @@ public class TestWidgetFinder {
 			a.getKey().getExecutable().getPosition().getLine() == b.getKey().getExecutable().getPosition().getLine() ? 0 : 1)
 			.collect(Collectors.toList());
 
-		assertEquals(1, entries.get(1).getValue().getNbDistinctWidgets());
-		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals(1, entries.get(0).getValue().getNbDistinctWidgets());
+		assertEquals("fooo", entries.get(0).getValue().getRegisteredWidgets().get(0).getSimpleName());
 
-		assertEquals(2, entries.get(0).getValue().getNbDistinctWidgets());
-		assertEquals("bar", new ArrayList<>(results.values()).get(1).getRegisteredWidgets().get(0).getSimpleName());
-		assertEquals("fooo", new ArrayList<>(results.values()).get(1).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals(2, entries.get(1).getValue().getNbDistinctWidgets());
+		List<String> names = entries.get(1).getValue().getRegisteredWidgets().stream().map(o -> o.getSimpleName()).sorted(String::compareTo).collect(Collectors.toList());
+		assertEquals("bar", names.get(0));
+		assertEquals("fooo", names.get(1));
 	}
 }
