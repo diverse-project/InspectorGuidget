@@ -24,15 +24,23 @@ import java.util.logging.Level;
  */
 public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?>> {
 	private Collection<CtTypeReference<?>> controlType;
-	private Map<CtField<?>, CtField<?>> fields;
+	private final @NotNull Map<CtField<?>, CtField<?>> fields;
 	/** The widgets created and directly added in a container. */
-	private Map<CtTypeReference<?>, CtTypeReference<?>> references;
+	private final @NotNull Map<CtTypeReference<?>, CtTypeReference<?>> references;
 	private CtTypeReference<?> collectionType;
 	private final @NotNull Set<WidgetListener> widgetObs;
+	private final boolean withConfigStat;
 
 	public WidgetProcessor() {
+		this(false);
+	}
+
+	public WidgetProcessor(final boolean withConfigurationStatmts) {
 		super();
 		widgetObs = new HashSet<>();
+		fields = new IdentityHashMap<>();
+		references = new IdentityHashMap<>();
+		withConfigStat = withConfigurationStatmts;
 	}
 
 	public void addWidgetObserver(final @NotNull WidgetListener obs) {
@@ -43,8 +51,6 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	public void init() {
 		LOG.log(Level.INFO, "init processor " + getClass().getSimpleName());
 
-		fields = new IdentityHashMap<>();
-		references = new IdentityHashMap<>();
 		collectionType = getFactory().Type().createReference(Collection.class);
 		controlType = WidgetHelper.INSTANCE.getWidgetTypes(getFactory());
 	}
@@ -190,12 +196,16 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 
 	private void addNotifyObserversOnContained(final CtInvocation<?> invok, final @Nullable CtTypeReference<?> element) {
-		if(element!=null && references.putIfAbsent(element, element)==null)
+		if(element!=null && references.putIfAbsent(element, element)==null) {
+			references.put(element, element);
 			widgetObs.forEach(o -> o.onWidgetCreatedForContainer(invok, element));
+		}
 	}
 
 	private void addNotifyObserversOnField(final @Nullable CtField<?> field, final CtTypeReference<?> element) {
-		if(field!=null && fields.putIfAbsent(field, field)==null)
+		if(field!=null && fields.putIfAbsent(field, field)==null) {
+			fields.put(field, field);
 			widgetObs.forEach(o -> o.onWidgetAttribute(field, element));
+		}
 	}
 }
