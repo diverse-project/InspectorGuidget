@@ -24,7 +24,7 @@ import java.util.logging.Level;
  */
 public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?>> {
 	private Collection<CtTypeReference<?>> controlType;
-	private final @NotNull Map<CtField<?>, CtField<?>> fields;
+	private final @NotNull Map<CtField<?>, List<CtVariableAccess<?>>> fields;
 	/** The widgets created and directly added in a container. */
 	private final @NotNull Map<CtTypeReference<?>, CtTypeReference<?>> references;
 	private CtTypeReference<?> collectionType;
@@ -197,15 +197,26 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 	private void addNotifyObserversOnContained(final CtInvocation<?> invok, final @Nullable CtTypeReference<?> element) {
 		if(element!=null && references.putIfAbsent(element, element)==null) {
-			references.put(element, element);
 			widgetObs.forEach(o -> o.onWidgetCreatedForContainer(invok, element));
 		}
 	}
 
 	private void addNotifyObserversOnField(final @Nullable CtField<?> field, final CtTypeReference<?> element) {
-		if(field!=null && fields.putIfAbsent(field, field)==null) {
-			fields.put(field, field);
-			widgetObs.forEach(o -> o.onWidgetAttribute(field, element));
+		if(field!=null && !fields.containsKey(field)) {
+			final List<CtVariableAccess<?>> usages = extractUsagesOfWidgetField(field);
+			fields.put(field, usages);
+			widgetObs.forEach(o -> o.onWidgetAttribute(field, usages, element));
 		}
+	}
+
+	private List<CtVariableAccess<?>> extractUsagesOfWidgetField(final CtField<?> field) {
+		if(withConfigStat) {
+			return SpoonHelper.INSTANCE.extractUsagesOfField(field);
+		}
+		return Collections.emptyList();
+	}
+
+	public @NotNull Map<CtField<?>, List<CtVariableAccess<?>>> getFields() {
+		return Collections.unmodifiableMap(fields);
 	}
 }

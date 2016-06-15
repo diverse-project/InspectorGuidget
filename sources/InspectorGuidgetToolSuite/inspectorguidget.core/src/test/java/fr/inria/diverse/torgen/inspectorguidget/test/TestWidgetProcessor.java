@@ -5,25 +5,23 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.reference.CtTypeReference;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> implements WidgetListener {
-	private Set<CtField<?>> widgetAttrs;
+	private Map<CtField<?>, List<CtVariableAccess<?>>> widgetAttrs;
 	private Set<CtTypeReference<?>> widgetAddedToContainer;
 
 	@Override
 	@Before
 	public void setUp() {
 		super.setUp();
-		widgetAttrs= new HashSet<>();
+		widgetAttrs= new HashMap<>();
 		widgetAddedToContainer= new HashSet<>();
 		processors.forEach(p -> p.addWidgetObserver(this));
 	}
@@ -31,7 +29,7 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> i
 
 	@Override
 	public List<WidgetProcessor> createProcessor() {
-		return Collections.singletonList(new WidgetProcessor());
+		return Collections.singletonList(new WidgetProcessor(true));
 	}
 
 	@Test
@@ -86,9 +84,17 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> i
 		assertEquals(1, widgetAddedToContainer.size());
 	}
 
+	@Test
+	public void testWidgetUsages() {
+		run("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
+		assertEquals(2, widgetAttrs.size());
+		assertEquals(2, new ArrayList<>(widgetAttrs.values()).get(0).size());
+		assertEquals(2, new ArrayList<>(widgetAttrs.values()).get(1).size());
+	}
+
 	@Override
-	public void onWidgetAttribute(final CtField<?> widget, final CtTypeReference<?> element) {
-		widgetAttrs.add(widget);
+	public void onWidgetAttribute(final CtField<?> widget, final List<CtVariableAccess<?>> usages, final CtTypeReference<?> element) {
+		widgetAttrs.put(widget, usages);
 	}
 
 	@Override

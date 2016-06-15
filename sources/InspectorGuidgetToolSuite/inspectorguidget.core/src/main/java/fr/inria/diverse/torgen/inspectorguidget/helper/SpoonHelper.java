@@ -1,17 +1,15 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.SuperMethodInvocationFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class SpoonHelper {
@@ -145,5 +143,37 @@ public final class SpoonHelper {
 			elt = parent;
 		}
 		System.out.println();
+	}
+
+	public List<CtVariableAccess<?>> extractUsagesOfField(final @NotNull CtField<?> field) {
+		CtElement parent;
+
+		if(field.getVisibility()==null) {
+			parent = field.getParent(CtPackage.class);
+			if(parent == null) parent = field.getParent(CtClass.class);
+		}else {
+			switch(field.getVisibility()) {
+				case PRIVATE:
+					parent = field.getParent(CtClass.class);
+					break;
+				case PROTECTED:
+					parent = field.getParent(CtPackage.class);
+					if(parent == null) parent = field.getParent(CtClass.class);
+					break;
+				case PUBLIC:
+					parent = field.getFactory().Package().getRootPackage();
+					break;
+				default:
+					parent = null;
+					break;
+			}
+		}
+
+		if(parent!=null) {
+			return parent.getElements(new MyVariableAccessFilter<>(field.getReference()));
+		}
+		//TODO find usages in method when the field is given as a parameter.
+
+		return Collections.emptyList();
 	}
 }
