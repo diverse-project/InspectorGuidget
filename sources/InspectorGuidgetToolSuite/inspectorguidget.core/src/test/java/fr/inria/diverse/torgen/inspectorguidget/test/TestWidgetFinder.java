@@ -134,8 +134,8 @@ public class TestWidgetFinder {
 		assertEquals(0, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 	}
 
+
 	@Test
-	@Ignore
 	public void testClassListenerInheritance() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerInheritance.java");
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
@@ -157,5 +157,16 @@ public class TestWidgetFinder {
 		List<String> names = entries.get(1).getValue().getRegisteredWidgets().stream().map(o -> o.getSimpleName()).sorted(String::compareTo).collect(Collectors.toList());
 		assertEquals("bar", names.get(0));
 		assertEquals("fooo", names.get(1));
+	}
+
+
+	@Test
+	@Ignore
+	public void testClassListenerExternal() {
+		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(1, results.size());
+		assertEquals(2, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 	}
 }
