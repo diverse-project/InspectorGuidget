@@ -12,7 +12,7 @@ class Bar implements ActionListener {
 		if(Foo.FOO.equals(e.getActionCommand())) {
 			System.out.println("FOO: " + e.getSource()); // Command 1
 			return;
-		}else if(Foo.BAR.equals(e.getActionCommand())) {
+		}else if(Foo.BAR.equals(e.getActionCommand())) {//DO NOT REMOVE THE ELSE (USED IN TESTS)
 			System.out.println("BAR: " + e.getSource()); // Command 2
 			return;
 		}

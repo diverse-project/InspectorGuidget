@@ -162,7 +162,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod) {
+	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod,
+														  final @NotNull List<CtElement> conds) {
 		List<Command> cmds = commands.get(listenerMethod);
 
 		if(cmds==null) {
@@ -171,7 +172,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		if(condStat instanceof CtIf) {
-			extractCommandsFromIf((CtIf) condStat, cmds, listenerMethod);
+			extractCommandsFromIf((CtIf) condStat, cmds, listenerMethod, conds);
 			return;
 		}
 
@@ -206,7 +207,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec) {
+	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec,
+									   final @NotNull List<CtElement> otherConds) {
 		final CtStatement elseStat =  ifStat.getElseStatement();
 		final CtStatement thenStat = ifStat.getThenStatement();
 		List<CtElement> stats = new ArrayList<>();
@@ -222,8 +224,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 		}
 
-		if(elseStat!=null) {
-			//TODO create a command if it does not contain any other GUI conditional statement
+		if(elseStat!=null && !otherConds.stream().filter(c -> !elseStat.getElements(new FindElementFilter(c)).isEmpty()).findFirst().isPresent()) {
 			// For the else block, creating a negation of the condition.
 			stats = new ArrayList<>();
 
@@ -308,7 +309,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			}else {
 				// For each conditional statements found in the listener method or in its dispatched methods,
 				// a command is extracted.
-				conds.forEach(cond -> extractCommandsFromConditionalStatements(cond, listenerMethod));
+				conds.forEach(cond -> extractCommandsFromConditionalStatements(cond, listenerMethod, conds));
 			}
 		}
 	}
@@ -341,7 +342,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		// Removing the GUI conditional statements that contain other GUI conditional statements.
 		conds.removeAll(conds.stream().filter(cond -> {
-			List<CtStatement> elements = cond.getElements(new ConditionalFilter());
+			List<CtStatement> elements;
+			if(cond instanceof CtIf) {
+				elements = ((CtIf)cond).getThenStatement().getElements(new ConditionalFilter());
+			}else {
+				elements = cond.getElements(new ConditionalFilter());
+			}
 			// By default 'elements' contains the condition 'cond'.
 			return elements.size()>1 &&
 					// Ignoring 'cond'

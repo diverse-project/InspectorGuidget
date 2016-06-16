@@ -330,4 +330,12 @@ public class TestCommandAnalyser {
 		assertEquals(1L, cmds.size());
 		assertEquals(19, cmds.get(0).getMainStatmtEntry().get().getStatmts().get(0).getPosition().getLine());
 	}
+
+	@Test
+	public void testCommandsInIfElseIfBlocks() {
+		analyser.addInputResource("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2, new ArrayList<>(analyser.getCommands().values()).get(0).size());
+	}
 }
