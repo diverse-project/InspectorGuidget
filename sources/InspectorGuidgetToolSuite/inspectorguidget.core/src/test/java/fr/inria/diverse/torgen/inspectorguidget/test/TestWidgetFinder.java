@@ -172,9 +172,18 @@ public class TestWidgetFinder {
 
 
 	@Test
-	@Ignore
 	public void testClassListenerExternal() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(2, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
+	}
+
+	@Test
+	public void testClassListenerExternalString() {
+		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternalString.java");
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
 
 		assertEquals(2, results.size());

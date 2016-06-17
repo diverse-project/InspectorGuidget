@@ -1,9 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
-import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.ThisAccessFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.TypeRefFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.*;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.Tuple;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
@@ -53,6 +50,49 @@ public class CommandWidgetFinder {
 		entry.setWidgetsUsedInConditions(getVarWidgetUsedInCmdConditions(cmd));
 		entry.setWidgetClasses(getWidgetClass(cmd));
 		entry.setWidgetsFromSharedVars(matchWidgetsUsagesWithCmdConditions(cmd));
+		entry.setWidgetsFromStringLiterals(matchWidgetsUsagesWithStringsInCmdConditions(cmd));
+	}
+
+
+	/**
+	 * Example:
+	 * if(e.getActionCommand().equals("FOO")){...}
+	 * ...
+	 * button.setActionCommand("FOO");
+	 * @param cmd The command to analyse.
+	 */
+	private Map<? extends CtField<?>, List<CtLiteral<?>>> matchWidgetsUsagesWithStringsInCmdConditions(final @NotNull Command cmd) {
+		final StringLiteralFilter stringLiteralFilter = new StringLiteralFilter();
+
+		final Set<CtLiteral<?>> stringliterals = cmd.getConditions().parallelStream().
+			// Must ignore the conditions of if statements when in an else block (in this case the effective if statement is a negation of the
+			// real conditions, so they are different)
+				filter(cond -> cond.realStatmt==cond.effectiveStatmt || cond.realStatmt.isParentInitialized() && !(cond.realStatmt.getParent() instanceof CtIf)).
+			// Getting the variables used in the conditions
+				map(cond -> cond.effectiveStatmt.getElements(stringLiteralFilter)).flatMap(s -> s.stream()).
+			// Keeping those that declaration are not null
+			// Collecting them
+				distinct().collect(Collectors.toCollection(HashSet::new));
+
+		final Map<? extends CtField<?>, List<CtLiteral<?>>> widget = widgets.entrySet().stream().
+			map(entry -> entry.getValue().stream().
+				// Getting the code statement that uses the variable
+					map(varac -> varac.getParent(CtStatement.class)).
+					filter(stat -> stat != null).
+				// Looking for the variables used in the conditions in the code statement
+					map(stat -> stringliterals.stream().filter(varr -> !stat.getElements(new FindElementFilter(varr, false)).isEmpty()).
+					collect(Collectors.toList())).
+					filter(list -> !list.isEmpty()).
+					map(var -> new Tuple<>(entry.getKey(), var))).
+			// Collecting all the variables used in both the command's conditions and the code statements that configure widgets
+				flatMap(s -> s).
+				collect(Collectors.toMap(Tuple::getA, Tuple::getB, (a, b) -> Stream.concat(a.stream(), b.stream()).distinct().collect(Collectors.toList())));
+
+		if(widget.size()>1) {
+			System.err.println("MORE THAN ONE WIDGET FOUND USING STRING LITERALS: " + widgets + " " + cmd);
+		}
+
+		return widget;
 	}
 
 
@@ -243,6 +283,7 @@ public class CommandWidgetFinder {
 		private @NotNull List<CtVariableReference<?>> widgetsUsedInConditions;
 		private @NotNull Optional<CtClass<?>> widgetClasses;
 		private @NotNull Map<? extends CtField<?>, List<CtVariable<?>>> widgetsFromSharedVars;
+		private @NotNull Map<? extends CtField<?>, List<CtLiteral<?>>> widgetsFromStringLiterals;
 
 		private WidgetFinderEntry() {
 			super();
@@ -250,9 +291,14 @@ public class CommandWidgetFinder {
 			widgetsUsedInConditions = Collections.emptyList();
 			widgetClasses = Optional.empty();
 			widgetsFromSharedVars = Collections.emptyMap();
+			widgetsFromStringLiterals = Collections.emptyMap();
 		}
 
-		public @NotNull Map<? extends CtField<?>, List<CtVariable<?>>> getwidgetFromSharedVars() {
+		public @NotNull  Map<? extends CtField<?>, List<CtLiteral<?>>> getWidgetsFromStringLiterals() {
+			return Collections.unmodifiableMap(widgetsFromStringLiterals);
+		}
+
+		public @NotNull Map<? extends CtField<?>, List<CtVariable<?>>> getWidgetsFromSharedVars() {
 			return Collections.unmodifiableMap(widgetsFromSharedVars);
 		}
 
@@ -266,6 +312,10 @@ public class CommandWidgetFinder {
 
 		public @NotNull Optional<CtClass<?>> getWidgetClasses() {
 			return widgetClasses;
+		}
+
+		public void setWidgetsFromStringLiterals(final @NotNull Map<? extends CtField<?>, List<CtLiteral<?>>> widgetsFromStringLiterals) {
+			this.widgetsFromStringLiterals = widgetsFromStringLiterals;
 		}
 
 		public void setWidgetsFromSharedVars(final @NotNull Map<? extends CtField<?>, List<CtVariable<?>>> widgetsFromSharedVars) {
@@ -285,9 +335,9 @@ public class CommandWidgetFinder {
 		}
 
 		public long getNbDistinctWidgets() {
-			return Stream.concat(Stream.concat(registeredWidgets.stream().map(w -> w.getDeclaration()),
+			return Stream.concat(Stream.concat(Stream.concat(registeredWidgets.stream().map(w -> w.getDeclaration()),
 												widgetsUsedInConditions.stream().map(w -> w.getDeclaration())),
-								widgetsFromSharedVars.keySet().stream()).
+								widgetsFromSharedVars.keySet().stream()), widgetsFromStringLiterals.keySet().stream()).
 					distinct().count()+(widgetClasses.isPresent()?1:0);
 		}
 	}

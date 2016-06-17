@@ -6,14 +6,16 @@ import spoon.reflect.visitor.filter.AbstractFilter;
 
 public class FindElementFilter extends AbstractFilter<CtElement> {
 	final @NotNull CtElement elt;
+	final boolean identify;
 
-	public FindElementFilter(final @NotNull CtElement element) {
+	public FindElementFilter(final @NotNull CtElement element, final boolean identifyCheck) {
 		super(CtElement.class);
 		elt = element;
+		identify = identifyCheck;
 	}
 
 	@Override
 	public boolean matches(final CtElement element) {
-		return element==elt;
+		return identify ? element==elt : element.equals(elt);
 	}
 }

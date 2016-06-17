@@ -141,7 +141,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	 * @return True if the given element is contained in the main block or in a condition statement of a command.
 	 */
 	private boolean isPartOfMainCommandBlockOrCondition(final @NotNull CtElement elt, final @NotNull Command currCmd, final @NotNull List<Command> cmds) {
-		final FindElementFilter filter = new FindElementFilter(elt);
+		final FindElementFilter filter = new FindElementFilter(elt, true);
 
 		// First, check the main blocks
 		boolean ok = cmds.parallelStream().filter(cmd -> cmd!=currCmd). // Ignoring the current command.
@@ -224,7 +224,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 		}
 
-		if(elseStat!=null && !otherConds.stream().filter(c -> !elseStat.getElements(new FindElementFilter(c)).isEmpty()).findFirst().isPresent()) {
+		if(elseStat!=null && !otherConds.stream().filter(c -> !elseStat.getElements(new FindElementFilter(c, true)).isEmpty()).findFirst().isPresent()) {
 			// For the else block, creating a negation of the condition.
 			stats = new ArrayList<>();
 
