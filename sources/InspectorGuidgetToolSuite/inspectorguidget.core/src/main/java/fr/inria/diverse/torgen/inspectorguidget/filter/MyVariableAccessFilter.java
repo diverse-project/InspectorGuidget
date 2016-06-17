@@ -37,8 +37,11 @@ public class MyVariableAccessFilter<T extends CtVariableAccess<?>> implements Fi
 	@Override
 	public boolean matches(final T variableAccess) {
 		final CtVariableReference<?> varAc = variableAccess.getVariable();
-
-		return varAc!=null && varAc.getDeclaration()!=null && varAc.getDeclaration().equals(variable.getDeclaration());
+		try {
+			return varAc!=null && varAc.getDeclaration()!=null && varAc.getDeclaration().equals(variable.getDeclaration());
+		}catch(NullPointerException ex) {
+			return false;
+		}
 	}
 
 }
