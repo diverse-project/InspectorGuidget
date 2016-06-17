@@ -112,7 +112,7 @@ public final class SpoonHelper {
 	public CtExpression<Boolean> negBoolExpression(final @NotNull CtExpression<Boolean> exp) {
 		final CtUnaryOperator<Boolean> neg = exp.getFactory().Core().createUnaryOperator();
 		neg.setKind(UnaryOperatorKind.NOT);
-		neg.setOperand(exp);
+		neg.setOperand(exp.clone());
 		return neg;
 	}
 
@@ -122,9 +122,9 @@ public final class SpoonHelper {
 		// A switch is an equality test against values
 		exp.setKind(BinaryOperatorKind.EQ);
 		// The tested object
-		exp.setLeftHandOperand(switchStat.getSelector());
+		exp.setLeftHandOperand(switchStat.getSelector().clone());
 		// The tested constant
-		exp.setRightHandOperand(caze.getCaseExpression());
+		exp.setRightHandOperand(caze.getCaseExpression().clone());
 		return exp;
 	}
 

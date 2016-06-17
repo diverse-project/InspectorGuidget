@@ -1,10 +1,12 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
+import fr.inria.diverse.torgen.inspectorguidget.Launcher;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetBugsDetector;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
+import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -21,11 +23,13 @@ import static org.junit.Assert.assertTrue;
 
 public class TestWidgetFinder {
 	private CommandAnalyser cmdAnalyser;
+	private WidgetProcessor widgetProc;
 	private CommandWidgetFinder finder;
 
 	@Before
 	public void setUp() throws Exception {
 		cmdAnalyser = new CommandAnalyser();
+		widgetProc = new WidgetProcessor(true);
 	}
 
 	@After
@@ -38,8 +42,15 @@ public class TestWidgetFinder {
 
 	private void initTest(final String path) {
 		cmdAnalyser.addInputResource(path);
+		Launcher launcher = new Launcher(Collections.singletonList(widgetProc));
+		launcher.addInputResource(path);
+
 		cmdAnalyser.run();
-		finder = new CommandWidgetFinder(cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()));
+		launcher.run();
+
+		finder = new CommandWidgetFinder(
+			cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()),
+			widgetProc.getFields());
 		finder.process();
 	}
 
@@ -150,7 +161,7 @@ public class TestWidgetFinder {
 			a.getKey().getExecutable().getPosition().getLine() == b.getKey().getExecutable().getPosition().getLine() ? 0 : 1)
 			.collect(Collectors.toList());
 
-		assertEquals(1, entries.get(0).getValue().getNbDistinctWidgets());
+		assertEquals(2, entries.get(0).getValue().getNbDistinctWidgets());
 		assertEquals("fooo", entries.get(0).getValue().getRegisteredWidgets().get(0).getSimpleName());
 
 		assertEquals(2, entries.get(1).getValue().getNbDistinctWidgets());
@@ -166,7 +177,8 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
 
-		assertEquals(1, results.size());
-		assertEquals(2, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertEquals(2, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
 	}
 }
