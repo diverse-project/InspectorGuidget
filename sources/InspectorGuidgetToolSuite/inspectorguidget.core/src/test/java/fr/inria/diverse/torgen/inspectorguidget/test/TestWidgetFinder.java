@@ -190,4 +190,14 @@ public class TestWidgetFinder {
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
 	}
+
+	@Test
+	public void testClassListenerExternalLocalVar() {
+		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternalLocalVar.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(2, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
+	}
 }
