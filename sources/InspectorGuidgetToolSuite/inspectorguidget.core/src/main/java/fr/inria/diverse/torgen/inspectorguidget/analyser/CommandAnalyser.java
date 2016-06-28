@@ -200,7 +200,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 //				}
 
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(switchStat);
-				conds.add(0, new CommandConditionEntry(SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas)));
+				conds.add(0, new CommandConditionEntry(cas, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas)));
 				//For each case, a condition is created using the case value.
 				return new Command(new CommandStatmtEntry(true, stats), conds, exec);
 			}).collect(Collectors.toList()));
