@@ -28,6 +28,8 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	private CtTypeReference<?> collectionType;
 	private final @NotNull Set<WidgetListener> widgetObs;
 	private final boolean withConfigStat;
+	/** A cache used to optimise the type references to analyse. */
+	private final Map<String, Boolean> cacheTypeChecked;
 
 	public WidgetProcessor() {
 		this(false);
@@ -39,6 +41,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		fields = new IdentityHashMap<>();
 		references = new IdentityHashMap<>();
 		withConfigStat = withConfigurationStatmts;
+		cacheTypeChecked = new HashMap<>();
 	}
 
 	public void addWidgetObserver(final @NotNull WidgetListener obs) {
@@ -54,15 +57,29 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	}
 
 	@Override
+	public void processingDone() {
+		super.processingDone();
+		cacheTypeChecked.clear();
+	}
+
+	@Override
 	public boolean isToBeProcessed(CtTypeReference<?> type) {
-		return isASubTypeOf(type, controlType);
+		String ty = type.getQualifiedName();
+
+		if(cacheTypeChecked.containsKey(ty)) {
+			return cacheTypeChecked.get(ty);
+		}else {
+			boolean ok = isASubTypeOf(type, controlType);
+			cacheTypeChecked.put(ty, ok);
+			return ok;
+		}
 	}
 
 	@Override
 	public void process(final @NotNull CtTypeReference<?> element) {
 		final CtElement parent = element.getParent();
 
-		LOG.log(Level.INFO, () -> "PROCESSING " + element + " " + parent.getClass() + " " + parent.getParent().getClass());
+		LOG.log(Level.INFO, () -> "PROCESSING " + element + " " + parent.getClass());
 
 		if(parent instanceof CtField<?>) {
 			addNotifyObserversOnField((CtField<?>) parent, element);
@@ -77,7 +94,11 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			return;
 		}
 		if(parent instanceof CtFieldReference<?>) {
-			addNotifyObserversOnField(((CtFieldReference<?>) parent).getDeclaration(), element);
+			CtField<?> decl = ((CtFieldReference<?>) parent).getDeclaration();
+
+			if(decl!=null && WidgetHelper.INSTANCE.isTypeRefAWidget(decl.getType())) {
+				addNotifyObserversOnField(decl, element);
+			}
 			return;
 		}
 		if(parent instanceof CtMethod<?>) {
@@ -90,6 +111,24 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		}
 		if(parent instanceof CtExecutableReference<?>) {
 			// A method is called on a widget, so ignored.
+			return;
+		}
+		if(parent instanceof CtTypeAccess<?>) {
+			// A static method / attribute is used on a widget class.
+			return;
+		}
+		if(parent instanceof CtClass<?>) {
+			// A widget class is used.
+			return;
+		}
+
+		if(parent instanceof CtLocalVariable<?> || parent instanceof CtLocalVariableReference<?> || parent instanceof CtVariableRead<?>) {
+			// A widget var assigned to a local var; or simply used.
+			return;
+		}
+
+		if(parent instanceof CtThisAccess<?>) {
+			// Use of this on a widget object.
 			return;
 		}
 
