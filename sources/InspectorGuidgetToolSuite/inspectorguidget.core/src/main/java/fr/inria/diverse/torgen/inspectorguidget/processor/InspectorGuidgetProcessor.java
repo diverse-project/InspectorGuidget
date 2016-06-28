@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.reference.SpoonClassNotFoundException;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,6 +47,13 @@ public abstract class InspectorGuidgetProcessor <T extends CtElement> extends Ab
 	}
 
 	public static boolean isASubTypeOf(final @NotNull CtTypeReference<?> candidate, final @NotNull Collection<CtTypeReference<?>> types) {
-		return types.stream().filter(candidate::isSubtypeOf).findFirst().isPresent();
+		return types.stream().filter(type -> {
+			try {
+				return candidate.isSubtypeOf(type);
+			}catch(SpoonClassNotFoundException ex) {
+//				ex.printStackTrace();
+				return false;
+			}
+		}).findFirst().isPresent();
 	}
 }
