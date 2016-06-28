@@ -5,12 +5,13 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor
 import fr.inria.diverse.torgen.inspectorguidget.processor.FXMLAnnotationProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
+import org.jetbrains.annotations.NotNull;
+import spoon.compiler.SpoonCompiler;
 import spoon.processing.Processor;
-import spoon.reflect.CtModel;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 /**
  *     <build>
@@ -37,12 +38,12 @@ public class Launcher extends InspectorGuidetAnalyser {
         launcher.run(args);
     }
 
-    public Launcher(final List<Processor<?>> procs) {
+    public Launcher(final @NotNull Collection<Processor<?>> procs) {
 		super(procs);
     }
 
-	@Override
-	public CtModel getModel() {
-		return null;
+
+	public Launcher(final @NotNull Collection<Processor<?>> procs, final @NotNull SpoonCompiler builder) {
+		super(procs, builder);
 	}
 }

@@ -41,9 +41,16 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 		modelBuilder = createCompiler();
 	}
 
+	public InspectorGuidetAnalyser(final @NotNull Collection<Processor<?>> procs, final @NotNull SpoonCompiler builder) {
+		super();
+		processors = new ArrayList<>();
+		procs.forEach(pr -> addProcessor(pr));
+		modelBuilder = builder;
+	}
+
 	@Override
 	public CtModel getModel() {
-		return null;
+		return modelBuilder.getFactory().getModel();
 	}
 
 	@Override

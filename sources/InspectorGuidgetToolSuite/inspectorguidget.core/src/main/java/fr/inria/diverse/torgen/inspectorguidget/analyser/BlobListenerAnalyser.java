@@ -130,7 +130,7 @@ public class BlobListenerAnalyser implements SpoonAPI {
 
 	@Override
 	public CtModel getModel() {
-		return null;
+		return cmdAnalyser.getModel();
 	}
 
 	public @NotNull CommandAnalyser getCmdAnalyser() {

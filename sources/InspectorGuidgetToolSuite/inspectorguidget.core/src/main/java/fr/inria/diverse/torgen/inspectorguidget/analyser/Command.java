@@ -161,6 +161,9 @@ public class Command {
 	}
 
 	public int getNbLines() {
+		Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0)),
+						conditions.stream().map(stat -> stat.realStatmt)).
+						filter(stat -> stat.getPosition() == null).findFirst().ifPresent(statnull -> System.out.println("NO POSITION: " + statnull));
 		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
 				conditions.stream().map(stat -> stat.realStatmt.getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()+1).sum();
 	}

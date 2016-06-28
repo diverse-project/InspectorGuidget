@@ -42,11 +42,10 @@ public class TestWidgetFinder {
 
 	private void initTest(final String path) {
 		cmdAnalyser.addInputResource(path);
-		Launcher launcher = new Launcher(Collections.singletonList(widgetProc));
-		launcher.addInputResource(path);
-
 		cmdAnalyser.run();
-		launcher.run();
+
+		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), cmdAnalyser.getModelBuilder());
+		launcher.process();
 
 		finder = new CommandWidgetFinder(
 			cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()),
