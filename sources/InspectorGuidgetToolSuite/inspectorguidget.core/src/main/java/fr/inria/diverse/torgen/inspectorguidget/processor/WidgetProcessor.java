@@ -6,9 +6,7 @@ import fr.inria.diverse.torgen.inspectorguidget.listener.WidgetListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtField;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtLocalVariableReference;
@@ -100,8 +98,14 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 
 	private void analyseMethodUse(final @NotNull CtMethod<?> meth, final CtTypeReference<?> element) {
-		meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).
-				forEach(invok -> analyseWidgetInvocation(invok, element));
+		final ModifierKind visib = meth.getVisibility();
+		if(visib == ModifierKind.PRIVATE) {
+			meth.getParent(CtClass.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok, element));
+		}else if(visib == ModifierKind.PUBLIC) {
+			meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok, element));
+		}else if(visib == null || visib == ModifierKind.PROTECTED) {
+			meth.getParent(CtPackage.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok, element));
+		}
 	}
 
 
