@@ -348,8 +348,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			}else {
 				elements = cond.getElements(new ConditionalFilter());
 			}
-			// By default 'elements' contains the condition 'cond'.
-			return elements.size()>1 &&
+			return !elements.isEmpty() &&
 					// Ignoring 'cond'
 					elements.stream().filter(cond2 -> cond!=cond2).
 					anyMatch(cond2 -> conds.contains(cond2));
