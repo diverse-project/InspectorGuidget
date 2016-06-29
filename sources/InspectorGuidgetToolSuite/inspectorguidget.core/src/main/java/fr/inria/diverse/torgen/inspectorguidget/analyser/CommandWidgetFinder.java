@@ -46,11 +46,21 @@ public class CommandWidgetFinder {
 			results.put(cmd, entry);
 		}
 
+//		long time = System.currentTimeMillis();
 		entry.setRegisteredWidgets(getAssociatedListenerVariable(cmd));
+//		System.out.println("ANALYSIS #1 in: " + (System.currentTimeMillis()-time));
+//		time = System.currentTimeMillis();
 		entry.setWidgetsUsedInConditions(getVarWidgetUsedInCmdConditions(cmd));
+//		System.out.println("ANALYSIS #2 in: " + (System.currentTimeMillis()-time));
+//		time = System.currentTimeMillis();
 		entry.setWidgetClasses(getWidgetClass(cmd));
+//		System.out.println("ANALYSIS #3 in: " + (System.currentTimeMillis()-time));
+//		time = System.currentTimeMillis();
 		entry.setWidgetsFromSharedVars(matchWidgetsUsagesWithCmdConditions(cmd));
+//		System.out.println("ANALYSIS #4 in: " + (System.currentTimeMillis()-time));
+//		time = System.currentTimeMillis();
 		entry.setWidgetsFromStringLiterals(matchWidgetsUsagesWithStringsInCmdConditions(cmd));
+//		System.out.println("ANALYSIS #5 in: " + (System.currentTimeMillis()-time));
 	}
 
 
@@ -117,8 +127,8 @@ public class CommandWidgetFinder {
 			// Collecting them
 			distinct().collect(Collectors.toCollection(HashSet::new));
 
-		final Map<? extends CtField<?>, List<CtVariable<?>>> widget = widgets.entrySet().stream().
-			map(entry -> entry.getValue().stream().
+		final Map<? extends CtField<?>, List<CtVariable<?>>> widget = widgets.entrySet().parallelStream().
+			map(entry -> entry.getValue().parallelStream().
 				// Getting the code statement that uses the variable
 				map(varac -> varac.getParent(CtStatement.class)).
 				filter(stat -> stat != null).
@@ -259,8 +269,9 @@ public class CommandWidgetFinder {
 			if(WidgetHelper.INSTANCE.isTypeRefAWidget(variableRead.getType())) {
 				return Optional.of(variableRead.getVariable());
 			}
-		}else if(target instanceof CtThisAccess<?>) {
-			// This accesses are supported in getWidgetClass.
+		}else if(target instanceof CtThisAccess<?> || target instanceof CtTypeAccess<?>) {
+			// First instanceof: 'This' accesses are supported in getWidgetClass.
+			// Second instanceof: For example: JOptionPane.showConfirmDialog(...), so not related to a variable.
 		}else {
 			System.err.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok + " " +
 								SpoonHelper.INSTANCE.formatPosition(invok.getPosition()));
