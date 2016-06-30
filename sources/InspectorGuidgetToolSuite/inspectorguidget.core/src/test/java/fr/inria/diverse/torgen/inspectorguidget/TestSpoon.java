@@ -2,16 +2,15 @@ package fr.inria.diverse.torgen.inspectorguidget;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import spoon.compiler.SpoonCompiler;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.factory.FactoryImpl;
-import spoon.support.DefaultCoreFactory;
-import spoon.support.StandardEnvironment;
-import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
+import spoon.reflect.reference.CtParameterReference;
+import spoon.reflect.visitor.filter.TypeFilter;
 
-import java.io.File;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
 
 
 class TestProcessor extends AbstractProcessor<CtExecutable<?>> {
@@ -25,12 +24,40 @@ public class TestSpoon {
 	@Test
 	@Ignore
 	public void testSpoon() {
-		final StandardEnvironment evt = new StandardEnvironment();
-		evt.setComplianceLevel(8);
-		SpoonCompiler modelBuilder = new JDTBasedSpoonCompiler(new FactoryImpl(new DefaultCoreFactory(), evt));
-		TestProcessor processor = new TestProcessor();
-		modelBuilder.addInputSource(new File("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java"));
-		modelBuilder.build();
-		modelBuilder.process(Collections.singletonList(processor));
+		final spoon.Launcher launcher = new spoon.Launcher();
+		launcher.addInputResource("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java");
+		launcher.getEnvironment().setNoClasspath(true);
+		launcher.getEnvironment().setComplianceLevel(8);
+		launcher.buildModel();
+
+		launcher.getModel().getElements(new TypeFilter<CtExecutable<?>>(CtExecutable.class) {
+			@Override
+			public boolean matches(CtExecutable<?> exec) {
+				final List<CtParameterReference<?>> guiParams = exec.getParameters().stream().map(param -> param.getReference()).collect(Collectors.toList());
+
+				if(guiParams.size()!=1) return false;
+
+				final CtParameterReference<?> param = guiParams.get(0);
+
+				exec.getBody().getElements(new TypeFilter<CtParameterReference<?>>(CtParameterReference.class) {
+					@Override
+					public boolean matches(CtParameterReference<?> p) {
+						assertEquals(p, param);
+						return super.matches(p);
+					}
+				});
+
+				return super.matches(exec);
+			}
+		});
 	}
+
+
+//	@Test
+//	@Ignore
+//	public void testDeclarationOfVariableReference() throws Exception {
+//		final Launcher launcher = new Launcher();
+//		launcher.addInputResource("./src/test/resources/noclasspath/Foo2.java");
+//
+//	}
 }
