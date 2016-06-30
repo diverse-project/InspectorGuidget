@@ -6,7 +6,6 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetBugsDetector;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.Tuple;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.After;
 import org.junit.Before;
@@ -177,8 +176,8 @@ public class TestWidgetFinder {
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
 
 		assertEquals(2, results.size());
-		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
 	}
 
 	@Test
@@ -187,8 +186,8 @@ public class TestWidgetFinder {
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
 
 		assertEquals(2, results.size());
-		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
 	}
 
 	@Test
@@ -197,8 +196,8 @@ public class TestWidgetFinder {
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
 
 		assertEquals(2, results.size());
-		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
 	}
 
 	@Test
@@ -207,13 +206,24 @@ public class TestWidgetFinder {
 		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
 
 		assertEquals(3, results.size());
-		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals(1, new ArrayList<>(results.values()).get(1).getNbDistinctWidgets());
-		assertEquals(1, new ArrayList<>(results.values()).get(2).getNbDistinctWidgets());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(2).getSuppostedAssociatedWidget().size());
+	}
 
-		CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);
-		detector.process();
-		List<Tuple<String, Command>> res = detector.getResults();
-		System.out.println(res);
+	@Test
+	public void testMenuWidgetAndListener() {
+		initTest("src/test/resources/java/widgetsIdentification/MenuWidgetAndListener.java");
+		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
+
+		assertEquals(3, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(2).getSuppostedAssociatedWidget().size());
+
+//		CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);
+//		detector.process();
+//		List<Tuple<String, Command>> res = detector.getResults();
+//		System.out.println(res);
 	}
 }

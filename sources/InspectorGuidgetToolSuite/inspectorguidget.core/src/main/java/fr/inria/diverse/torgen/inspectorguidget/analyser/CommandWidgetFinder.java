@@ -186,9 +186,14 @@ public class CommandWidgetFinder {
 		return cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter).stream().
 											map(w -> {
 												try{
-													return (CtVariableReference<?>)w.getParent(CtVariableReference.class);
+													CtVariableReference<?> varrr = w.getParent(CtVariableReference.class);
+
+													if(varrr!=null && WidgetHelper.INSTANCE.isTypeRefAWidget(varrr.getType())) {
+														return varrr;
+													}
+
+													return null;
 												}catch(ParentNotInitializedException ex) {
-													System.err.println("NO VAR REF IN CONDITIONS: " + w + " " + cond);
 													return null;
 												}
 											}).filter(w -> w!=null)).
@@ -350,6 +355,28 @@ public class CommandWidgetFinder {
 												widgetsUsedInConditions.stream().map(w -> w.getDeclaration())),
 								widgetsFromSharedVars.keySet().stream()), widgetsFromStringLiterals.keySet().stream()).
 					distinct().count()+(widgetClasses.isPresent()?1:0);
+		}
+
+		public List<CtVariable<?>> getDistinctUsedWidgets() {
+			return Stream.concat(Stream.concat(new ArrayList<>(getWidgetsFromSharedVars().keySet()).stream().map(w -> (CtVariable<?>)w),
+				new ArrayList<>(getWidgetsUsedInConditions()).stream().map(w -> w.getDeclaration())),
+				new ArrayList<>(getWidgetsFromStringLiterals().keySet()).stream().map(w -> (CtVariable<?>)w)).
+				distinct().collect(Collectors.toList());
+		}
+
+
+		public List<CtVariable<?>> getSuppostedAssociatedWidget() {
+			final List<CtVariable<?>> widgets = getDistinctUsedWidgets();
+
+			if(widgets.isEmpty()) {
+				return registeredWidgets.stream().map(w -> w.getDeclaration()).collect(Collectors.toList());
+			}
+			return widgets;
+		}
+
+		public List<CtVariable<?>> getWidgetUsedInBothRegistrationCmd() {
+			final List<CtVariable<?>> widgets = getDistinctUsedWidgets();
+			return registeredWidgets.stream().map(w -> w.getDeclaration()).filter(w -> widgets.contains(w)).collect(Collectors.toList());
 		}
 	}
 }
