@@ -21,10 +21,14 @@ import java.util.logging.Level;
  * Detects declaration of widgets.
  */
 public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?>> {
-	private Collection<CtTypeReference<?>> controlType;
-	private final @NotNull Map<CtField<?>, List<CtVariableAccess<?>>> fields;
+	/** The widgets defined as fields of classes. */
+	private final @NotNull Map<CtVariable<?>, List<CtVariableAccess<?>>> fields;
 	/** The widgets created and directly added in a container. */
 	private final @NotNull Map<CtTypeReference<?>, CtTypeReference<?>> references;
+	/** Redefined widgets (e.g. reused local vars). */
+	private final @NotNull Map<CtAssignment<?,?>, List<CtVariableAccess<?>>> varsReassigned;
+
+	private Collection<CtTypeReference<?>> controlType;
 	private CtTypeReference<?> collectionType;
 	private final @NotNull Set<WidgetListener> widgetObs;
 	private final boolean withConfigStat;
@@ -42,6 +46,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		references = new IdentityHashMap<>();
 		withConfigStat = withConfigurationStatmts;
 		cacheTypeChecked = new HashMap<>();
+		varsReassigned = new HashMap<>();
 	}
 
 	public void addWidgetObserver(final @NotNull WidgetListener obs) {
@@ -149,7 +154,27 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 
 	private void analyseWidgetConstructorCall(final @NotNull CtConstructorCall<?> call, final CtTypeReference<?> element) {
-		analyseWidgetUse(call.getParent(), element);
+		if(call.isParentInitialized()) {
+			final CtElement parent = call.getParent();
+
+			// When the creation of the widget is stored in a new local var, this var is considered as a widget.
+			if(parent instanceof CtLocalVariable<?>) {
+				addNotifyObserversOnField((CtLocalVariable<?>)parent, element);
+			}
+			// When the creation of the widget is stored in an already defined local var...
+			else if(parent instanceof CtAssignment<?,?>) {
+				CtAssignment<?, ?> assig = (CtAssignment<?, ?>) parent;
+				// if the var is in fact a field and this last has been already added, then the reassignment is considered...
+				if(assig.getAssigned() instanceof CtFieldWrite<?> && fields.containsKey(((CtFieldWrite<?>)assig.getAssigned()).getVariable().getDeclaration())) {
+					addNotifyObserversOnReassignedVar(assig, element);
+				}else {
+				// otherwise the assignment is treated as it.
+					analyseWidgetAssignment(assig, element);
+				}
+			} else {
+				analyseWidgetUse(parent, element);
+			}
+		}
 	}
 
 
@@ -244,7 +269,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		}
 	}
 
-	private void addNotifyObserversOnField(final @Nullable CtField<?> field, final CtTypeReference<?> element) {
+	private void addNotifyObserversOnField(final @Nullable CtVariable<?> field, final CtTypeReference<?> element) {
 		if(field!=null && !fields.containsKey(field)) {
 			final List<CtVariableAccess<?>> usages = extractUsagesOfWidgetField(field);
 			fields.put(field, usages);
@@ -252,14 +277,22 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		}
 	}
 
-	private List<CtVariableAccess<?>> extractUsagesOfWidgetField(final CtField<?> field) {
+	private void addNotifyObserversOnReassignedVar(final @Nullable CtAssignment<?,?> assig, final CtTypeReference<?> element) {
+		if(assig!=null && !varsReassigned.containsKey(assig)) {
+			final List<CtVariableAccess<?>> usages = Collections.emptyList();// extractUsagesOfWidgetField(field);
+			varsReassigned.put(assig, usages);
+			widgetObs.forEach(o -> o.onWidgetCreatedInExistingVar(assig, usages, element));
+		}
+	}
+
+	private List<CtVariableAccess<?>> extractUsagesOfWidgetField(final CtVariable<?> field) {
 		if(withConfigStat) {
 			return SpoonHelper.INSTANCE.extractUsagesOfField(field);
 		}
 		return Collections.emptyList();
 	}
 
-	public @NotNull Map<CtField<?>, List<CtVariableAccess<?>>> getFields() {
+	public @NotNull Map<CtVariable<?>, List<CtVariableAccess<?>>> getFields() {
 		return Collections.unmodifiableMap(fields);
 	}
 }

@@ -19,13 +19,13 @@ import java.util.stream.Stream;
 public class CommandWidgetFinder {
 	private final @NotNull List<Command> cmds;
 	private final @NotNull Map<Command, WidgetFinderEntry> results;
-	private final @NotNull Map<CtField<?>, List<CtVariableAccess<?>>> widgets;
+	private final @NotNull Map<CtVariable<?>, List<CtVariableAccess<?>>> widgets;
 
 	/**
 	 * Craetes the analyser.
 	 * @param commands the set of commands to analyse.
 	 */
-	public CommandWidgetFinder(final @NotNull List<Command> commands, final @NotNull Map<CtField<?>, List<CtVariableAccess<?>>> widgets) {
+	public CommandWidgetFinder(final @NotNull List<Command> commands, final @NotNull Map<CtVariable<?>, List<CtVariableAccess<?>>> widgets) {
 		super();
 		cmds = commands;
 		results = new HashMap<>();
@@ -71,7 +71,7 @@ public class CommandWidgetFinder {
 	 * button.setActionCommand("FOO");
 	 * @param cmd The command to analyse.
 	 */
-	private Map<? extends CtField<?>, List<CtLiteral<?>>> matchWidgetsUsagesWithStringsInCmdConditions(final @NotNull Command cmd) {
+	private Map<? extends CtVariable<?>, List<CtLiteral<?>>> matchWidgetsUsagesWithStringsInCmdConditions(final @NotNull Command cmd) {
 		final StringLiteralFilter stringLiteralFilter = new StringLiteralFilter();
 
 		final Set<CtLiteral<?>> stringliterals = cmd.getConditions().parallelStream().
@@ -84,7 +84,7 @@ public class CommandWidgetFinder {
 			// Collecting them
 				distinct().collect(Collectors.toCollection(HashSet::new));
 
-		final Map<? extends CtField<?>, List<CtLiteral<?>>> widget = widgets.entrySet().stream().
+		final Map<? extends CtVariable<?>, List<CtLiteral<?>>> widget = widgets.entrySet().stream().
 			map(entry -> entry.getValue().stream().
 				// Getting the code statement that uses the variable
 					map(varac -> varac.getParent(CtStatement.class)).
@@ -113,7 +113,7 @@ public class CommandWidgetFinder {
 	 * button.setActionCommand(FOO);
 	 * @param cmd The command to analyse.
 	 */
-	private Map<? extends CtField<?>, List<CtVariable<?>>> matchWidgetsUsagesWithCmdConditions(final @NotNull Command cmd) {
+	private Map<? extends CtVariable<?>, List<CtVariable<?>>> matchWidgetsUsagesWithCmdConditions(final @NotNull Command cmd) {
 		final VariableAccessFilter filter = new VariableAccessFilter();
 
 		final Set<CtVariable<?>> vars = cmd.getConditions().parallelStream().
@@ -127,7 +127,7 @@ public class CommandWidgetFinder {
 			// Collecting them
 			distinct().collect(Collectors.toCollection(HashSet::new));
 
-		final Map<? extends CtField<?>, List<CtVariable<?>>> widget = widgets.entrySet().parallelStream().
+		final Map<? extends CtVariable<?>, List<CtVariable<?>>> widget = widgets.entrySet().parallelStream().
 			map(entry -> entry.getValue().parallelStream().
 				// Getting the code statement that uses the variable
 				map(varac -> varac.getParent(CtStatement.class)).
@@ -293,8 +293,8 @@ public class CommandWidgetFinder {
 		private @NotNull List<CtVariableReference<?>> registeredWidgets;
 		private @NotNull List<CtVariableReference<?>> widgetsUsedInConditions;
 		private @NotNull Optional<CtClass<?>> widgetClasses;
-		private @NotNull Map<? extends CtField<?>, List<CtVariable<?>>> widgetsFromSharedVars;
-		private @NotNull Map<? extends CtField<?>, List<CtLiteral<?>>> widgetsFromStringLiterals;
+		private @NotNull Map<? extends CtVariable<?>, List<CtVariable<?>>> widgetsFromSharedVars;
+		private @NotNull Map<? extends CtVariable<?>, List<CtLiteral<?>>> widgetsFromStringLiterals;
 
 		private WidgetFinderEntry() {
 			super();
@@ -305,11 +305,11 @@ public class CommandWidgetFinder {
 			widgetsFromStringLiterals = Collections.emptyMap();
 		}
 
-		public @NotNull  Map<? extends CtField<?>, List<CtLiteral<?>>> getWidgetsFromStringLiterals() {
+		public @NotNull  Map<? extends CtVariable<?>, List<CtLiteral<?>>> getWidgetsFromStringLiterals() {
 			return Collections.unmodifiableMap(widgetsFromStringLiterals);
 		}
 
-		public @NotNull Map<? extends CtField<?>, List<CtVariable<?>>> getWidgetsFromSharedVars() {
+		public @NotNull Map<? extends CtVariable<?>, List<CtVariable<?>>> getWidgetsFromSharedVars() {
 			return Collections.unmodifiableMap(widgetsFromSharedVars);
 		}
 
@@ -325,11 +325,11 @@ public class CommandWidgetFinder {
 			return widgetClasses;
 		}
 
-		public void setWidgetsFromStringLiterals(final @NotNull Map<? extends CtField<?>, List<CtLiteral<?>>> widgetsFromStringLiterals) {
+		public void setWidgetsFromStringLiterals(final @NotNull Map<? extends CtVariable<?>, List<CtLiteral<?>>> widgetsFromStringLiterals) {
 			this.widgetsFromStringLiterals = widgetsFromStringLiterals;
 		}
 
-		public void setWidgetsFromSharedVars(final @NotNull Map<? extends CtField<?>, List<CtVariable<?>>> widgetsFromSharedVars) {
+		public void setWidgetsFromSharedVars(final @NotNull Map<? extends CtVariable<?>, List<CtVariable<?>>> widgetsFromSharedVars) {
 			this.widgetsFromSharedVars = widgetsFromSharedVars;
 		}
 

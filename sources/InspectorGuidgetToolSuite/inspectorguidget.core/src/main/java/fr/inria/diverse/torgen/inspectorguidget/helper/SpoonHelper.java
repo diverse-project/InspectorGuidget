@@ -145,7 +145,7 @@ public final class SpoonHelper {
 		System.out.println();
 	}
 
-	public List<CtVariableAccess<?>> extractUsagesOfField(final @NotNull CtField<?> field) {
+	public List<CtVariableAccess<?>> extractUsagesOfField(final @NotNull CtVariable<?> field) {
 		CtElement parent;
 
 		if(field.getVisibility()==null) {
