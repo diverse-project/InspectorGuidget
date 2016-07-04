@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +26,7 @@ public class TestWidgetFinder {
 	private CommandAnalyser cmdAnalyser;
 	private WidgetProcessor widgetProc;
 	private CommandWidgetFinder finder;
+	Map<Command, CommandWidgetFinder.WidgetFinderEntry> results;
 
 	@Before
 	public void setUp() throws Exception {
@@ -40,8 +42,8 @@ public class TestWidgetFinder {
 		}
 	}
 
-	private void initTest(final String path) {
-		cmdAnalyser.addInputResource(path);
+	private void initTest(final String... paths) {
+		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
 
 		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), cmdAnalyser.getModelBuilder());
@@ -51,13 +53,12 @@ public class TestWidgetFinder {
 			cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()),
 			widgetProc.getFields());
 		finder.process();
+		results = finder.getResults();
 	}
 
 	@Test
 	public void testAnonClassOnSingleFieldWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleFieldWidgetNoCond.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
 	}
@@ -66,8 +67,6 @@ public class TestWidgetFinder {
 	@Ignore
 	public void testLambdaOnSingleFieldWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnSingleFieldWidgetNoCond.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
 	}
@@ -75,8 +74,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testAnonClassOnSingleLocalVarWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleLocalVarWidgetNoCond.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals(1L, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
@@ -85,8 +82,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testAnonClassOnSingleFieldWidgetEqualCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnFieldWidgetsEqualCond.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals(2, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
@@ -96,8 +91,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testLambdaOnSingleFieldWidgetEqualCond() {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals(2, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
@@ -107,8 +100,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassSingleWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassSingleWidgetNoCond.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
@@ -117,8 +108,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassInheritanceSingleWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassInheritanceSingleWidgetNoCond.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
@@ -127,8 +116,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testWidgetClassListener() {
 		initTest("src/test/resources/java/widgetsIdentification/WidgetClassListener.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 		assertTrue(new ArrayList<>(results.values()).get(0).getWidgetClasses().isPresent());
@@ -138,8 +125,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testFalseNegativeWidgetClassListener() {
 		initTest("src/test/resources/java/widgetsIdentification/FalsePositiveThisListener.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(1, results.size());
 		assertEquals(0, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
 	}
@@ -148,8 +133,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassListenerInheritance() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerInheritance.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);
 		detector.process();
 
@@ -160,7 +143,7 @@ public class TestWidgetFinder {
 			a.getKey().getExecutable().getPosition().getLine() == b.getKey().getExecutable().getPosition().getLine() ? 0 : 1)
 			.collect(Collectors.toList());
 
-		assertEquals(2, entries.get(0).getValue().getNbDistinctWidgets());
+		assertEquals(1, entries.get(0).getValue().getNbDistinctWidgets());
 		assertEquals("fooo", entries.get(0).getValue().getRegisteredWidgets().get(0).getSimpleName());
 
 		assertEquals(2, entries.get(1).getValue().getNbDistinctWidgets());
@@ -173,8 +156,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassListenerExternal() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(2, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
@@ -183,8 +164,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassListenerExternalString() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternalString.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(2, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
@@ -193,8 +172,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassListenerExternalLocalVar() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternalLocalVar.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(2, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
@@ -203,8 +180,6 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassListenerExternal2() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerExternal2.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(3, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
@@ -214,16 +189,9 @@ public class TestWidgetFinder {
 	@Test
 	public void testMenuWidgetAndListener() {
 		initTest("src/test/resources/java/widgetsIdentification/MenuWidgetAndListener.java");
-		Map<Command, CommandWidgetFinder.WidgetFinderEntry> results = finder.getResults();
-
 		assertEquals(3, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(2).getSuppostedAssociatedWidget().size());
-
-//		CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);
-//		detector.process();
-//		List<Tuple<String, Command>> res = detector.getResults();
-//		System.out.println(res);
 	}
 }

@@ -1,17 +1,18 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
+import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtLambda;
-import spoon.reflect.declaration.CtTypeInformation;
+import spoon.reflect.reference.CtTypeReference;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
-public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
+public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<?>>  {
 	protected final @NotNull Set<CtLambda<?>> allListenerLambdas;
 
 	public LambdaListenerProcessor() {
@@ -28,24 +29,24 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 		LOG.log(Level.INFO, "process CtLambda: " + lambda);
 
 		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
-		final CtTypeInformation type = lambda.getType();
+		final CtTypeReference<?> type = lambda.getType();
 
 		// Case SWING
-		swingListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
+		WidgetHelper.INSTANCE.getSwingListenersRef(getFactory()).stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			swingClassObservers.forEach(l -> l.onSwingListenerLambda(lambda));
 			processMethods(lambda);
 		});
 
 		// Case AWT
-		awtListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
+		WidgetHelper.INSTANCE.getAWTListenersRef(getFactory()).stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			awtClassObservers.forEach(l -> l.onAWTListenerLambda(lambda));
 			processMethods(lambda);
 		});
 
 		// Case JFX
-		jfxListenersRef.stream().filter(type::isSubtypeOf).forEach(ref -> {
+		WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			jfxClassObservers.forEach(l -> l.onJFXListenerLambda(lambda));
 			processMethods(lambda);
@@ -60,7 +61,7 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 		//				}
 
 		// Case GENERIC
-		if(!isAdded.getValue() && type.isSubtypeOf(eventListenerRef)) {
+		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(type, getFactory())) {
 			processMethods(lambda);
 		}
 	}
@@ -87,6 +88,6 @@ public class LambdaListenerProcessor extends ListenerProcessor<CtLambda<?>>  {
 
 	@Override
 	public boolean isToBeProcessed(final @NotNull CtLambda<?> candidate) {
-		return isListenerCass(candidate.getType());
+		return WidgetHelper.INSTANCE.isListenerClass(candidate.getType(), getFactory());
 	}
 }

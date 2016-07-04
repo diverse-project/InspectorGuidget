@@ -71,10 +71,13 @@ public class CommandWidgetBugsDetector {
 
 	private Optional<Tuple<String, Command>> checkAtLeastOneWidgetForOneCommand(final @NotNull Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry) {
 		CommandWidgetFinder.WidgetFinderEntry value = entry.getValue();
-		List<CtVariable<?>> ws = value.getWidgetUsedInBothRegistrationCmd();
+		List<CtVariable<?>> ws = value.getSuppostedAssociatedWidget();
 
 		switch(ws.size()) {
-			case 0: return Optional.of(new Tuple<>("Cannot find any widget for this command.", entry.getKey()));
+			case 0:
+				if(value.getWidgetClasses().isPresent())
+					return Optional.empty();
+				return Optional.of(new Tuple<>("Cannot find any widget for this command.", entry.getKey()));
 			case 1: return Optional.empty();
 			default:
 				return Optional.of(new Tuple<>("More than one widgets found for this command. " +

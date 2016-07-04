@@ -128,7 +128,16 @@ public class CommandWidgetFinder {
 			distinct().collect(Collectors.toCollection(HashSet::new));
 
 		final Map<? extends CtVariable<?>, List<CtVariable<?>>> widget = widgets.entrySet().parallelStream().
-			map(entry -> entry.getValue().parallelStream().
+			map(entry -> entry.getValue().parallelStream().filter(m -> {
+				// Ignoring the statements that are parts of a listener method. The statements that must be analysed
+				// or those that configure the widgets.
+					try {
+						CtExecutable<?> ex = m.getParent(CtExecutable.class);
+						return ex==null || !WidgetHelper.INSTANCE.isListenerClassMethod(ex);
+					}catch(ParentNotInitializedException ex) {
+						return true;
+					}
+				}).
 				// Getting the code statement that uses the variable
 				map(varac -> varac.getParent(CtStatement.class)).
 				filter(stat -> stat != null).

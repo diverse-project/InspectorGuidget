@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * This processor find listener methods in the source code
  */
-public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
+public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>> {
 	private final @NotNull Map<CtClass<?>, List<CtMethod<?>>> listenerMethods;
 
 
@@ -38,7 +39,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		final BooleanProperty isAdded = new SimpleBooleanProperty(false);
 
 		// Case SWING
-		swingListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
+		WidgetHelper.INSTANCE.getSwingListenersRef(getFactory()).stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			if(!listenerMethods.containsKey(clazz)) {
 				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
@@ -48,7 +49,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		});
 
 		// Case AWT
-		awtListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
+		WidgetHelper.INSTANCE.getAWTListenersRef(getFactory()).stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			if(!listenerMethods.containsKey(clazz)) {
 				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
@@ -58,7 +59,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 		});
 
 		// Case JFX
-		jfxListenersRef.stream().filter(clazz::isSubtypeOf).forEach(ref -> {
+		WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
 			if(!listenerMethods.containsKey(clazz)) {
 				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
@@ -67,7 +68,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 			}
 		});
 
-		if(!isAdded.getValue() && clazz.isSubtypeOf(eventListenerRef)) {
+		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(clazz, getFactory())) {
 			LOG.log(Level.SEVERE, "Listener not supported " +
 					SpoonHelper.INSTANCE.formatPosition(clazz.getPosition()) + ": " + clazz);
 		}
@@ -76,7 +77,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 
 	@Override
 	public boolean isToBeProcessed(final @NotNull CtClass<?> candidate) {
-		return isListenerCass(candidate);
+		return WidgetHelper.INSTANCE.isListenerClass(candidate, getFactory());
 	}
 
 
@@ -95,7 +96,7 @@ public class ClassListenerProcessor extends ListenerProcessor<CtClass<?>> {
 
 			//FIXME generics in methods are not correctly managed by Spoon or Java (getClass from Class
 			// does not provide any generics). So...
-			if(m==null && cl.isSubtypeOf(jfxListenersRef.get(0))) {
+			if(m==null && cl.isSubtypeOf(WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).get(0))) {
 				m = cl.getMethodsByName(interfM.getName()).get(0);
 			}
 			if(m==null && !cl.hasModifier(ModifierKind.ABSTRACT))

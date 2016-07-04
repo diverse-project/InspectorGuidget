@@ -4,8 +4,8 @@ import fr.inria.diverse.torgen.inspectorguidget.listener.AWTListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.listener.JFXListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.listener.SwingListenerClass;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
+import fr.inria.diverse.torgen.inspectorguidget.processor.InspectorGuidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
-import fr.inria.diverse.torgen.inspectorguidget.processor.ListenerProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import spoon.reflect.code.CtLambda;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcessor<? extends CtElement>>
+public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidgetProcessor<? extends CtElement>>
 		implements AWTListenerClass, SwingListenerClass, JFXListenerClass {
 	private Set<CtClass<?>> clazzListener;
 	private Set<CtLambda<?>> lambdaListener;
@@ -136,7 +136,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<ListenerProcesso
 	}
 
 	@Override
-	public List<ListenerProcessor<? extends CtElement>> createProcessor() {
+	public List<InspectorGuidgetProcessor<? extends CtElement>> createProcessor() {
 		lambdaProc = new LambdaListenerProcessor();
 		classProc = new ClassListenerProcessor();
 		return Arrays.asList(classProc, lambdaProc);
