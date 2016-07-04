@@ -89,6 +89,7 @@ public class TestWidgetFinder {
 	}
 
 	@Test
+	@Ignore
 	public void testLambdaOnSingleFieldWidgetEqualCond() {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java");
 		assertEquals(1, results.size());
@@ -193,5 +194,12 @@ public class TestWidgetFinder {
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(2).getSuppostedAssociatedWidget().size());
+	}
+
+	@Test
+	public void testAnotherExample() {
+		initTest("src/test/resources/java/widgetsIdentification/AnotherExample.java");
+		assertEquals(1, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 	}
 }

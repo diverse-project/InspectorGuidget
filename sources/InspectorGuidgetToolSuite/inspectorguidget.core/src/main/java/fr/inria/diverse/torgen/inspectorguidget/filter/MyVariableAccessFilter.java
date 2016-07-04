@@ -17,6 +17,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.filter;
 
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
 
@@ -24,21 +25,25 @@ import spoon.reflect.visitor.Filter;
  * This simple filter matches all the accesses to a given field.
  */
 public class MyVariableAccessFilter<T extends CtVariableAccess<?>> implements Filter<T> {
-	private final CtVariableReference<?> variable;
+	private final CtVariable<?> variable;
 
 	/**
 	 * Creates a new field access filter.
 	 * @param varref the accessed varref
 	 */
-	public MyVariableAccessFilter(final CtVariableReference<?> varref) {
+	public MyVariableAccessFilter(final CtVariable<?> varref) {
 		variable = varref;
 	}
 
 	@Override
 	public boolean matches(final T variableAccess) {
 		final CtVariableReference<?> varAc = variableAccess.getVariable();
+
+		if(varAc==null)
+			return false;
+
 		try {
-			return varAc!=null && varAc.getDeclaration()!=null && varAc.getDeclaration().equals(variable.getDeclaration());
+			return varAc.getDeclaration()==variable;
 		}catch(NullPointerException ex) {
 			return false;
 		}

@@ -170,7 +170,7 @@ public final class SpoonHelper {
 		}
 
 		if(parent!=null) {
-			return parent.getElements(new MyVariableAccessFilter<>(field.getReference()));
+			return parent.getElements(new MyVariableAccessFilter<>(field));
 		}
 		//TODO find usages in method when the field is given as a parameter.
 

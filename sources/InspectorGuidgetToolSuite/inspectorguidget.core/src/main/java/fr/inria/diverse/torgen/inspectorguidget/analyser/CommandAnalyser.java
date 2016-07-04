@@ -109,7 +109,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				filter(var -> var.getDeclaration().getParent(CtExecutable.class)==listener).
 				map(var ->
 					// Finding the uses of the local var in the executable
-					var.getDeclaration().getParent(CtExecutable.class).getBody().getElements(new MyVariableAccessFilter<>(var)).stream().
+					var.getDeclaration().getParent(CtExecutable.class).getBody().getElements(new MyVariableAccessFilter<>(var.getDeclaration())).stream().
 						// Considering the var accesses that operate before the statement only.
 						filter(varacesss -> varacesss.getPosition().getLine() <= elt.getPosition().getLine()).
 						map(varaccess -> {

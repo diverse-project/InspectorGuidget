@@ -142,7 +142,7 @@ public class CommandWidgetFinder {
 				map(varac -> varac.getParent(CtStatement.class)).
 				filter(stat -> stat != null).
 				// Looking for the variables used in the conditions in the code statement
-				map(stat -> vars.stream().filter(varr -> !stat.getElements(new MyVariableAccessFilter<>(varr.getReference())).isEmpty()).
+				map(stat -> vars.stream().filter(varr -> !stat.getElements(new MyVariableAccessFilter<>(varr)).isEmpty()).
 					collect(Collectors.toList())).
 				filter(list -> !list.isEmpty()).
 				map(var -> new Tuple<>(entry.getKey(), var))).
