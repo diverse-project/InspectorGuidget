@@ -172,4 +172,16 @@ public class TestGUIBugsDetector {
 		initTest("src/test/resources/java/widgetsIdentification/UseSameStringVar.java");
 		assertTrue(bugs.toString(), bugs.isEmpty());
 	}
+
+	@Test
+	public void testAnotherExample2() {
+		initTest("src/test/resources/java/widgetsIdentification/AnotherExample2.java");
+		assertTrue(bugs.toString(), bugs.isEmpty());
+	}
+
+	@Test
+	public void testAnotherExample3() {
+		initTest("src/test/resources/java/widgetsIdentification/AnotherExample3.java");
+		assertTrue(bugs.toString(), bugs.isEmpty());
+	}
 }

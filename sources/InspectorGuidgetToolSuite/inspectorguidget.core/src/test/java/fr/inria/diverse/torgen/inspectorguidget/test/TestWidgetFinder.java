@@ -209,4 +209,18 @@ public class TestWidgetFinder {
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 	}
+
+	@Test
+	public void testAnotherExample2() {
+		initTest("src/test/resources/java/widgetsIdentification/AnotherExample2.java");
+		assertEquals(1, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+	}
+
+	@Test
+	public void testAnotherExample3() {
+		initTest("src/test/resources/java/widgetsIdentification/AnotherExample3.java");
+		assertEquals(2, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+	}
 }

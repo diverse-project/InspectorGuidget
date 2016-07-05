@@ -217,7 +217,11 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		if(exp instanceof CtFieldWrite<?>) {
 			addNotifyObserversOnField(((CtFieldWrite<?>) exp).getVariable().getDeclaration(), element);
-		}else {
+		}
+		else if(exp instanceof CtVariableWrite<?>) {
+			addNotifyObserversOnField(((CtVariableWrite<?>)exp).getVariable().getDeclaration(), element);
+		}
+		else {
 			LOG.log(Level.WARNING, "Widget Assignment not supported or ignored: " + exp.getClass() + " " + exp);
 		}
 	}
