@@ -9,6 +9,7 @@
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiListener" style="push" />
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.guiCommand" style="push" />
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.blobListener" style="push" />
+	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.GUIBugs" style="push" />
 	            <command commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.clearMarkers" style="push" />
 	        </menu>
 		</menuContribution> 
@@ -28,6 +29,11 @@
     	<handler
             class="inspectorguidget.eclipse.actions.DetectBlobListenerHandler"
             commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.blobListener">
+		</handler>
+		
+    	<handler
+            class="inspectorguidget.eclipse.actions.DetectGUIBugsHandler"
+            commandId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.GUIBugs">
 		</handler>
       
 		<handler
@@ -64,6 +70,13 @@
             description="Detect Blob listeners"
             id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.blobListener"
             name="Detect Blob listeners">
+		</command>
+		
+		<command
+            categoryId="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.category.inspect"
+            description="Detect GUI bugs"
+            id="fr.inria.rennes.diverse.torgen.inspectorGuidget.eclipse.ui.command.GUIBugs"
+            name="Detect GUI bugs">
 		</command>
 
 		<command
@@ -110,6 +123,14 @@
             category="inspectorguidget.eclipse.views.InspectorGuidgetViewCategory"
             class="inspectorguidget.eclipse.views.BlobView"
             id="inspectorguidget.eclipse.views.BlobView">
+		</view>
+		
+		<view
+            name="GUI bugs view"
+            icon="icons/sample.gif"
+            category="inspectorguidget.eclipse.views.InspectorGuidgetViewCategory"
+            class="inspectorguidget.eclipse.views.GUIBugsView"
+            id="inspectorguidget.eclipse.views.GUIBugsView">
 		</view>
 	</extension>
 </plugin>
