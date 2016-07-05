@@ -202,4 +202,11 @@ public class TestWidgetFinder {
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 	}
+
+	@Test
+	public void testUseSameStringVar() {
+		initTest("src/test/resources/java/widgetsIdentification/UseSameStringVar.java");
+		assertEquals(1, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+	}
 }

@@ -98,9 +98,9 @@ public class CommandWidgetFinder {
 				flatMap(s -> s).
 				collect(Collectors.toMap(Tuple::getA, Tuple::getB, (a, b) -> Stream.concat(a.stream(), b.stream()).distinct().collect(Collectors.toList())));
 
-		if(widget.size()>1) {
-			System.err.println("MORE THAN ONE WIDGET FOUND USING STRING LITERALS: " + widgets + " " + cmd);
-		}
+//		if(widget.size()>1) {
+//			System.err.println("MORE THAN ONE WIDGET FOUND USING STRING LITERALS: " + widgets + " " + cmd);
+//		}
 
 		return widget;
 	}
@@ -150,9 +150,9 @@ public class CommandWidgetFinder {
 			flatMap(s -> s).
 			collect(Collectors.toMap(Tuple::getA, Tuple::getB, (a, b) -> Stream.concat(a.stream(), b.stream()).distinct().collect(Collectors.toList())));
 
-		if(widget.size()>1) {
-			System.err.println("MORE THAN ONE WIDGET FOUND USING VARIABLES: " + widgets + " " + cmd);
-		}
+//		if(widget.size()>1) {
+//			System.err.println("MORE THAN ONE WIDGET FOUND USING VARIABLES: " + widgets + " " + cmd);
+//		}
 
 		return widget;
 	}
@@ -377,10 +377,17 @@ public class CommandWidgetFinder {
 		public List<CtVariable<?>> getSuppostedAssociatedWidget() {
 			final List<CtVariable<?>> widgets = getDistinctUsedWidgets();
 
-			if(widgets.isEmpty()) {
-				return registeredWidgets.stream().map(w -> w.getDeclaration()).collect(Collectors.toList());
+			switch(widgets.size()) {
+				case 0:
+					return registeredWidgets.stream().map(w -> w.getDeclaration()).collect(Collectors.toList());
+				case 1:
+					return widgets;
+				default:
+					List<CtVariable<?>> reg = registeredWidgets.stream().map(w -> w.getDeclaration()).filter(w -> widgets.contains(w)).collect(Collectors.toList());
+					if(reg.isEmpty())
+						return widgets;
+					return reg;
 			}
-			return widgets;
 		}
 
 		public List<CtVariable<?>> getWidgetUsedInBothRegistrationCmd() {

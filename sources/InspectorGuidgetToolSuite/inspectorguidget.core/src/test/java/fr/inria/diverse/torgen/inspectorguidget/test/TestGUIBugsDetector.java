@@ -83,7 +83,7 @@ public class TestGUIBugsDetector {
 	@Test
 	public void testAnonClassOnSingleFieldWidgetEqualCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnFieldWidgetsEqualCond.java");
-		assertFalse(bugs.toString(), bugs.isEmpty());
+		assertTrue(bugs.toString(), bugs.isEmpty());
 	}
 
 	@Test
@@ -164,6 +164,12 @@ public class TestGUIBugsDetector {
 	@Test
 	public void testAnotherExample() {
 		initTest("src/test/resources/java/widgetsIdentification/AnotherExample.java");
+		assertTrue(bugs.toString(), bugs.isEmpty());
+	}
+
+	@Test
+	public void testUseSameStringVar() {
+		initTest("src/test/resources/java/widgetsIdentification/UseSameStringVar.java");
 		assertTrue(bugs.toString(), bugs.isEmpty());
 	}
 }
