@@ -294,7 +294,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 	private void analyseSingleListenerMethod(final @NotNull  Optional<CtClass<?>> listenerClass,
 											 final @NotNull CtExecutable<?> listenerMethod) {
-		if(listenerMethod.getBody()==null || listenerMethod.getBody().getStatements().isEmpty()) {
+		if((listenerMethod.getBody() == null || listenerMethod.getBody().getStatements().isEmpty()) &&
+			(!(listenerMethod instanceof CtLambda) || ((CtLambda<?>)listenerMethod).getExpression() == null)) {// A lambda may not have a body but an expression
 			// Empty so no command
 			synchronized(commands) { commands.put(listenerMethod, Collections.emptyList()); }
 		}else {
@@ -303,8 +304,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
 				synchronized(commands) {
-					commands.put(listenerMethod, Collections.singletonList(
-						new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod)));
+					if(listenerMethod.getBody()==null && listenerMethod instanceof CtLambda<?>) {
+						// It means it is a lambda
+						commands.put(listenerMethod, Collections.singletonList(
+							new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
+										Collections.emptyList(), listenerMethod)));
+					} else {
+						// It means it is a method
+						commands.put(listenerMethod, Collections.singletonList(
+							new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod)));
+					}
 				}
 			}else {
 				// For each conditional statements found in the listener method or in its dispatched methods,

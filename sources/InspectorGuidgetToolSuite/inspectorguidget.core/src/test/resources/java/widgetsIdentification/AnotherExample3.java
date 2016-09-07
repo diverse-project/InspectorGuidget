@@ -40,5 +40,7 @@ class Toobar {
 		button = new JButton();
 		button.addActionListener(ml);
 		button.setActionCommand(LaTeXDrawResources.LABEL_SAVE_AS);
+
+		JButton button2 = new JButton();
 	}
 }

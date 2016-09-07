@@ -9,7 +9,6 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -64,7 +63,6 @@ public class TestWidgetFinder {
 	}
 
 	@Test
-	@Ignore
 	public void testLambdaOnSingleFieldWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnSingleFieldWidgetNoCond.java");
 		assertEquals(1, results.size());
@@ -89,7 +87,6 @@ public class TestWidgetFinder {
 	}
 
 	@Test
-	@Ignore
 	public void testLambdaOnSingleFieldWidgetEqualCond() {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java");
 		assertEquals(1, results.size());

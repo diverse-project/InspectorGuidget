@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="Maven: fr.inria.gforge.spoon:spoon-core:5.2.0-SNAPSHOT">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/fr/inria/gforge/spoon/spoon-core/5.2.0-SNAPSHOT/spoon-core-5.2.0-20160616.235102-85.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/fr/inria/gforge/spoon/spoon-core/5.2.0-SNAPSHOT/spoon-core-5.2.0-20160619.235054-88.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$MAVEN_REPOSITORY$/fr/inria/gforge/spoon/spoon-core/5.2.0-SNAPSHOT/spoon-core-5.2.0-20160616.235102-85-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/fr/inria/gforge/spoon/spoon-core/5.2.0-SNAPSHOT/spoon-core-5.2.0-20160619.235054-88-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/fr/inria/gforge/spoon/spoon-core/5.2.0-SNAPSHOT/spoon-core-5.2.0-20160616.235102-85-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/fr/inria/gforge/spoon/spoon-core/5.2.0-SNAPSHOT/spoon-core-5.2.0-20160619.235054-88-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
