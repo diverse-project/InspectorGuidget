@@ -9,6 +9,7 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -219,5 +220,13 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/widgetsIdentification/AnotherExample3.java");
 		assertEquals(2, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+	}
+
+	@Test
+	@Ignore
+	public void testAnotherExample3CorrectStatementsIndentification() {
+		initTest("src/test/resources/java/widgetsIdentification/AnotherExample3.java");
+		assertEquals(3, new ArrayList<>(widgetProc.getFields().entrySet()).get(0).getValue().size());
+		assertEquals(3, new ArrayList<>(widgetProc.getFields().entrySet()).get(1).getValue().size());
 	}
 }
