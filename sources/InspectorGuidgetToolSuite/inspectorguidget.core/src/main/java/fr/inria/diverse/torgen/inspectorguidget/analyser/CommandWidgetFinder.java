@@ -85,7 +85,7 @@ public class CommandWidgetFinder {
 			// Collecting them
 				distinct().collect(Collectors.toCollection(HashSet::new));
 
-		final List<StringLitMatch> widget = widgetUsages.stream().map(usage -> {
+		return widgetUsages.stream().map(usage -> {
 			// Getting the code statement that uses the variable
 			 return usage.accesses.stream().map(acc -> acc.getParent(CtStatement.class)).filter(stat -> stat != null).
 				// Looking for the variables used in the conditions in the code statement
@@ -94,8 +94,6 @@ public class CommandWidgetFinder {
 					filter(list -> !list.isEmpty()).
 					map(var -> new StringLitMatch(usage, var));
 			}).flatMap(s -> s).collect(Collectors.toList());
-
-		return widget;
 	}
 
 
@@ -120,7 +118,7 @@ public class CommandWidgetFinder {
 			// Collecting them
 			distinct().collect(Collectors.toCollection(HashSet::new));
 
-		List<VarMatch> widget = widgetUsages.parallelStream().
+		return widgetUsages.parallelStream().
 			map(usage -> usage.accesses.parallelStream().filter(m -> {
 				// Ignoring the statements that are parts of a listener method. The statements that must be analysed
 				// or those that configure the widgetUsages.
@@ -145,8 +143,6 @@ public class CommandWidgetFinder {
 //		if(widget.size()>1) {
 //			System.err.println("MORE THAN ONE WIDGET FOUND USING VARIABLES: " + widgetUsages + " " + cmd);
 //		}
-
-		return widget;
 	}
 
 
@@ -390,10 +386,10 @@ public class CommandWidgetFinder {
 			}
 		}
 
-		public List<CtVariable<?>> getWidgetUsedInBothRegistrationCmd() {
-			final List<CtVariable<?>> widgets = getDistinctUsedWidgets();
-			return registeredWidgets.stream().map(u -> u.widgetVar).filter(w -> widgets.contains(w)).collect(Collectors.toList());
-		}
+//		public List<CtVariable<?>> getWidgetUsedInBothRegistrationCmd() {
+//			final List<CtVariable<?>> widgets = getDistinctUsedWidgets();
+//			return registeredWidgets.stream().map(u -> u.widgetVar).filter(w -> widgets.contains(w)).collect(Collectors.toList());
+//		}
 	}
 
 
