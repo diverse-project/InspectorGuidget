@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.factory.ClassFactory;
 import spoon.reflect.reference.CtTypeReference;
 
@@ -99,9 +98,9 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 			if(m==null && cl.isSubtypeOf(WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).get(0))) {
 				m = cl.getMethodsByName(interfM.getName()).get(0);
 			}
-			if(m==null && !cl.hasModifier(ModifierKind.ABSTRACT))
-				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfM + " from the interface: " + interf + " "  +
-						SpoonHelper.INSTANCE.formatPosition(cl.getPosition()));
+//			if(m==null && !cl.hasModifier(ModifierKind.ABSTRACT))
+//				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfM + " from the interface: " + interf + " "  +
+//						SpoonHelper.INSTANCE.formatPosition(cl.getPosition()));
 			return m;
 		}).filter(m -> m!=null).collect(Collectors.toList());
 	}

@@ -135,6 +135,13 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 		assertEquals(1, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
+	@Test
+	public void testMouseListClassInheritanceAbsract() {
+		run("src/test/resources/java/listeners/MouseListClassInheritanceAbsract.java");
+		assertEquals(2, clazzListener.size());
+		assertEquals(5, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
+	}
+
 	@Override
 	public List<InspectorGuidgetProcessor<? extends CtElement>> createProcessor() {
 		lambdaProc = new LambdaListenerProcessor();
