@@ -272,7 +272,22 @@ public class CommandWidgetFinder {
 		}else if(target instanceof CtThisAccess<?> || target instanceof CtTypeAccess<?>) {
 			// First instanceof: 'This' accesses are supported in getWidgetClass.
 			// Second instanceof: For example: JOptionPane.showConfirmDialog(...), so not related to a variable.
-		}else {
+		} if(target instanceof CtInvocation<?>) {
+			CtClass<Object> clazz = target.getFactory().Class().get(((CtInvocation<?>) target).getExecutable().getDeclaringType().getQualifiedName());
+			List<CtMethod<?>> methods = clazz.getMethodsByName(((CtInvocation<?>) target).getExecutable().getSimpleName());
+
+			if(methods.size()==1) {
+				List<CtReturn<?>> returns = methods.get(0).getBody().getElements(new ReturnFilter());
+
+				if(returns.size()==1 && returns.get(0).getReturnedExpression() instanceof CtVariableAccess<?>) {
+					return getMatchingWidgetUsage(((CtVariableAccess<?>)returns.get(0).getReturnedExpression()).getVariable().getDeclaration());
+				}
+				System.err.println("Unsupported return statement(s): " + returns + " in " + methods.get(0));
+			}else {
+				System.err.println("Incorrect number of methods found for the invocation: " + target + ", methods: " + methods);
+			}
+		}
+		else {
 			System.err.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok + " " +
 								SpoonHelper.INSTANCE.formatPosition(invok.getPosition()));
 		}
@@ -399,6 +414,11 @@ public class CommandWidgetFinder {
 			super(u);
 			stringlit = lit;
 		}
+
+		@Override
+		public String toString() {
+			return "StringLitMatch{" + "string lit=" + stringlit + ", usage: " + usage +'}';
+		}
 	}
 
 	public static class VarMatch extends CmdWidgetMatch {
@@ -407,6 +427,11 @@ public class CommandWidgetFinder {
 		public VarMatch(final @NotNull WidgetProcessor.WidgetUsage u, final @NotNull List<CtVariable<?>> var) {
 			super(u);
 			vars = var;
+		}
+
+		@Override
+		public String toString() {
+			return "StringLitMatch{" + "vars=" + vars + ", usage: " + usage +'}';
 		}
 	}
 }

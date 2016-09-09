@@ -231,4 +231,11 @@ public class TestWidgetFinder {
 		assertNotEquals(new ArrayList<>(results.values()).get(0).getWidgetsFromSharedVars().get(0).usage.creation.get().getPosition().getLine(),
 			new ArrayList<>(results.values()).get(1).getWidgetsFromSharedVars().get(0).usage.creation.get().getPosition().getLine());
 	}
+
+	@Test
+	public void testListenerRegisterOnInvocation() {
+		initTest("src/test/resources/java/analysers/ListenerRegisterOnInvocation.java");
+		assertEquals(1, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+	}
 }
