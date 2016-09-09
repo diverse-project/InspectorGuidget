@@ -145,23 +145,26 @@ public final class SpoonHelper {
 		System.out.println();
 	}
 
-	public List<CtVariableAccess<?>> extractUsagesOfField(final @NotNull CtVariable<?> field) {
+	public List<CtVariableAccess<?>> extractUsagesOfVar(final @NotNull CtVariable<?> var) {
 		CtElement parent;
 
-		if(field.getVisibility()==null) {
-			parent = field.getParent(CtPackage.class);
-			if(parent == null) parent = field.getParent(CtClass.class);
+		if(var instanceof CtLocalVariable<?>) {
+			parent = var.getParent(CtBlock.class);
+		}
+		else if(var.getVisibility()==null) {
+			parent = var.getParent(CtPackage.class);
+			if(parent == null) parent = var.getParent(CtClass.class);
 		}else {
-			switch(field.getVisibility()) {
+			switch(var.getVisibility()) {
 				case PRIVATE:
-					parent = field.getParent(CtClass.class);
+					parent = var.getParent(CtClass.class);
 					break;
 				case PROTECTED:
-					parent = field.getParent(CtPackage.class);
-					if(parent == null) parent = field.getParent(CtClass.class);
+					parent = var.getParent(CtPackage.class);
+					if(parent == null) parent = var.getParent(CtClass.class);
 					break;
 				case PUBLIC:
-					parent = field.getFactory().Package().getRootPackage();
+					parent = var.getFactory().Package().getRootPackage();
 					break;
 				default:
 					parent = null;
@@ -170,9 +173,9 @@ public final class SpoonHelper {
 		}
 
 		if(parent!=null) {
-			return parent.getElements(new MyVariableAccessFilter<>(field));
+			return parent.getElements(new MyVariableAccessFilter(var));
 		}
-		//TODO find usages in method when the field is given as a parameter.
+		//TODO find usages in method when the var is given as a parameter.
 
 		return Collections.emptyList();
 	}

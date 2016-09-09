@@ -1,8 +1,8 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
-import fr.inria.diverse.torgen.inspectorguidget.listener.WidgetListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
@@ -16,23 +16,20 @@ import spoon.reflect.visitor.filter.VariableAccessFilter;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * Detects declaration of widgets.
  */
 public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?>> {
-	/** The widgets defined as fields of classes. */
-	private final @NotNull Map<CtVariable<?>, List<CtVariableAccess<?>>> fields;
+	/** The widgets instiantiation and their usages. */
+	private final @NotNull List<WidgetUsage> widgetUsages;
 	/** The widgets created and directly added in a container. */
-	private final @NotNull Map<CtTypeReference<?>, CtTypeReference<?>> references;
-	/** Redefined widgets (e.g. reused local vars). */
-	private final @NotNull Map<CtAssignment<?,?>, List<CtVariableAccess<?>>> varsReassigned;
+	private final @NotNull Set<CtInvocation<?>> refWidgets;
 
 	private Collection<CtTypeReference<?>> controlType;
-	private CtTypeReference<?> collectionType;
-	private final @NotNull Set<WidgetListener> widgetObs;
 	private final boolean withConfigStat;
-	/** A cache used to optimise the type references to analyse. */
+	/** A cache used to optimise the type refWidgets to analyse. */
 	private final Map<String, Boolean> cacheTypeChecked;
 
 	public WidgetProcessor() {
@@ -41,34 +38,102 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 	public WidgetProcessor(final boolean withConfigurationStatmts) {
 		super();
-		widgetObs = new HashSet<>();
-		fields = new IdentityHashMap<>();
-		references = new IdentityHashMap<>();
+		widgetUsages = new ArrayList<>();
+		refWidgets = new HashSet<>();
 		withConfigStat = withConfigurationStatmts;
 		cacheTypeChecked = new HashMap<>();
-		varsReassigned = new HashMap<>();
-	}
-
-	public void addWidgetObserver(final @NotNull WidgetListener obs) {
-		widgetObs.add(obs);
 	}
 
 	@Override
 	public void init() {
 		LOG.log(Level.INFO, "init processor " + getClass().getSimpleName());
-
-		collectionType = getFactory().Type().createReference(Collection.class);
 		controlType = WidgetHelper.INSTANCE.getWidgetTypes(getFactory());
 	}
 
 	@Override
 	public void processingDone() {
+		// Now have to extract the usages of each widgets.
+
+		// Grouping all the widgets by their var definition.
+		// Some widgets may be redefined into an existing variable (used for another widget).
+		// In this case the list<widgetusage> corresponding to the ctvariable will contain 2 elements. The constructor
+		// differenciates the widgets.
+		final Map<CtVariable<?>, List<WidgetUsage>> usages = widgetUsages.parallelStream().collect(Collectors.groupingBy(u -> u.widgetVar));
+
+		// For each variable, computing its usages
+		List<WidgetUsage> finalUsages = usages.entrySet().parallelStream().map(entry -> {
+			// We suppose the usage cannot be empty because of the constructor call.
+			if(entry.getValue().isEmpty()) {
+				LOG.log(Level.SEVERE, () -> "This usage does not have access: " + entry.getValue());
+				return Collections.<WidgetUsage>emptyList();
+			}
+
+			if(entry.getValue().size() == 1) {
+				WidgetUsage u1 = entry.getValue().get(0);
+				// Getting the usages of this widget.
+				return Collections.singletonList(new WidgetUsage(u1.widgetVar, u1.creation.orElse(null), extractUsagesOfWidgetVar(u1.widgetVar)));
+			}else {
+				if(entry.getValue().stream().filter(u -> !u.creation.isPresent()).findFirst().isPresent()){
+					LOG.log(Level.SEVERE, () -> "A constructor is not defined while several usages are present: " + entry.getValue());
+					return Collections.<WidgetUsage>emptyList();
+				}
+
+				// Have to find out which statement is part of which widget using their position in the code.
+				final List<CtVariableAccess<?>> allUsages = extractUsagesOfWidgetVar(entry.getValue().get(0).widgetVar);
+				// Sorting the widget using the position of their initialisation.
+				final List<WidgetUsage> widgetSorted = entry.getValue().stream().sorted(
+					(a, b) -> a.creation.get().getPosition().getLine() < b.creation.get().getPosition().getLine() ? -1 : 1).
+					collect(Collectors.toList());
+
+				int min = 0;
+				int max;
+				List<WidgetUsage> finalWidgetUsages = new ArrayList<>();
+
+				// For each widget usage, computing which lines are part of it.
+				for(int i = 0, size = widgetSorted.size(); i<size; i++) {
+					max = i==size-1 ? Integer.MAX_VALUE : widgetSorted.get(i + 1).creation.get().getPosition().getLine();
+					final int fmin = min;
+					final int fmax = max;
+					finalWidgetUsages.add(new WidgetUsage(widgetSorted.get(i).widgetVar, widgetSorted.get(i).creation.orElse(null),
+						allUsages.stream().filter(u -> u.getPosition().getLine() >= fmin && u.getPosition().getLine() < fmax).collect(Collectors.toList())));
+					min = max;
+				}
+
+				return finalWidgetUsages;
+			}
+		}).flatMap(s -> s.stream()).collect(Collectors.toList());
+
+		widgetUsages.clear();
+		widgetUsages.addAll(finalUsages);
+
+		// Removing the initialisation from the usages.
+		widgetUsages.parallelStream().filter(u -> u.creation.isPresent()).forEach(u -> {
+			try {
+				final CtElement consCallParent = u.creation.get().getParent();
+
+				if(consCallParent instanceof CtAssignment<?, ?>) {
+					List<CtVariableAccess<?>> varCreation = consCallParent.getElements(new MyVariableAccessFilter(u.widgetVar));
+					u.accesses.removeAll(varCreation);
+				}
+			}catch(ParentNotInitializedException ex) {
+				LOG.log(Level.SEVERE, "The parent of " + u.creation.get() + " is not initialised.", ex);
+			}
+		});
+
 		super.processingDone();
 		cacheTypeChecked.clear();
 	}
 
+	public @NotNull List<WidgetUsage> getWidgetUsages() {
+		return widgetUsages;
+	}
+
+	public @NotNull Set<CtInvocation<?>> getRefWidgets() {
+		return refWidgets;
+	}
+
 	@Override
-	public boolean isToBeProcessed(CtTypeReference<?> type) {
+	public boolean isToBeProcessed(final CtTypeReference<?> type) {
 		String ty = type.getQualifiedName();
 
 		if(cacheTypeChecked.containsKey(ty)) {
@@ -87,31 +152,27 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		LOG.log(Level.INFO, () -> "PROCESSING " + element + " " + parent.getClass());
 
 		if(parent instanceof CtField<?>) {
-			addNotifyObserversOnField((CtField<?>) parent, element);
+			onWidgetVar((CtField<?>) parent);
 			return;
 		}
 		if(parent instanceof CtExecutableReference<?> && parent.getParent() instanceof CtConstructorCall<?>) {
-			analyseWidgetConstructorCall((CtConstructorCall<?>) parent.getParent(), element);
+			analyseWidgetConstructorCall((CtConstructorCall<?>) parent.getParent());
 			return;
 		}
 		if(parent instanceof CtAssignment<?,?>) {
-			analyseWidgetAssignment((CtAssignment<?, ?>) parent, element);
+			analyseWidgetAssignment((CtAssignment<?, ?>) parent);
 			return;
 		}
 		if(parent instanceof CtFieldReference<?>) {
 			CtField<?> decl = ((CtFieldReference<?>) parent).getDeclaration();
 
 			if(decl!=null && WidgetHelper.INSTANCE.isTypeRefAWidget(decl.getType())) {
-				addNotifyObserversOnField(decl, element);
+				onWidgetVar(decl);
 			}
 			return;
 		}
 		if(parent instanceof CtMethod<?>) {
-			analyseMethodUse((CtMethod<?>) parent, element);
-			return;
-		}
-		if(parent instanceof CtTypeReference<?>) {
-			process((CtTypeReference<?>) parent);
+			analyseMethodUse((CtMethod<?>) parent);
 			return;
 		}
 		if(parent instanceof CtExecutableReference<?>) {
@@ -141,38 +202,55 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	}
 
 
-	private void analyseMethodUse(final @NotNull CtMethod<?> meth, final CtTypeReference<?> element) {
+	private void analyseMethodUse(final @NotNull CtMethod<?> meth) {
 		final ModifierKind visib = meth.getVisibility();
+
 		if(visib == ModifierKind.PRIVATE) {
-			meth.getParent(CtClass.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok, element));
+			meth.getParent(CtClass.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok));
 		}else if(visib == ModifierKind.PUBLIC) {
-			meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok, element));
+			meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok));
 		}else if(visib == null || visib == ModifierKind.PROTECTED) {
-			meth.getParent(CtPackage.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok, element));
+			meth.getParent(CtPackage.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok));
 		}
 	}
 
 
-	private void analyseWidgetConstructorCall(final @NotNull CtConstructorCall<?> call, final CtTypeReference<?> element) {
+	private void processConstructorCallInVar(final @NotNull CtVariable<?> var, final @NotNull CtConstructorCall<?> call) {
+		synchronized(widgetUsages) {
+			final List<WidgetUsage> widgets = widgetUsages.parallelStream().filter(u -> u.widgetVar == var).collect(Collectors.toList());
+
+			// The constructor must not be already present in the widget usages.
+			if(!widgets.stream().filter(u -> u.creation.isPresent() && u.creation.get()==call).findFirst().isPresent()) {
+				if(widgets.size() == 1 && !widgets.get(0).creation.isPresent()) {
+					WidgetUsage widgetUsage = widgets.get(0);
+					widgetUsages.remove(widgetUsage);
+					widgetUsages.add(new WidgetUsage(var, call, widgetUsage.accesses));
+				} else {
+					// The var is already created. So another widget usage will be created
+					widgetUsages.add(new WidgetUsage(var, call, Collections.emptyList()));
+				}
+			}
+		}
+	}
+
+	private void analyseWidgetConstructorCall(final @NotNull CtConstructorCall<?> call) {
 		if(call.isParentInitialized()) {
 			final CtElement parent = call.getParent();
 
 			// When the creation of the widget is stored in a new local var, this var is considered as a widget.
-			if(parent instanceof CtLocalVariable<?>) {
-				addNotifyObserversOnField((CtLocalVariable<?>)parent, element);
+			if(parent instanceof CtVariable<?>) {
+				processConstructorCallInVar((CtVariable<?>)parent, call);
 			}
 			// When the creation of the widget is stored in an already defined local var...
 			else if(parent instanceof CtAssignment<?,?>) {
 				CtAssignment<?, ?> assig = (CtAssignment<?, ?>) parent;
-				// if the var is in fact a field and this last has been already added, then the reassignment is considered...
-				if(assig.getAssigned() instanceof CtFieldWrite<?> && fields.containsKey(((CtFieldWrite<?>)assig.getAssigned()).getVariable().getDeclaration())) {
-					addNotifyObserversOnReassignedVar(assig, element);
-				}else {
-				// otherwise the assignment is treated as it.
-					analyseWidgetAssignment(assig, element);
+
+				if(assig.getAssigned() instanceof CtVariableAccess<?>) {
+					processConstructorCallInVar(((CtVariableAccess<?>)assig.getAssigned()).getVariable().getDeclaration(), call);
 				}
-			} else {
-				analyseWidgetUse(parent, element);
+			}
+			else if(parent instanceof CtInvocation<?>) {
+				onWidgetCreatedInContainer((CtInvocation<?>) parent);
 			}
 		}
 	}
@@ -180,11 +258,11 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 	private void analyseWidgetUse(final CtElement elt, final CtTypeReference<?> refType) {
 		if(elt instanceof CtAssignment<?, ?>) {
-			analyseWidgetAssignment((CtAssignment<?, ?>) elt, refType);
+			analyseWidgetAssignment((CtAssignment<?, ?>) elt);
 			return;
 		}
 		if(elt instanceof CtInvocation<?>) {
-			analyseWidgetInvocation((CtInvocation<?>) elt, refType);
+			analyseWidgetInvocation((CtInvocation<?>) elt);
 			return;
 		}
 
@@ -193,14 +271,13 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			return;
 		}
 
-		LOG.log(Level.WARNING, "Widget use not supported or ignored (" + SpoonHelper.INSTANCE.formatPosition(elt.getPosition()) +
-				"): " + elt.getClass());
+		LOG.log(Level.WARNING, "Widget use not supported or ignored (" + SpoonHelper.INSTANCE.formatPosition(elt.getPosition()) + "): " + elt.getClass());
 	}
 
 
 	private void analyseUseOfLocalVariable(final @NotNull CtLocalVariableReference<?> var, final @Nullable CtBlock<?> block, final CtTypeReference<?> refType) {
 		if(block==null) {
-			LOG.log(Level.SEVERE, "No block ("+SpoonHelper.INSTANCE.formatPosition(var.getPosition())+"): " + var);
+			LOG.log(Level.SEVERE, "No block ("+ SpoonHelper.INSTANCE.formatPosition(var.getPosition())+"): " + var);
 			return;
 		}
 
@@ -212,14 +289,14 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	 * Object foo;
 	 * foo = new JButton();
 	 */
-	private void analyseWidgetAssignment(final @NotNull CtAssignment<?,?> assign, final CtTypeReference<?> element) {
+	private void analyseWidgetAssignment(final @NotNull CtAssignment<?,?> assign) {
 		final CtExpression<?> exp = assign.getAssigned();
 
 		if(exp instanceof CtFieldWrite<?>) {
-			addNotifyObserversOnField(((CtFieldWrite<?>) exp).getVariable().getDeclaration(), element);
+			onWidgetVar(((CtFieldWrite<?>) exp).getVariable().getDeclaration());
 		}
 		else if(exp instanceof CtVariableWrite<?>) {
-			addNotifyObserversOnField(((CtVariableWrite<?>)exp).getVariable().getDeclaration(), element);
+			onWidgetVar(((CtVariableWrite<?>)exp).getVariable().getDeclaration());
 		}
 		else {
 			LOG.log(Level.WARNING, "Widget Assignment not supported or ignored: " + exp.getClass() + " " + exp);
@@ -234,7 +311,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	 * List<Object> foo = new ArrayList<>();
 	 * foo.add(new JMenuItem());
 	 */
-	private void analyseWidgetInvocation(final @NotNull CtInvocation<?> invok, final CtTypeReference<?> element) {
+	private void analyseWidgetInvocation(final @NotNull CtInvocation<?> invok) {
 		final CtExpression<?> exp = invok.getTarget();
 
 		if(exp==null) {
@@ -244,59 +321,64 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		final CtTypeReference<?> type = exp.getType();
 
-		if(type.isSubtypeOf(collectionType) && type.getParent() instanceof CtFieldReference<?>) {
-			addNotifyObserversOnField(((CtFieldReference<?>) type.getParent()).getDeclaration(), element);
-			return;
-		}
-
 		if(isASubTypeOf(type, controlType)) {
-			addNotifyObserversOnContained(invok, element);
-			return;
+			onWidgetCreatedInContainer(invok);
 		}
-		if(invok.getParent() instanceof CtAssignment<?,?>) {
-			analyseWidgetAssignment((CtAssignment<?, ?>) invok.getParent(), element);
-			return;
-		}
-		if(invok.getParent() instanceof CtInvocation<?> && invok.getParent() instanceof CtInvocation<?>) {
-			// Calling a method on a collection.
-			addNotifyObserversOnContained(invok, element);
-			return;
+		else if(invok.getParent() instanceof CtAssignment<?,?>) {
+			analyseWidgetAssignment((CtAssignment<?, ?>) invok.getParent());
 		}
 
 		LOG.log(Level.WARNING, "Widget invocation not supported or ignored: " + type.getSimpleName() + " " + invok);
 	}
 
 
-	private void addNotifyObserversOnContained(final CtInvocation<?> invok, final @Nullable CtTypeReference<?> element) {
-		if(element!=null && references.putIfAbsent(element, element)==null) {
-			widgetObs.forEach(o -> o.onWidgetCreatedForContainer(invok, element));
+	public boolean isWidgetVarUsed(final @Nullable CtVariable<?> var) {
+		if(var==null) return false;
+		synchronized(widgetUsages) {
+			return widgetUsages.parallelStream().filter(u -> u.widgetVar == var).findFirst().isPresent();
 		}
 	}
 
-	private void addNotifyObserversOnField(final @Nullable CtVariable<?> field, final CtTypeReference<?> element) {
-		if(field!=null && !fields.containsKey(field)) {
-			final List<CtVariableAccess<?>> usages = extractUsagesOfWidgetField(field);
-			fields.put(field, usages);
-			widgetObs.forEach(o -> o.onWidgetAttribute(field, usages, element));
+
+	private void onWidgetCreatedInContainer(final @Nullable CtInvocation<?> invocation) {
+		if(invocation!=null) {
+			synchronized(refWidgets) {
+				refWidgets.add(invocation);
+			}
 		}
 	}
 
-	private void addNotifyObserversOnReassignedVar(final @Nullable CtAssignment<?,?> assig, final CtTypeReference<?> element) {
-		if(assig!=null && !varsReassigned.containsKey(assig)) {
-			final List<CtVariableAccess<?>> usages = Collections.emptyList();// extractUsagesOfWidgetField(field);
-			varsReassigned.put(assig, usages);
-			widgetObs.forEach(o -> o.onWidgetCreatedInExistingVar(assig, usages, element));
+	private void onWidgetVar(final @Nullable CtVariable<?> var) {
+		if(var!=null && !isWidgetVarUsed(var)) {
+			synchronized(widgetUsages) {
+				widgetUsages.add(new WidgetUsage(var, null, Collections.emptyList()));
+			}
 		}
 	}
 
-	private List<CtVariableAccess<?>> extractUsagesOfWidgetField(final CtVariable<?> field) {
+	private List<CtVariableAccess<?>> extractUsagesOfWidgetVar(final CtVariable<?> var) {
 		if(withConfigStat) {
-			return SpoonHelper.INSTANCE.extractUsagesOfField(field);
+			return SpoonHelper.INSTANCE.extractUsagesOfVar(var);
 		}
 		return Collections.emptyList();
 	}
 
-	public @NotNull Map<CtVariable<?>, List<CtVariableAccess<?>>> getFields() {
-		return Collections.unmodifiableMap(fields);
+
+	public static class WidgetUsage {
+		public final CtVariable<?> widgetVar;
+		public final Optional<CtConstructorCall<?>> creation;
+		public final List<CtVariableAccess<?>> accesses;
+
+		public WidgetUsage(final @NotNull CtVariable<?> widgetVar, final @Nullable CtConstructorCall<?> creation,
+						   final @NotNull List<CtVariableAccess<?>> accesses) {
+			this.widgetVar = widgetVar;
+			this.creation = Optional.ofNullable(creation);
+			this.accesses = accesses;
+		}
+
+		@Override
+		public String toString() {
+			return "WidgetUsage{var: " + widgetVar + ", construct: " + creation.isPresent() + ", nbAccessses:" + accesses.size() + "}";
+		}
 	}
 }

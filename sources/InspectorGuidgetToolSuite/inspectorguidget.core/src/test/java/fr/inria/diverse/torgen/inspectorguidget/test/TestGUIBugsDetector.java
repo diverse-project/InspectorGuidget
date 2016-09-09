@@ -54,7 +54,7 @@ public class TestGUIBugsDetector {
 
 		finder = new CommandWidgetFinder(
 			cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()),
-			widgetProc.getFields());
+			widgetProc.getWidgetUsages());
 		finder.process();
 		results = finder.getResults();
 		CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);

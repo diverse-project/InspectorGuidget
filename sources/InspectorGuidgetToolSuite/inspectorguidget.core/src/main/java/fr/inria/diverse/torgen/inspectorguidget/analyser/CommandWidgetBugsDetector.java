@@ -81,8 +81,8 @@ public class CommandWidgetBugsDetector {
 			case 1: return Optional.empty();
 			default:
 				return Optional.of(new Tuple<>("More than one widgets found for this command. " +
-					ws.size() + " widgets found that are: " + value.getRegisteredWidgets() + "(registered) " + value.getWidgetsFromStringLiterals().keySet() +
-					" (string lit) " + value.getWidgetsFromSharedVars().keySet() + "(shared vars) " + value.getWidgetsUsedInConditions() + " (in cond)" +
+					ws.size() + " widgets found that are: " + value.getRegisteredWidgets() + "(registered) " + value.getWidgetsFromStringLiterals() +
+					" (string lit) " + value.getWidgetsFromSharedVars() + "(shared vars) " + value.getWidgetsUsedInConditions() + " (in cond)" +
 					value.getWidgetClasses().isPresent() + " (widget classes)", entry.getKey()));
 		}
 	}

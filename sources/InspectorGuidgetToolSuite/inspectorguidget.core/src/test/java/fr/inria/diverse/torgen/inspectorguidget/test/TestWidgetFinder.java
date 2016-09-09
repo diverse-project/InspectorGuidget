@@ -9,7 +9,6 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestWidgetFinder {
@@ -51,7 +51,7 @@ public class TestWidgetFinder {
 
 		finder = new CommandWidgetFinder(
 			cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()),
-			widgetProc.getFields());
+			widgetProc.getWidgetUsages());
 		finder.process();
 		results = finder.getResults();
 	}
@@ -60,14 +60,15 @@ public class TestWidgetFinder {
 	public void testAnonClassOnSingleFieldWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleFieldWidgetNoCond.java");
 		assertEquals(1, results.size());
-		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 	}
 
 	@Test
 	public void testLambdaOnSingleFieldWidgetNoCond() {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnSingleFieldWidgetNoCond.java");
 		assertEquals(1, results.size());
-		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals(1L, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 	}
 
 	@Test
@@ -75,7 +76,7 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnSingleLocalVarWidgetNoCond.java");
 		assertEquals(1, results.size());
 		assertEquals(1L, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 	}
 
 	@Test
@@ -83,8 +84,8 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/widgetsIdentification/AnonClassOnFieldWidgetsEqualCond.java");
 		assertEquals(1, results.size());
 		assertEquals(2, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
-		assertEquals("a", new ArrayList<>(results.values()).get(0).getWidgetsUsedInConditions().get(0).getSimpleName());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).widgetVar.getSimpleName());
+		assertEquals("a", new ArrayList<>(results.values()).get(0).getWidgetsUsedInConditions().get(0).widgetVar.getSimpleName());
 	}
 
 	@Test
@@ -92,8 +93,8 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java");
 		assertEquals(1, results.size());
 		assertEquals(2, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
-		assertEquals("a", new ArrayList<>(results.values()).get(0).getWidgetsUsedInConditions().get(0).getSimpleName());
+		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).widgetVar.getSimpleName());
+		assertEquals("a", new ArrayList<>(results.values()).get(0).getWidgetsUsedInConditions().get(0).widgetVar.getSimpleName());
 	}
 
 	@Test
@@ -101,7 +102,7 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/widgetsIdentification/ClassSingleWidgetNoCond.java");
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 	}
 
 	@Test
@@ -109,7 +110,7 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/widgetsIdentification/ClassInheritanceSingleWidgetNoCond.java");
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getNbDistinctWidgets());
-		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals("fooo", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 	}
 
 	@Test
@@ -143,10 +144,10 @@ public class TestWidgetFinder {
 			.collect(Collectors.toList());
 
 		assertEquals(1, entries.get(0).getValue().getNbDistinctWidgets());
-		assertEquals("fooo", entries.get(0).getValue().getRegisteredWidgets().get(0).getSimpleName());
+		assertEquals("fooo", entries.get(0).getValue().getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 
 		assertEquals(2, entries.get(1).getValue().getNbDistinctWidgets());
-		List<String> names = entries.get(1).getValue().getRegisteredWidgets().stream().map(o -> o.getSimpleName()).sorted(String::compareTo).collect(Collectors.toList());
+		List<String> names = entries.get(1).getValue().getRegisteredWidgets().stream().map(o -> o.widgetVar.getSimpleName()).sorted(String::compareTo).collect(Collectors.toList());
 		assertEquals("bar", names.get(0));
 		assertEquals("fooo", names.get(1));
 	}
@@ -223,10 +224,11 @@ public class TestWidgetFinder {
 	}
 
 	@Test
-	@Ignore
 	public void testAnotherExample3CorrectStatementsIndentification() {
 		initTest("src/test/resources/java/widgetsIdentification/AnotherExample3.java");
-		assertEquals(3, new ArrayList<>(widgetProc.getFields().entrySet()).get(0).getValue().size());
-		assertEquals(3, new ArrayList<>(widgetProc.getFields().entrySet()).get(1).getValue().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
+		assertNotEquals(new ArrayList<>(results.values()).get(0).getWidgetsFromSharedVars().get(0).usage.creation.get().getPosition().getLine(),
+			new ArrayList<>(results.values()).get(1).getWidgetsFromSharedVars().get(0).usage.creation.get().getPosition().getLine());
 	}
 }

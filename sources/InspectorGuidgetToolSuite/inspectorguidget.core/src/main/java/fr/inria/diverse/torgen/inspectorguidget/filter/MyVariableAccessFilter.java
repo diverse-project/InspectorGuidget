@@ -24,7 +24,7 @@ import spoon.reflect.visitor.Filter;
 /**
  * This simple filter matches all the accesses to a given field.
  */
-public class MyVariableAccessFilter<T extends CtVariableAccess<?>> implements Filter<T> {
+public class MyVariableAccessFilter implements Filter<CtVariableAccess<?>> {
 	private final CtVariable<?> variable;
 
 	/**
@@ -36,14 +36,11 @@ public class MyVariableAccessFilter<T extends CtVariableAccess<?>> implements Fi
 	}
 
 	@Override
-	public boolean matches(final T variableAccess) {
+	public boolean matches(final CtVariableAccess<?> variableAccess) {
 		final CtVariableReference<?> varAc = variableAccess.getVariable();
 
-		if(varAc==null)
-			return false;
-
 		try {
-			return varAc.getDeclaration()==variable;
+			return varAc!=null && varAc.getDeclaration()==variable;
 		}catch(NullPointerException ex) {
 			return false;
 		}
