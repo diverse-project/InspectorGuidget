@@ -272,7 +272,7 @@ public class CommandWidgetFinder {
 		}else if(target instanceof CtThisAccess<?> || target instanceof CtTypeAccess<?>) {
 			// First instanceof: 'This' accesses are supported in getWidgetClass.
 			// Second instanceof: For example: JOptionPane.showConfirmDialog(...), so not related to a variable.
-		} if(target instanceof CtInvocation<?>) {
+		} else if(target instanceof CtInvocation<?>) {
 			CtClass<Object> clazz = target.getFactory().Class().get(((CtInvocation<?>) target).getExecutable().getDeclaringType().getQualifiedName());
 			List<CtMethod<?>> methods = clazz.getMethodsByName(((CtInvocation<?>) target).getExecutable().getSimpleName());
 
