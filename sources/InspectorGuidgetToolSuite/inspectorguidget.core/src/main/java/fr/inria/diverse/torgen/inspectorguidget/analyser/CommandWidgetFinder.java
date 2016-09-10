@@ -74,6 +74,8 @@ public class CommandWidgetFinder {
 //		time = System.currentTimeMillis();
 		entry.setWidgetsFromStringLiterals(checkListenerMatching(listenerClass, matchWidgetsUsagesWithStringsInCmdConditions(cmd)));
 //		System.out.println("ANALYSIS #5 in: " + (System.currentTimeMillis()-time));
+
+		entry.preciseWidgets(cmd);
 	}
 
 
@@ -423,10 +425,38 @@ public class CommandWidgetFinder {
 			}
 		}
 
-//		public List<CtVariable<?>> getWidgetUsedInBothRegistrationCmd() {
-//			final List<CtVariable<?>> widgets = getDistinctUsedWidgets();
-//			return registeredWidgets.stream().map(u -> u.widgetVar).filter(w -> widgets.contains(w)).collect(Collectors.toList());
-//		}
+
+		/**
+		 *
+		 */
+		private void preciseWidgets(final @NotNull Command cmd) {
+			// This optimisation is performed only when several widgets are registered to the listener:
+			// this method will try to find out which widgets really concern the command.
+			if(registeredWidgets.size()<2) return;
+
+			registeredWidgets.removeIf(w -> {
+				boolean ok = widgetsFromSharedVars.stream().map(u -> u.vars).flatMap(s -> s.stream()).filter(var -> {
+					final MyVariableAccessFilter filter = new MyVariableAccessFilter(var);
+					// Looking the usages a variable access that corresponds to the variable used to register the widget to the listener.
+					return w.accesses.stream().map(a -> a.getParent(CtStatement.class)).
+						filter(a -> !a.getElements(filter).isEmpty()).findFirst().isPresent();
+				}).findFirst().isPresent();
+
+				// If no usage found
+				if(!ok) // Try with the string literals.
+					ok = widgetsFromStringLiterals.stream().map(u -> u.stringlit).flatMap(s -> s.stream()).filter(var -> {
+						final SpecificStringLiteralFilter filter = new SpecificStringLiteralFilter(var);
+						return w.accesses.stream().map(a -> a.getParent(CtStatement.class)).
+							filter(a -> !a.getElements(filter).isEmpty()).findFirst().isPresent();
+					}).findFirst().isPresent();
+
+				// If no usage found
+//				if(!ok) // Try with the widgets used in the conditions (this optimisation seems to be already done.
+//					ok = widgetsUsedInConditions.stream().filter(var -> var.widgetVar == w.widgetVar).findFirst().isPresent();
+
+				return !ok;
+			});
+		}
 	}
 
 

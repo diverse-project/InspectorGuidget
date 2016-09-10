@@ -7,7 +7,6 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetBugsDetect
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
-import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,10 +144,8 @@ public class TestWidgetFinder {
 		assertEquals(1, entries.get(0).getValue().getNbDistinctWidgets());
 		assertEquals("fooo", entries.get(0).getValue().getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 
-		assertEquals(2, entries.get(1).getValue().getNbDistinctWidgets());
-		List<String> names = entries.get(1).getValue().getRegisteredWidgets().stream().map(o -> o.widgetVar.getSimpleName()).sorted(String::compareTo).collect(Collectors.toList());
-		assertEquals("bar", names.get(0));
-		assertEquals("fooo", names.get(1));
+		assertEquals(1, entries.get(1).getValue().getNbDistinctWidgets());
+		assertEquals("bar", entries.get(1).getValue().getRegisteredWidgets().get(0).widgetVar.getSimpleName());
 	}
 
 
@@ -240,10 +237,30 @@ public class TestWidgetFinder {
 
 	@Test
 	public void testAnotherExample4() {
-		spoon.Launcher.LOGGER.setLevel(Level.OFF);
 		initTest("src/test/resources/java/widgetsIdentification/AnotherExample4.java");
 		assertEquals(2, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
+	}
+
+	@Test
+	public void testFilterOutRegistrationWidgetUsingVars() {
+		initTest("src/test/resources/java/widgetsIdentification/FilterOutRegistrationWidgetUsingVars.java");
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getRegisteredWidgets().size());
+	}
+
+	@Test
+	public void testFilterOutRegistrationWidgetUsingLiterals() {
+		initTest("src/test/resources/java/widgetsIdentification/FilterOutRegistrationWidgetUsingLiterals.java");
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getRegisteredWidgets().size());
+	}
+
+	@Test
+	public void testFilterOutRegistrationWidgetUsingWidgetVars() {
+		initTest("src/test/resources/java/widgetsIdentification/FilterOutRegistrationWidgetUsingWidgetVars.java");
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getRegisteredWidgets().size());
 	}
 }
