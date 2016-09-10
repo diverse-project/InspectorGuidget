@@ -5,6 +5,7 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtTypeReference;
@@ -37,7 +38,7 @@ public class CommandWidgetFinder {
 	 * Executes the analysis.
 	 */
 	public void process() {
-		cmds.parallelStream().forEach(cmd -> process(cmd));
+		cmds.forEach(cmd -> process(cmd));
 	}
 
 	private void process(final @NotNull Command cmd) {
@@ -45,6 +46,17 @@ public class CommandWidgetFinder {
 
 		synchronized(results) {
 			results.put(cmd, entry);
+		}
+
+		CtClass<?> listenerClass = null;
+		try {
+			CtElement cmdParent = cmd.getExecutable().getParent();
+
+			if(cmdParent instanceof CtClass<?>) {
+				listenerClass = (CtClass<?>) cmdParent;
+			}
+		}catch(ParentNotInitializedException ex) {
+			ex.printStackTrace();
 		}
 
 //		long time = System.currentTimeMillis();
@@ -57,11 +69,36 @@ public class CommandWidgetFinder {
 		entry.setWidgetClasses(getWidgetClass(cmd));
 //		System.out.println("ANALYSIS #3 in: " + (System.currentTimeMillis()-time));
 //		time = System.currentTimeMillis();
-		entry.setWidgetsFromSharedVars(matchWidgetsUsagesWithCmdConditions(cmd));
+		entry.setWidgetsFromSharedVars(checkListenerMatching(listenerClass, matchWidgetsUsagesWithCmdConditions(cmd)));
 //		System.out.println("ANALYSIS #4 in: " + (System.currentTimeMillis()-time));
 //		time = System.currentTimeMillis();
-		entry.setWidgetsFromStringLiterals(matchWidgetsUsagesWithStringsInCmdConditions(cmd));
+		entry.setWidgetsFromStringLiterals(checkListenerMatching(listenerClass, matchWidgetsUsagesWithStringsInCmdConditions(cmd)));
 //		System.out.println("ANALYSIS #5 in: " + (System.currentTimeMillis()-time));
+	}
+
+
+	/**
+	 * Checks that the matchings correspond to the listener that contains the command:
+	 * a reference of the listener is searched in the usages of the identified widgets and is compared
+	 * to the listener of the command to determine whether this widget really matches the command.
+	 * This analysis does not work with toolkit that does not require listener registration such as
+	 * with JavaFX where a listener method can be associated with the widget directly in the FXML.
+	 * @param listenerClass The listener class of the command.
+	 * @param cmdWidgetMatches The list of the widgets that may correspond to the command.
+	 * @param <T> The type of the matching.
+	 * @return The filtered list of widgets.
+	 */
+	private @NotNull <T extends CmdWidgetMatch> List<T> checkListenerMatching(final @Nullable CtClass<?> listenerClass,
+																			 final @NotNull List<T> cmdWidgetMatches) {
+		if(listenerClass==null) return cmdWidgetMatches;
+
+		SingleTypeRefFilter filter = new SingleTypeRefFilter(listenerClass.getReference());
+
+		// Removing all the supposing widget matching which listener registration does not match the listener class of the command.
+		// This permits to precise the widget <-> command identification.
+		cmdWidgetMatches.removeIf(m -> !m.usage.accesses.stream().filter(a -> !a.getParent(CtStatement.class).getElements(filter).isEmpty()).findFirst().isPresent());
+
+		return cmdWidgetMatches;
 	}
 
 

@@ -7,6 +7,7 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetBugsDetect
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
+import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,9 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TestWidgetFinder {
 	private CommandAnalyser cmdAnalyser;
@@ -237,5 +236,14 @@ public class TestWidgetFinder {
 		initTest("src/test/resources/java/analysers/ListenerRegisterOnInvocation.java");
 		assertEquals(1, results.size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+	}
+
+	@Test
+	public void testAnotherExample4() {
+		spoon.Launcher.LOGGER.setLevel(Level.OFF);
+		initTest("src/test/resources/java/widgetsIdentification/AnotherExample4.java");
+		assertEquals(2, results.size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
 	}
 }
