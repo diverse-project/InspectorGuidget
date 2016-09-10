@@ -38,7 +38,7 @@ public class CommandWidgetFinder {
 	 * Executes the analysis.
 	 */
 	public void process() {
-		cmds.forEach(cmd -> process(cmd));
+		cmds.parallelStream().forEach(cmd -> process(cmd));
 	}
 
 	private void process(final @NotNull Command cmd) {
