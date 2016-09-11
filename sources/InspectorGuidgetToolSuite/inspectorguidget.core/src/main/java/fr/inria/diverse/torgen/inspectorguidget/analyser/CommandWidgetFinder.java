@@ -30,7 +30,7 @@ public class CommandWidgetFinder {
 	public CommandWidgetFinder(final @NotNull List<Command> commands, final @NotNull List<WidgetProcessor.WidgetUsage> usages) {
 		super();
 		cmds = commands;
-		results = new HashMap<>();
+		results = new IdentityHashMap<>();
 		widgetUsages = usages;
 	}
 
@@ -96,7 +96,7 @@ public class CommandWidgetFinder {
 
 		SingleTypeRefFilter filter = new SingleTypeRefFilter(listenerClass.getReference());
 
-		// Removing all the supposing widget matching which listener registration does not match the listener class of the command.
+		// Removing all the supposed widget matching which listener registration does not match the listener class of the command.
 		// This permits to precise the widget <-> command identification.
 		cmdWidgetMatches.removeIf(m -> !m.usage.accesses.stream().filter(a -> !a.getParent(CtStatement.class).getElements(filter).isEmpty()).findFirst().isPresent());
 
@@ -335,7 +335,7 @@ public class CommandWidgetFinder {
 	 * @return A unmodifiable map of the results of the process.
 	 */
 	public @NotNull Map<Command, WidgetFinderEntry> getResults() {
-		return Collections.unmodifiableMap(results);
+		synchronized(results) { return Collections.unmodifiableMap(results); }
 	}
 
 
@@ -435,6 +435,8 @@ public class CommandWidgetFinder {
 			if(registeredWidgets.size()<2) return;
 
 			registeredWidgets.removeIf(w -> {
+				if(widgetsFromSharedVars.isEmpty() && widgetsFromStringLiterals.isEmpty()) return false;
+
 				boolean ok = widgetsFromSharedVars.stream().map(u -> u.vars).flatMap(s -> s.stream()).filter(var -> {
 					final MyVariableAccessFilter filter = new MyVariableAccessFilter(var);
 					// Looking the usages a variable access that corresponds to the variable used to register the widget to the listener.

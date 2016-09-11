@@ -27,15 +27,15 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		super(Collections.emptyList());
 
 		commands = new IdentityHashMap<>();
-		classProc=new ClassListenerProcessor();
-		lambdaProc=new LambdaListenerProcessor();
+		classProc = new ClassListenerProcessor();
+		lambdaProc = new LambdaListenerProcessor();
 
 		addProcessor(classProc);
 		addProcessor(lambdaProc);
 	}
 
 	public @NotNull Map<CtExecutable<?>, List<Command>> getCommands() {
-		return Collections.unmodifiableMap(commands);
+		synchronized(commands) { return Collections.unmodifiableMap(commands); }
 	}
 
 	@Override
@@ -54,21 +54,23 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		lambdaProc.getAllListenerLambdas().parallelStream().forEach(l -> analyseSingleListenerMethod(Optional.empty(), l));
 
 		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
-		commands.entrySet().forEach(entry -> entry.getValue().forEach(cmd -> {
-				cmd.extractLocalDispatchCallWithoutGUIParam();
-				// For each command, adding the required local variable definitions.
-				cmd.addAllStatements(0,
-					// Looking for local variable accesses in the command
-					cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
-						// Selecting the local variable definitions not already contained in the command
-						map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s==v).findFirst().isPresent()).
-						collect(Collectors.toList())).flatMap(s -> s.stream()).
-						// For each var def, creating a command statement entry that will be added to the list of entries of the command.
-						map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
+		synchronized(commands) {
+			commands.entrySet().forEach(entry -> entry.getValue().forEach(cmd -> {
+					cmd.extractLocalDispatchCallWithoutGUIParam();
+					// For each command, adding the required local variable definitions.
+					cmd.addAllStatements(0,
+						// Looking for local variable accesses in the command
+						cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
+							// Selecting the local variable definitions not already contained in the command
+								map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s==v).findFirst().isPresent()).
+								collect(Collectors.toList())).flatMap(s -> s.stream()).
+							// For each var def, creating a command statement entry that will be added to the list of entries of the command.
+								map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
 
-				inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
-			}
-		));
+					inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
+				}
+			));
+		}
 	}
 
 
@@ -164,11 +166,14 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod,
 														  final @NotNull List<CtElement> conds) {
-		List<Command> cmds = commands.get(listenerMethod);
+		List<Command> cmds;
+		synchronized(commands) {
+			cmds = commands.get(listenerMethod);
 
-		if(cmds==null) {
-			cmds = new ArrayList<>();
-			commands.put(listenerMethod, cmds);
+			if(cmds == null) {
+				cmds = new ArrayList<>();
+				commands.put(listenerMethod, cmds);
+			}
 		}
 
 		if(condStat instanceof CtIf) {
