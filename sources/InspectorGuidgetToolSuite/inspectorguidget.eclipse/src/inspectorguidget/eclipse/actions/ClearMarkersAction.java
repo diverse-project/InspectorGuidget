@@ -15,6 +15,9 @@ public class ClearMarkersAction implements IObjectActionDelegate {
 	@Override
 	public void run(final IAction action) {
 		DetectGUIListenerAction.clearMarkers();
+		DetectBlobListenerAction.clearMarkers();
+		DetectGUIBugsAction.clearMarkers();
+		DetectGUICommandAction.clearMarkers();
 		clearInspectorGuidgetMarkers(AbstractAction.getCurrentProject());
 	}
 
