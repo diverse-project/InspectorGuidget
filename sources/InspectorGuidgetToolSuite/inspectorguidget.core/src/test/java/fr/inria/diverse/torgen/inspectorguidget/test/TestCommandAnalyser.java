@@ -338,10 +338,19 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	public void testAnotherExample5NbCmd() {
+	public void testFilterOutRegistrationWidgetUsingVarsNbCmd() {
 		analyser.addInputResource("src/test/resources/java/widgetsIdentification/FilterOutRegistrationWidgetUsingVars.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1, new ArrayList<>(analyser.getCommands().values()).get(0).size());
+	}
+
+	@Test
+	public void testInsertPSTricksCodeFrameNbCmd() {
+		analyser.addInputResource("src/test/resources/java/widgetsIdentification/InsertPSTricksCodeFrame.java");
+		analyser.run();
+		assertEquals(2, analyser.getCommands().values().size());
+		assertEquals(2, new ArrayList<>(analyser.getCommands().values()).get(0).size());
+		assertEquals(2, new ArrayList<>(analyser.getCommands().values()).get(0).size());
 	}
 }

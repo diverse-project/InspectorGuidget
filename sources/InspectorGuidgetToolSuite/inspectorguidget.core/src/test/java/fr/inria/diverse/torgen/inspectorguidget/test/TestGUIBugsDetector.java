@@ -184,4 +184,10 @@ public class TestGUIBugsDetector {
 		initTest("src/test/resources/java/widgetsIdentification/AnotherExample3.java");
 		assertTrue(bugs.toString(), bugs.isEmpty());
 	}
+
+	@Test
+	public void testInsertPSTricksCodeFrame() {
+		initTest("src/test/resources/java/widgetsIdentification/InsertPSTricksCodeFrame.java");
+		assertTrue(bugs.toString(), bugs.isEmpty());
+	}
 }

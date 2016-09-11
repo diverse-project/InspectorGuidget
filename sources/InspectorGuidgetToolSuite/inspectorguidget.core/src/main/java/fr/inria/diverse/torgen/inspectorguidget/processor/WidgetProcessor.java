@@ -58,13 +58,24 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		// Some widgets may be redefined into an existing variable (used for another widget).
 		// In this case the list<widgetusage> corresponding to the ctvariable will contain 2 elements. The constructor
 		// differenciates the widgets.
-		final Map<CtVariable<?>, List<WidgetUsage>> usages = widgetUsages.parallelStream().collect(Collectors.groupingBy(u -> u.widgetVar));
+		// The next line does not work since Identify is required and groupBy has to use widgetVar
+//		final Map<CtVariable<?>, List<WidgetUsage>> usages = widgetUsages.parallelStream().collect(Collectors.groupingBy(u -> u.widgetVar));
+		final Map<CtVariable<?>, List<WidgetUsage>> usages = new IdentityHashMap<>();
+		widgetUsages.forEach(u -> {
+			List<WidgetUsage> usage = usages.get(u.widgetVar);
+			if(usage == null) {
+				usage = new ArrayList<>();
+				usages.put(u.widgetVar, usage);
+			}
+			usage.add(u);
+		});
+
 
 		// For each variable, computing its usages
 		List<WidgetUsage> finalUsages = usages.entrySet().parallelStream().map(entry -> {
 			// We suppose the usage cannot be empty because of the constructor call.
 			if(entry.getValue().isEmpty()) {
-				LOG.log(Level.SEVERE, () -> "This usage does not have access: " + entry.getValue());
+				LOG.log(Level.SEVERE, () -> "This variable does not have widget usage: " + entry.getValue());
 				return Collections.<WidgetUsage>emptyList();
 			}
 

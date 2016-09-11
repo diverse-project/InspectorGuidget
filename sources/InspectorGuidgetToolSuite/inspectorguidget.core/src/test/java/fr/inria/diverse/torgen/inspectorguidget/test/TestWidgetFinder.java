@@ -263,4 +263,17 @@ public class TestWidgetFinder {
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getRegisteredWidgets().size());
 	}
+
+	@Test
+	public void testInsertPSTricksCodeFrame() {
+		initTest("src/test/resources/java/widgetsIdentification/InsertPSTricksCodeFrame.java");
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getRegisteredWidgets().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getRegisteredWidgets().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(2).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(2).getRegisteredWidgets().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(3).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(3).getRegisteredWidgets().size());
+	}
 }
