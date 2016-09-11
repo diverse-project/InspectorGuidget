@@ -2,14 +2,19 @@ package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.SuperMethodInvocationFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
-import spoon.reflect.declaration.*;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtPackage;
+import spoon.reflect.declaration.CtVariable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class SpoonHelper {
@@ -21,20 +26,19 @@ public final class SpoonHelper {
 	}
 
 
-	public @NotNull List<CtExecutable<?>> getExecUsingSuperCall(final @NotNull List<CtExecutable<?>> execs) {
-		final SuperMethodInvocationFilter filter = new SuperMethodInvocationFilter();
-		return execs.parallelStream().filter(exec -> exec.getElements(filter).stream().
-								filter(supercall -> exec.getSimpleName().equals(supercall.getExecutable().getSimpleName())).findFirst().isPresent()
-			).collect(Collectors.toList());
-	}
+//	public @NotNull List<CtExecutable<?>> getExecUsingSuperCall(final @NotNull List<CtExecutable<?>> execs) {
+//		final SuperMethodInvocationFilter filter = new SuperMethodInvocationFilter();
+//		return execs.parallelStream().filter(exec -> exec.getElements(filter).stream().
+//								filter(supercall -> exec.getSimpleName().equals(supercall.getExecutable().getSimpleName())).findFirst().isPresent()
+//			).collect(Collectors.toList());
+//	}
 
 
 	/**
 	 * @param elt The element from which the research starts.
-	 * @param topParent The top parent that stops the research.
 	 * @return All the conditional expressions from the given element 'elt' up to the given top parent.
 	 */
-	public @NotNull List<CtElement> getSuperConditionalExpressions(final @NotNull CtElement elt, final @NotNull CtElement topParent) {
+	public @NotNull List<CtElement> getSuperConditionalExpressions(final @NotNull CtElement elt) {
 		CtElement parent = elt.isParentInitialized() ? elt.getParent() : null;
 		List<CtElement> conds = new ArrayList<>();
 
@@ -128,22 +132,22 @@ public final class SpoonHelper {
 		return exp;
 	}
 
-	/**
-	 * Shows the parents' class name and the position of these parents in the code of the given element.
-	 * @param element The element to scrutinise. Can be null.
-	 */
-	public void showParentsClassName(final @Nullable CtElement element) {
-		if(element==null) return;
-		CtElement elt = element;
-		CtElement parent;
-
-		while(elt.isParentInitialized() && elt.getParent()!=null) {
-			parent = elt.getParent();
-			System.out.print(parent.getClass().getSimpleName() + " " + formatPosition(parent.getPosition()) + " -> ");
-			elt = parent;
-		}
-		System.out.println();
-	}
+//	/**
+//	 * Shows the parents' class name and the position of these parents in the code of the given element.
+//	 * @param element The element to scrutinise. Can be null.
+//	 */
+//	public void showParentsClassName(final @Nullable CtElement element) {
+//		if(element==null) return;
+//		CtElement elt = element;
+//		CtElement parent;
+//
+//		while(elt.isParentInitialized() && elt.getParent()!=null) {
+//			parent = elt.getParent();
+//			System.out.print(parent.getClass().getSimpleName() + " " + formatPosition(parent.getPosition()) + " -> ");
+//			elt = parent;
+//		}
+//		System.out.println();
+//	}
 
 	public List<CtVariableAccess<?>> extractUsagesOfVar(final @NotNull CtVariable<?> var) {
 		CtElement parent;

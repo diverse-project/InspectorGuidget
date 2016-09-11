@@ -116,7 +116,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						filter(varacesss -> varacesss.getPosition().getLine() <= elt.getPosition().getLine()).
 						map(varaccess -> {
 							// Getting all the super conditional statements.
-							List<CtElement> exps = SpoonHelper.INSTANCE.getSuperConditionalExpressions(varaccess, var.getDeclaration().getParent());
+							List<CtElement> exps = SpoonHelper.INSTANCE.getSuperConditionalExpressions(varaccess);
 							// Getting the main expression of the var access (or the var access itself).
 							CtExpression<?> parent = varaccess.getParent(CtExpression.class);
 							exps.add(parent==null ? varaccess : parent);
