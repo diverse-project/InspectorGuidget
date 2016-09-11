@@ -389,7 +389,8 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		@Override
 		public String toString() {
-			return "WidgetUsage{var: " + widgetVar + ", construct: " + creation.isPresent() + ", nbAccessses:" + accesses.size() + "}";
+			return "WidgetUsage{var: " + widgetVar + " (" + SpoonHelper.INSTANCE.formatPosition(widgetVar.getPosition()) +
+				"), construct: " + creation.isPresent() + ", nbAccessses:" + accesses.size() + "}";
 		}
 	}
 }
