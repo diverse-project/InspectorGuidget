@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class Command {
 	private final @NotNull CtExecutable<?> executable;
 
-	private final @NotNull CommandStatmtEntry EMPTY_CMD_ENTRY = new CommandStatmtEntry(false);
+	private static final @NotNull CommandStatmtEntry EMPTY_CMD_ENTRY = new CommandStatmtEntry(false);
 
 	private final @NotNull List<CommandStatmtEntry> statements;
 
@@ -166,6 +166,28 @@ public class Command {
 						filter(stat -> stat.getPosition() == null).findFirst().ifPresent(statnull -> System.out.println("NO POSITION: " + statnull));
 		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
 				conditions.stream().map(stat -> stat.realStatmt.getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()+1).sum();
+	}
+
+
+	@Override
+	public boolean equals(final Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
+
+		Command command = (Command) o;
+
+		if(!executable.equals(command.executable)) return false;
+		if(!statements.equals(command.statements)) return false;
+		return conditions.equals(command.conditions);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = executable.hashCode();
+		result = 31 * result + statements.hashCode();
+		result = 31 * result + conditions.hashCode();
+		return result;
 	}
 
 	@Override

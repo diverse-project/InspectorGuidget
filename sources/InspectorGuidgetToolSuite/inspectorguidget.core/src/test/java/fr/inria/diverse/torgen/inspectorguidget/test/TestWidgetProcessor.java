@@ -143,4 +143,10 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 		assertEquals(2, usages.get(1).accesses.size());
 		assertEquals(0, usages.get(2).accesses.size());
 	}
+
+	@Test
+	public void testAnotherExample5() {
+		run("src/test/resources/java/widgetsIdentification/AnotherExample5.java");
+		assertEquals(2, wproc.getWidgetUsages().size());
+	}
 }

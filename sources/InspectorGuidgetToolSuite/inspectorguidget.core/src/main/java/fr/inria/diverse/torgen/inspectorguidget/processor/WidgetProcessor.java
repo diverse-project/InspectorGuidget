@@ -387,10 +387,34 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			this.accesses = accesses;
 		}
 
+
+		@Override
+		public boolean equals(final Object o) {
+			if(this == o) return true;
+			if(o == null || getClass() != o.getClass()) return false;
+
+			WidgetUsage that = (WidgetUsage) o;
+
+			if(!widgetVar.equals(that.widgetVar)) return false;
+			if(!creation.isPresent() != that.creation.isPresent()) return false;
+			return !creation.isPresent() || creation.get().equals(that.creation.get()) && accesses.equals(that.accesses);
+
+		}
+
+		@Override
+		public int hashCode() {
+			int result = widgetVar.hashCode();
+			result = 31 * result + (creation.isPresent() ? creation.get().hashCode() : 0);
+			result = 31 * result + accesses.hashCode();
+			return result;
+		}
+
 		@Override
 		public String toString() {
+			String creat = creation.flatMap(c ->
+				Optional.of(c.toString() + " " + SpoonHelper.INSTANCE.formatPosition(c.getPosition()))).orElse("nope");
 			return "WidgetUsage{var: " + widgetVar + " (" + SpoonHelper.INSTANCE.formatPosition(widgetVar.getPosition()) +
-				"), construct: " + creation.isPresent() + ", nbAccessses:" + accesses.size() + "}";
+				"), construct: " + creat + ", nbAccessses:" + accesses.size() + "}";
 		}
 	}
 }

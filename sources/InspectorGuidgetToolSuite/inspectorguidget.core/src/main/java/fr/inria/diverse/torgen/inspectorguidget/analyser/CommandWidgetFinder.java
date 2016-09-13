@@ -216,7 +216,7 @@ public class CommandWidgetFinder {
 	 * @param cmd The comand to analyse
 	 * @return The list of the references to the widgetUsages used in the conditions.
 	 */
-	private @NotNull List<WidgetProcessor.WidgetUsage> getVarWidgetUsedInCmdConditions(final @NotNull Command cmd) {
+	private @NotNull Set<WidgetProcessor.WidgetUsage> getVarWidgetUsedInCmdConditions(final @NotNull Command cmd) {
 		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
 		// Getting the widget types used in the conditions.
 		final List<CtTypeReference<?>> types = cmd.getConditions().stream().map(cond -> cond.realStatmt.getElements(filter)).
@@ -231,7 +231,7 @@ public class CommandWidgetFinder {
 				}catch(ParentNotInitializedException ex) {
 					return false;
 				}
-			}).findFirst().isPresent()).collect(Collectors.toList());
+			}).findFirst().isPresent()).collect(Collectors.toSet());
 	}
 
 
@@ -248,18 +248,18 @@ public class CommandWidgetFinder {
 	 * @param cmd The command to analyse.
 	 * @return The reference to the widget or nothing.
 	 */
-	private @NotNull List<WidgetProcessor.WidgetUsage> getAssociatedListenerVariable(final @NotNull Command cmd) {
+	private @NotNull Set<WidgetProcessor.WidgetUsage> getAssociatedListenerVariable(final @NotNull Command cmd) {
 		final CtExecutable<?> listenerMethod = cmd.getExecutable();
 		final CtInvocation<?> invok = listenerMethod.getParent(CtInvocation.class);
 
 		if(invok==null) {
 			if(listenerMethod.isParentInitialized() && listenerMethod.getParent() instanceof CtClass<?>)
 				return getAssociatedListenerVariableThroughClass((CtClass<?>)listenerMethod.getParent());
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 
 		Optional<WidgetProcessor.WidgetUsage> lisVar = getAssociatedListenerVariableThroughInvocation(invok);
-		return lisVar.isPresent() ? Collections.singletonList(lisVar.get()) : Collections.emptyList();
+		return lisVar.isPresent() ? Collections.singleton(lisVar.get()) : Collections.emptySet();
 	}
 
 
@@ -268,13 +268,13 @@ public class CommandWidgetFinder {
 	 * @param clazz The class to analyse.
 	 * @return The possible widget.
 	 */
-	private List<WidgetProcessor.WidgetUsage> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz) {
+	private Set<WidgetProcessor.WidgetUsage> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz) {
 		// Looking for 'this' usages
-		List<WidgetProcessor.WidgetUsage> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
+		Set<WidgetProcessor.WidgetUsage> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
 			// Keeping the 'this' usages that are parameters of a method call
 				filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
 				map(thisacc -> getAssociatedListenerVariableThroughInvocation((CtInvocation<?>) thisacc.getParent())).
-				filter(usage -> usage.isPresent()).map(usage -> usage.get()).collect(Collectors.toList());
+				filter(usage -> usage.isPresent()).map(usage -> usage.get()).collect(Collectors.toSet());
 
 		// Looking for associations in super classes.
 		final CtType<?> superclass = clazz.getSuperclass()==null?null:clazz.getSuperclass().getDeclaration();
@@ -340,16 +340,16 @@ public class CommandWidgetFinder {
 
 
 	public static final class WidgetFinderEntry {
-		private @NotNull List<WidgetProcessor.WidgetUsage> registeredWidgets;
-		private @NotNull List<WidgetProcessor.WidgetUsage> widgetsUsedInConditions;
+		private @NotNull Set<WidgetProcessor.WidgetUsage> registeredWidgets;
+		private @NotNull Set<WidgetProcessor.WidgetUsage> widgetsUsedInConditions;
 		private @NotNull Optional<CtClass<?>> widgetClasses;
 		private @NotNull List<VarMatch> widgetsFromSharedVars;
 		private @NotNull List<StringLitMatch> widgetsFromStringLiterals;
 
 		private WidgetFinderEntry() {
 			super();
-			registeredWidgets = Collections.emptyList();
-			widgetsUsedInConditions = Collections.emptyList();
+			registeredWidgets = Collections.emptySet();
+			widgetsUsedInConditions = Collections.emptySet();
 			widgetClasses = Optional.empty();
 			widgetsFromSharedVars = Collections.emptyList();
 			widgetsFromStringLiterals = Collections.emptyList();
@@ -363,12 +363,12 @@ public class CommandWidgetFinder {
 			return Collections.unmodifiableList(widgetsFromSharedVars);
 		}
 
-		public @NotNull List<WidgetProcessor.WidgetUsage> getRegisteredWidgets() {
-			return Collections.unmodifiableList(registeredWidgets);
+		public @NotNull Set<WidgetProcessor.WidgetUsage> getRegisteredWidgets() {
+			return Collections.unmodifiableSet(registeredWidgets);
 		}
 
-		public @NotNull List<WidgetProcessor.WidgetUsage> getWidgetsUsedInConditions() {
-			return Collections.unmodifiableList(widgetsUsedInConditions);
+		public @NotNull Set<WidgetProcessor.WidgetUsage> getWidgetsUsedInConditions() {
+			return Collections.unmodifiableSet(widgetsUsedInConditions);
 		}
 
 		public @NotNull Optional<CtClass<?>> getWidgetClasses() {
@@ -383,11 +383,11 @@ public class CommandWidgetFinder {
 			this.widgetsFromSharedVars = widgetsFromSharedVars;
 		}
 
-		private void setRegisteredWidgets(final @NotNull List<WidgetProcessor.WidgetUsage> registeredWidgets) {
+		private void setRegisteredWidgets(final @NotNull Set<WidgetProcessor.WidgetUsage> registeredWidgets) {
 			this.registeredWidgets = registeredWidgets;
 		}
 
-		private void setWidgetsUsedInConditions(final @NotNull List<WidgetProcessor.WidgetUsage> widgetsUsedInConditions) {
+		private void setWidgetsUsedInConditions(final @NotNull Set<WidgetProcessor.WidgetUsage> widgetsUsedInConditions) {
 			this.widgetsUsedInConditions = widgetsUsedInConditions;
 		}
 
