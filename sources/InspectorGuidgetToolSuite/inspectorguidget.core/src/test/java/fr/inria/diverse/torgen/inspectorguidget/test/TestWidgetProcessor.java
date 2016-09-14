@@ -8,7 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	private WidgetProcessor wproc;
@@ -147,6 +148,13 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Test
 	public void testAnotherExample5() {
 		run("src/test/resources/java/widgetsIdentification/AnotherExample5.java");
+		assertEquals(2, wproc.getWidgetUsages().size());
+	}
+
+
+	@Test
+	public void testWidgetsWithSameName() {
+		run("src/test/resources/java/widgetsIdentification/WidgetsWithSameName.java");
 		assertEquals(2, wproc.getWidgetUsages().size());
 	}
 }

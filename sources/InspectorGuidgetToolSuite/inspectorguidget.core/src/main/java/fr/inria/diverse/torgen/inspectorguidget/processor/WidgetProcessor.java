@@ -396,6 +396,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			WidgetUsage that = (WidgetUsage) o;
 
 			if(!widgetVar.equals(that.widgetVar)) return false;
+			if(!widgetVar.getPosition().equals(that.widgetVar.getPosition())) return false;
 			if(!creation.isPresent() != that.creation.isPresent()) return false;
 			return !creation.isPresent() || creation.get().equals(that.creation.get()) && accesses.equals(that.accesses);
 
@@ -404,6 +405,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		@Override
 		public int hashCode() {
 			int result = widgetVar.hashCode();
+			result = 31 * result + widgetVar.getPosition().hashCode();
 			result = 31 * result + (creation.isPresent() ? creation.get().hashCode() : 0);
 			result = 31 * result + accesses.hashCode();
 			return result;
