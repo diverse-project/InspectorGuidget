@@ -351,6 +351,15 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(2, analyser.getCommands().values().size());
 		assertEquals(2, new ArrayList<>(analyser.getCommands().values()).get(0).size());
-		assertEquals(2, new ArrayList<>(analyser.getCommands().values()).get(0).size());
+		assertEquals(2, new ArrayList<>(analyser.getCommands().values()).get(1).size());
+	}
+
+	@Test
+	public void testMultipleListenerMethodsNbCmd() {
+		analyser.addInputResource("src/test/resources/java/listeners/MultipleListenerMethods.java");
+		analyser.run();
+		assertEquals(2, analyser.getCommands().values().size());
+		assertEquals(1, Math.min(new ArrayList<>(analyser.getCommands().values()).get(0).size(), new ArrayList<>(analyser.getCommands().values()).get(1).size()));
+		assertEquals(5, Math.max(new ArrayList<>(analyser.getCommands().values()).get(0).size(), new ArrayList<>(analyser.getCommands().values()).get(1).size()));
 	}
 }

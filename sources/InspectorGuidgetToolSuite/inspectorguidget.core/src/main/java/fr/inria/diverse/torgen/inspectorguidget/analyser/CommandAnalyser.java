@@ -407,7 +407,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				analyseSingleListenerMethod(Optional.of(listenerClass), nonEmptyM.get(0));
 				break;
 			default:
-				//TODO
+				//FIXME for the refactoring step, this step has to be improved.
+				nonEmptyM.forEach(m -> analyseSingleListenerMethod(Optional.of(listenerClass), m));
 				break;
 		}
 	}
