@@ -7,7 +7,7 @@ import org.eclipse.core.commands.ExecutionException;
 public class DetectGUIListenerHandler extends AbstractHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		new ClearMarkersAction().run(null);
+//		new ClearMarkersAction().run(null);
 		new DetectGUIListenerAction().run(null);
 		return null;
 	}

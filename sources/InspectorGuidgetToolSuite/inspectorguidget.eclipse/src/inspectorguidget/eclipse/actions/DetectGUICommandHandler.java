@@ -7,7 +7,7 @@ import org.eclipse.core.commands.ExecutionException;
 public class DetectGUICommandHandler extends AbstractHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		new ClearMarkersAction().run(null);
+//		new ClearMarkersAction().run(null);
 		new DetectGUICommandAction().run(null);
 		return null;
 	}
