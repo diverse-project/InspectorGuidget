@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import spoon.reflect.code.CtBinaryOperator;
+import spoon.reflect.code.CtLiteral;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -372,5 +373,14 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 		assertTrue(analyser.getCommands().values().iterator().next().iterator().next().getConditions().get(0).effectiveStatmt instanceof CtBinaryOperator);
+	}
+
+	@Test
+	public void testClassListenerSwitchDefault2() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSwitchDefault2.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertTrue(analyser.getCommands().values().iterator().next().iterator().next().getConditions().get(0).effectiveStatmt instanceof CtLiteral);
 	}
 }

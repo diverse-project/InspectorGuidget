@@ -137,8 +137,7 @@ public final class SpoonHelper {
 		if(caze.getCaseExpression()==null) {// i.e. default case
 			return switchStat.getCases().stream().filter(c -> c.getCaseExpression() != null).
 				map(c -> negBoolExpression(createEqExpressionFromSwitchCase(switchStat, c))).reduce((a, b) -> andBoolExpression(a, b, false)).
-//				orElseGet(() -> );
-			get();
+				orElseGet(() -> switchStat.getFactory().Code().createLiteral(Boolean.TRUE));
 		}
 
 		CtBinaryOperator<Boolean> exp = switchStat.getFactory().Core().createBinaryOperator();
