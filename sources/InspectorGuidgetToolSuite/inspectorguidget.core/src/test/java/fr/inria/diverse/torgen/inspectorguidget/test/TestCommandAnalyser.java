@@ -7,6 +7,7 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import spoon.reflect.code.CtBinaryOperator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static spoon.testing.Assert.assertThat;
 
 public class TestCommandAnalyser {
@@ -361,5 +363,14 @@ public class TestCommandAnalyser {
 		assertEquals(2, analyser.getCommands().values().size());
 		assertEquals(1, Math.min(new ArrayList<>(analyser.getCommands().values()).get(0).size(), new ArrayList<>(analyser.getCommands().values()).get(1).size()));
 		assertEquals(5, Math.max(new ArrayList<>(analyser.getCommands().values()).get(0).size(), new ArrayList<>(analyser.getCommands().values()).get(1).size()));
+	}
+
+	@Test
+	public void testClassListenerSwitchDefault() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSwitchDefault.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertTrue(analyser.getCommands().values().iterator().next().iterator().next().getConditions().get(0).effectiveStatmt instanceof CtBinaryOperator);
 	}
 }

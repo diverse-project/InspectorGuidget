@@ -11,10 +11,7 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtVariable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class SpoonHelper {
@@ -120,15 +117,38 @@ public final class SpoonHelper {
 		return neg;
 	}
 
+	public CtExpression<Boolean> andBoolExpression(final @NotNull CtExpression<Boolean> exp1, final @NotNull CtExpression<Boolean> exp2,
+												   final boolean clone) {
+		final CtBinaryOperator<Boolean> and = exp1.getFactory().Core().createBinaryOperator();
+		and.setKind(BinaryOperatorKind.AND);
+
+		if(clone) {
+			and.setLeftHandOperand(exp1.clone());
+			and.setRightHandOperand(exp2.clone());
+		}else {
+			and.setLeftHandOperand(exp1);
+			and.setRightHandOperand(exp2);
+		}
+		return and;
+	}
+
 
 	public CtExpression<Boolean> createEqExpressionFromSwitchCase(final @NotNull CtSwitch<?> switchStat, final @NotNull CtCase<?> caze) {
-		final CtBinaryOperator<Boolean> exp = switchStat.getFactory().Core().createBinaryOperator();
+		if(caze.getCaseExpression()==null) {// i.e. default case
+			return switchStat.getCases().stream().filter(c -> c.getCaseExpression() != null).
+				map(c -> negBoolExpression(createEqExpressionFromSwitchCase(switchStat, c))).reduce((a, b) -> andBoolExpression(a, b, false)).
+//				orElseGet(() -> );
+			get();
+		}
+
+		CtBinaryOperator<Boolean> exp = switchStat.getFactory().Core().createBinaryOperator();
 		// A switch is an equality test against values
 		exp.setKind(BinaryOperatorKind.EQ);
 		// The tested object
 		exp.setLeftHandOperand(switchStat.getSelector().clone());
 		// The tested constant
 		exp.setRightHandOperand(caze.getCaseExpression().clone());
+
 		return exp;
 	}
 
