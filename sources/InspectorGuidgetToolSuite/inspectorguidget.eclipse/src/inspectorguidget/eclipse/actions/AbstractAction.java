@@ -145,6 +145,8 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		analyser.process();
 		analysisTime = System.currentTimeMillis();
 		monitor.worked(3);
+		System.out.println("Code model built in " + (spoonloading - startTime));
+		System.out.println("Analysis done in " + (analysisTime - spoonloading));
 	}
 
 
