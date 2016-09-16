@@ -327,22 +327,31 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 				// Treating the potential code block located after the last conditional statement
 				final List<Command> cmds = commands.get(listenerMethod);
+				// Getting the line number of the last statement used in a command or in a conditional block.
 				final int start = cmds.parallelStream().mapToInt(c -> c.getLineEnd()).max().orElseGet(() ->
 							conds.parallelStream().mapToInt(c -> c.getPosition().getEndLine()).max().orElse(Integer.MAX_VALUE));
+				// Getting the line code of the end of the listener method
 				final int end = listenerMethod.getBody().getPosition().getEndLine();
+				// Getting all the statements located in between the start and end code lines.
+				// returns, throws and catch blocks are ignored.
 				final List<CtStatement> finalBlock = listenerMethod.getBody().getElements(new LinePositionFilter(start, end)).
 					parallelStream().filter(s -> !(s instanceof CtReturn) && !(s instanceof CtThrow) && s.getParent(CtCatch.class)==null).
 					collect(Collectors.toList());
 
+				// If there is such statements.
 				if(!finalBlock.isEmpty()) {
+					// If all the commands have a return statement at their end, it means that this block will form another command.
 					if(cmds.parallelStream().filter(c -> c.getMainStatmtEntry().isPresent()).map(c -> c.getMainStatmtEntry().get()).
 						allMatch(c -> !c.statmts.isEmpty() && c.statmts.get(c.statmts.size() - 1) instanceof CtReturn)) {
 						cmds.add(new Command(new CommandStatmtEntry(true, finalBlock), Collections.emptyList(), listenerMethod));
 					}else {
+						// If no command has a return statement at their end, it means that this block will be part of each of these
+						// commands.
 						if(cmds.parallelStream().filter(c -> c.getMainStatmtEntry().isPresent()).map(c -> c.getMainStatmtEntry().get()).
 							noneMatch(c -> !c.statmts.isEmpty() && c.statmts.get(c.statmts.size() - 1) instanceof CtReturn)) {
 							cmds.forEach(c -> c.addAllStatements(Collections.singletonList(new CommandStatmtEntry(false, finalBlock))));
 						}
+						// For the other case (some of the commands have a return but some others not), we cannot manage that.
 					}
 				}
 			}
