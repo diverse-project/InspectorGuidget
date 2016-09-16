@@ -399,4 +399,45 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testFinalBlockAllReturns() {
+		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockAllReturns.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(10, analyser.getCommands().values().iterator().next().iterator().next().getLineEnd());
+	}
+
+	@Test
+	public void testFinalBlockNoReturn() {
+		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockNoReturn.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(3, analyser.getCommands().values().iterator().next().iterator().next().getNbLines());
+	}
+
+	@Test
+	public void testFinalBlockJustReturn() {
+		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockJustReturn.java");
+		analyser.run();
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testFinalBlockIsCatch() {
+		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockIsCatch.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testFinalBlockIsThrow() {
+		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockIsThrow.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

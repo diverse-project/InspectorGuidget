@@ -324,6 +324,27 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				// For each conditional statements found in the listener method or in its dispatched methods,
 				// a command is extracted.
 				conds.forEach(cond -> extractCommandsFromConditionalStatements(cond, listenerMethod, conds));
+
+				// Treating the potential code block located after the last conditional statement
+				final List<Command> cmds = commands.get(listenerMethod);
+				final int start = cmds.parallelStream().mapToInt(c -> c.getLineEnd()).max().orElseGet(() ->
+							conds.parallelStream().mapToInt(c -> c.getPosition().getEndLine()).max().orElse(Integer.MAX_VALUE));
+				final int end = listenerMethod.getBody().getPosition().getEndLine();
+				final List<CtStatement> finalBlock = listenerMethod.getBody().getElements(new LinePositionFilter(start, end)).
+					parallelStream().filter(s -> !(s instanceof CtReturn) && !(s instanceof CtThrow) && s.getParent(CtCatch.class)==null).
+					collect(Collectors.toList());
+
+				if(!finalBlock.isEmpty()) {
+					if(cmds.parallelStream().filter(c -> c.getMainStatmtEntry().isPresent()).map(c -> c.getMainStatmtEntry().get()).
+						allMatch(c -> !c.statmts.isEmpty() && c.statmts.get(c.statmts.size() - 1) instanceof CtReturn)) {
+						cmds.add(new Command(new CommandStatmtEntry(true, finalBlock), Collections.emptyList(), listenerMethod));
+					}else {
+						if(cmds.parallelStream().filter(c -> c.getMainStatmtEntry().isPresent()).map(c -> c.getMainStatmtEntry().get()).
+							noneMatch(c -> !c.statmts.isEmpty() && c.statmts.get(c.statmts.size() - 1) instanceof CtReturn)) {
+							cmds.forEach(c -> c.addAllStatements(Collections.singletonList(new CommandStatmtEntry(false, finalBlock))));
+						}
+					}
+				}
 			}
 		}
 	}

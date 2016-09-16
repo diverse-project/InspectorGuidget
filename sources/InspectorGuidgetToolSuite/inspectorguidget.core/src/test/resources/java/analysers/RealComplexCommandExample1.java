@@ -78,13 +78,9 @@ public class RealComplexCommandExample1 implements ChangeListener {
 					p1.setLocation(p2.getX(), y + radius);
 					return;
 				}
-
-				p1.setLocation(p1.getX()*3.0, p1.getY()*3.0);
 			}
 		}catch(Exception ex) {
 			ex.printStackTrace();
 		}
-
-//		super.stateChanged(e); //TODO
 	}
 }

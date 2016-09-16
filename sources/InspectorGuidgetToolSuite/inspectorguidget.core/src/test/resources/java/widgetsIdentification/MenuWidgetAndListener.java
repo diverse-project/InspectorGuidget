@@ -54,9 +54,6 @@ public class MenuWidgetAndListener extends JPopupMenu implements ActionListener 
 				System.out.println("paste");
 				return ;
 			}
-
-			return ;
 		}
-
 	}
 }
