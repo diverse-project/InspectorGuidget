@@ -66,7 +66,7 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 		final String projectName = project.getName();
 		final String projectPath = project.getLocation().toFile().getAbsolutePath() + "/";
 		
-		analyser.getCommands().entrySet().forEach(entry -> {
+		analyser.getCommands().entrySet().stream().filter(entry -> !entry.getValue().isEmpty()).forEach(entry -> {
 			SourcePosition pos = entry.getKey().getPosition();
 			outputXP.append(projectName).append(';').append(pos.getFile().getPath().replace(projectPath, "")).append(';').
 				append(pos.getLine()).append(';').append(pos.getEndLine()).append(';').append(entry.getValue().size()).append('\n');
