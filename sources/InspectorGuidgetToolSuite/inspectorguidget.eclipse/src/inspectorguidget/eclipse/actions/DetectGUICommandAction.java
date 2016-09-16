@@ -73,7 +73,7 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 		});
 		String file = Activator.getDefault().getPreferenceStore().getString(PreferencePage.PATH_STORE);
 		if(!file.endsWith("/")) file +="/";
-		file+="listeners.log";
+		file+="listeners-" + projectName + ".log";
 		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.println(outputXP.toString());
 			out.close();
