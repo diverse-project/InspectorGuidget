@@ -103,6 +103,7 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 		if(method != null) {
 			String sourceFile = method.getPosition().getFile().getName();
 			int line = method.getPosition().getLine();
+			int endline = method.getPosition().getEndLine();
 			String name;
 			CtType<?> parentType = method.getParent(CtType.class);
 			
@@ -111,7 +112,7 @@ public class DetectGUIListenerAction extends AbstractAction<GUIListenerAnalyser>
 			else
 				name = parentType.getQualifiedName() + "." + method.getSimpleName();
 			
-			res = name + ";" + sourceFile + ";" + line;
+			res = name + ";" + sourceFile + ";" + line + ";" + endline;
 		}
 
 		return res;

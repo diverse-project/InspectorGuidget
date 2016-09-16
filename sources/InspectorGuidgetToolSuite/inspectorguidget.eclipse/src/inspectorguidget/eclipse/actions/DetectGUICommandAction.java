@@ -1,6 +1,9 @@
 package inspectorguidget.eclipse.actions;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -9,6 +12,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -17,12 +21,16 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandStatmtEntry;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import inspectorguidget.eclipse.Activator;
+import inspectorguidget.eclipse.preferences.PreferencePage;
 import inspectorguidget.eclipse.views.CommandView;
 import spoon.reflect.code.CtCodeElement;
+import spoon.reflect.cu.SourcePosition;
 
 public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	/** Link Markers to their methods */
 	private static final Map<IMarker, Command> INFO_MARKERS = new HashMap<>();
+	private final StringBuilder outputXP = new StringBuilder();
 
 	public DetectGUICommandAction() {
 		super();
@@ -54,6 +62,24 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 		}
 
 		analyser.getCommands().values().stream().flatMap(s -> s.stream()).forEach(cmd -> markCtElement(cmd, project));
+		
+		final String projectName = project.getName();
+		final String projectPath = project.getLocation().toFile().getAbsolutePath() + "/";
+		
+		analyser.getCommands().entrySet().forEach(entry -> {
+			SourcePosition pos = entry.getKey().getPosition();
+			outputXP.append(projectName).append(';').append(pos.getFile().getPath().replace(projectPath, "")).append(';').
+				append(pos.getLine()).append(';').append(pos.getEndLine()).append(';').append(entry.getValue().size()).append('\n');
+		});
+		String file = Activator.getDefault().getPreferenceStore().getString(PreferencePage.PATH_STORE);
+		if(!file.endsWith("/")) file +="/";
+		file+="listeners.log";
+		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+			out.println(outputXP.toString());
+			out.close();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
