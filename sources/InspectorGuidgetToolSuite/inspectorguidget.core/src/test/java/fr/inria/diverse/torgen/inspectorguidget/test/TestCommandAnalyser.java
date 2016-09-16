@@ -383,4 +383,20 @@ public class TestCommandAnalyser {
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 		assertTrue(analyser.getCommands().values().iterator().next().iterator().next().getConditions().get(0).effectiveStatmt instanceof CtLiteral);
 	}
+
+	@Test
+	public void testSimpleDispatchMethodNoBody() {
+		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatchMethodNoBody.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testSimpleDispatchMethodNoBody2() {
+		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatchMethodNoBody2.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

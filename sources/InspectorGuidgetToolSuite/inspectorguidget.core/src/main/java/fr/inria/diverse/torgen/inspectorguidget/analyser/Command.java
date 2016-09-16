@@ -116,11 +116,13 @@ public class Command {
 											flatMap(s -> s.stream()).collect(Collectors.toList());
 
 			if(invoks.size()==1 && main.getStatmts().size()==1) {
-				statements.add(new CommandStatmtEntry(true, invoks.get(0).getExecutable().getDeclaration().getBody().getStatements()));
-				statements.remove(main);
+				if(invoks.get(0).getExecutable().getDeclaration().getBody()!=null) {
+					statements.add(new CommandStatmtEntry(true, invoks.get(0).getExecutable().getDeclaration().getBody().getStatements()));
+					statements.remove(main);
+				}
 			}else {
-				invoks.forEach(inv -> statements.add(
-						new CommandStatmtEntry(false, inv.getExecutable().getDeclaration().getBody().getStatements())));
+				invoks.stream().filter(inv -> inv.getExecutable().getDeclaration().getBody()!=null).
+					forEach(inv -> statements.add(new CommandStatmtEntry(false, inv.getExecutable().getDeclaration().getBody().getStatements())));
 			}
 		});
 	}
