@@ -440,4 +440,12 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+
+	@Test
+	public void testLambdaListenerHasMainCommandBlock() {
+		analyser.addInputResource("src/test/resources/java/analysers/LambdaListenerHasMainCommandBlock.java");
+		analyser.run();
+		assertTrue(analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).get(0).getMainStatmtEntry().isPresent());
+	}
 }

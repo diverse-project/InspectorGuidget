@@ -55,19 +55,22 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
 		synchronized(commands) {
-			commands.entrySet().forEach(entry -> entry.getValue().forEach(cmd -> {
+			commands.entrySet().parallelStream().forEach(entry -> entry.getValue().forEach(cmd -> {
 					cmd.extractLocalDispatchCallWithoutGUIParam();
-					// For each command, adding the required local variable definitions.
-					cmd.addAllStatements(0,
-						// Looking for local variable accesses in the command
-						cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
-							// Selecting the local variable definitions not already contained in the command
-								map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s==v).findFirst().isPresent()).
-								collect(Collectors.toList())).flatMap(s -> s.stream()).
-							// For each var def, creating a command statement entry that will be added to the list of entries of the command.
-								map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement)elt))).collect(Collectors.toList()));
 
-					inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
+					if(!cmd.getConditions().isEmpty()) {
+						// For each command, adding the required local variable definitions.
+						cmd.addAllStatements(0,
+							// Looking for local variable accesses in the command
+							cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
+								// Selecting the local variable definitions not already contained in the command
+									map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s == v).findFirst().isPresent()).
+									collect(Collectors.toList())).flatMap(s -> s.stream()).
+								// For each var def, creating a command statement entry that will be added to the list of entries of the command.
+									map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) elt))).collect(Collectors.toList()));
+
+						inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
+					}
 				}
 			));
 		}
