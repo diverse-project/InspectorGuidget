@@ -43,7 +43,6 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 			if(!listenerMethods.containsKey(clazz)) {
 				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
 				listenerMethods.put(clazz, methds);
-				swingClassObservers.forEach(l -> l.onSwingListenerClass(clazz, methds));
 			}
 		});
 
@@ -53,7 +52,6 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 			if(!listenerMethods.containsKey(clazz)) {
 				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
 				listenerMethods.put(clazz, methds);
-				awtClassObservers.forEach(l -> l.onAWTListenerClass(clazz, methds));
 			}
 		});
 
@@ -63,7 +61,6 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 			if(!listenerMethods.containsKey(clazz)) {
 				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
 				listenerMethods.put(clazz, methds);
-				jfxClassObservers.forEach(l -> l.onJFXListenerClass(clazz, methds));
 			}
 		});
 

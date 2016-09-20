@@ -17,7 +17,7 @@ public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<
 
 	public LambdaListenerProcessor() {
 		super();
-		allListenerLambdas= new HashSet<>();
+		allListenerLambdas = new HashSet<>();
 	}
 
 	public @NotNull Set<CtLambda<?>> getAllListenerLambdas() {
@@ -34,21 +34,18 @@ public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<
 		// Case SWING
 		WidgetHelper.INSTANCE.getSwingListenersRef(getFactory()).stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			swingClassObservers.forEach(l -> l.onSwingListenerLambda(lambda));
 			processMethods(lambda);
 		});
 
 		// Case AWT
 		WidgetHelper.INSTANCE.getAWTListenersRef(getFactory()).stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			awtClassObservers.forEach(l -> l.onAWTListenerLambda(lambda));
 			processMethods(lambda);
 		});
 
 		// Case JFX
 		WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).stream().filter(type::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			jfxClassObservers.forEach(l -> l.onJFXListenerLambda(lambda));
 			processMethods(lambda);
 		});
 
