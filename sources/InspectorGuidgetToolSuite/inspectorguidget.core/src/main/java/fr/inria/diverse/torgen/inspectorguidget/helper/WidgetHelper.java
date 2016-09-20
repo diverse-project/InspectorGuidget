@@ -20,11 +20,21 @@ public final class WidgetHelper {
 	private List<CtTypeReference<?>> jfxListenersRef;
 	private CtTypeReference<?> eventListenerRef;
 	private Set<String> listenerMethodPrototypes;
+	private CtTypeReference<?> actionRef;
 
 	private final Object LOCK = new Object();
 
 	private WidgetHelper() {
 		super();
+	}
+
+	public CtTypeReference<?> getActionRef(final @NotNull Factory factory) {
+		synchronized(LOCK) {
+			if(actionRef==null) {
+				actionRef = factory.Type().createReference(javax.swing.AbstractAction.class);
+			}
+			return actionRef;
+		}
 	}
 
 	public List<CtTypeReference<?>> getSwingListenersRef(final @NotNull Factory factory) {
@@ -179,7 +189,7 @@ public final class WidgetHelper {
 		synchronized(LOCK) {
 			if(eventListenerRef == null && type != null) eventListenerRef = factory.Type().createReference(java.util.EventListener.class);
 		}
-		return type!=null && type.isSubtypeOf(eventListenerRef);
+		return type!=null && type.isSubtypeOf(eventListenerRef) && !type.isSubtypeOf(getActionRef(factory));
 	}
 
 	public @NotNull List<CtTypeReference<?>> getWidgetTypes(final @NotNull Factory factory) {

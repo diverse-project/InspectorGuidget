@@ -23,7 +23,7 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 
 	public ClassListenerProcessor() {
 		super();
-		listenerMethods= new IdentityHashMap<>();
+		listenerMethods = new IdentityHashMap<>();
 	}
 
 	public @NotNull Map<CtClass<?>, List<CtMethod<?>>> getAllListenerMethods() {
