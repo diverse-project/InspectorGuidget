@@ -57,12 +57,9 @@ public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyse
 	
 	
 	private void markCtElement(final Entry<CtExecutable<?>, List<Command>> entry, final IProject project) {
-		final String projectName = project.getName();
 		final File source = entry.getKey().getPosition().getFile();
-		// FIXME: little hack here
-		final String absPath = source.getAbsolutePath();
-		final int begin = absPath.indexOf(projectName) + projectName.length() + 1; 
-		String path = absPath.substring(begin);
+		final int begin = project.getLocation().toFile().toString().length() + 1; 
+		String path = source.getAbsolutePath().substring(begin);
 		IResource r = project.findMember(path);
 		
 		if(r==null) {

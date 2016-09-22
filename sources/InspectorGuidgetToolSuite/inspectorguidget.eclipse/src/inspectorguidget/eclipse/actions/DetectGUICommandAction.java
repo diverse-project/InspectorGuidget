@@ -12,7 +12,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -84,7 +83,6 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 	
 	
 	private void markCtElement(final Command cmd, final IProject project) {
-		final String projectName = project.getName();
 		Optional<CommandStatmtEntry> mainStatmtEntry = cmd.getMainStatmtEntry();
 		File source;
 		if(mainStatmtEntry.isPresent())
@@ -93,10 +91,9 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 			System.err.println("NO MAIN STATEMENT ENTRY: " + " " + cmd.getAllStatmts());
 			return;
 		}
-		// FIXME: little hack here
-		final String absPath = source.getAbsolutePath();
-		final int begin = absPath.indexOf(projectName) + projectName.length() + 1; 
-		String path = absPath.substring(begin);
+
+		final int begin = project.getLocation().toFile().toString().length() + 1; 
+		String path = source.getAbsolutePath().substring(begin);
 		IResource r = project.findMember(path);
 		
 		if(r==null) {
