@@ -6,10 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtPackage;
-import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,6 +26,36 @@ public final class SpoonHelper {
 //								filter(supercall -> exec.getSimpleName().equals(supercall.getExecutable().getSimpleName())).findFirst().isPresent()
 //			).collect(Collectors.toList());
 //	}
+
+
+	/**
+	 * Looks for a parent of the given type from a given element.
+	 * @param elt The element from which the parent is looked for.
+	 * @param typeParent The class of the parent to look for.
+	 * @param butNot The research will stop as soon as the current parent is this element. Can be null.
+	 * @return The found element or nothing.
+	 */
+	public <T extends CtElement> @NotNull Optional<CtElement> getParentOf(final @Nullable CtElement elt,
+																		  final @NotNull Class<T> typeParent, final @Nullable CtElement butNot) {
+		if(elt==null)
+			return Optional.empty();
+
+		try {
+			CtElement parent = elt.getParent();
+
+			while(!typeParent.isInstance(parent) && parent!=butNot) {
+				parent = parent.getParent();
+			}
+
+			if(parent==butNot || !typeParent.isInstance(parent))
+				return Optional.empty();
+
+			return Optional.of(parent);
+
+		}catch(final ParentNotInitializedException ex) {
+			return Optional.empty();
+		}
+	}
 
 
 	/**

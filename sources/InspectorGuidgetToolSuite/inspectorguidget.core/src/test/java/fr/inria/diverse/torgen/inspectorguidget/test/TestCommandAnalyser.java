@@ -148,6 +148,16 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
+	public void testClassListenerSwitchHasMainBlock() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSwitch.java");
+		analyser.run();
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
+		assertTrue(cmds.get(0).getMainStatmtEntry().isPresent());
+		assertTrue(cmds.get(1).getMainStatmtEntry().isPresent());
+		assertTrue(cmds.get(2).getMainStatmtEntry().isPresent());
+	}
+
+	@Test
 	public void testClassNestedIf() {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSimpleNestedIf.java");
 		analyser.run();
@@ -341,6 +351,16 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
+	public void testCommandsInIfElseIfBlocksHasMainBlock() {
+		analyser.addInputResource("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertTrue(analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).get(0).getMainStatmtEntry().isPresent());
+		assertTrue(analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).get(1).getMainStatmtEntry().isPresent());
+
+	}
+
+	@Test
 	public void testFilterOutRegistrationWidgetUsingVarsNbCmd() {
 		analyser.addInputResource("src/test/resources/java/widgetsIdentification/FilterOutRegistrationWidgetUsingVars.java");
 		analyser.run();
@@ -401,6 +421,13 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
+	public void testSimpleDispatchMethodNoBody2HasMainBlock() {
+		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatchMethodNoBody2.java");
+		analyser.run();
+		assertTrue(analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).get(0).getMainStatmtEntry().isPresent());
+	}
+
+	@Test
 	public void testFinalBlockAllReturns() {
 		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockAllReturns.java");
 		analyser.run();
@@ -441,11 +468,22 @@ public class TestCommandAnalyser {
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
-
 	@Test
 	public void testLambdaListenerHasMainCommandBlock() {
 		analyser.addInputResource("src/test/resources/java/analysers/LambdaListenerHasMainCommandBlock.java");
 		analyser.run();
 		assertTrue(analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).get(0).getMainStatmtEntry().isPresent());
+	}
+
+	@Test
+	public void testLocalVarOutsideListener() {
+		analyser.addInputResource("src/test/resources/java/analysers/LocalVarOutsideListener.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
+		assertTrue(cmds.get(0).getMainStatmtEntry().isPresent());
+		assertTrue(cmds.get(1).getMainStatmtEntry().isPresent());
+		assertTrue(cmds.get(2).getMainStatmtEntry().isPresent());
 	}
 }
