@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public abstract class InspectorGuidetAnalyser implements SpoonAPI {
-	protected static final @NotNull Logger LOG = Logger.getLogger("InspectorGuidget analysers");
+	public static final @NotNull Logger LOG = Logger.getLogger("InspectorGuidget analysers");
 
 	static {
 		LOG.setLevel(LoggingHelper.INSTANCE.loggingLevel);

@@ -276,14 +276,14 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
 				}
 			}else if(parent instanceof CtSwitch<?>) {
-				final CtElement elt = parent;
+				final CtElement elt = currElt;
 				CtSwitch<?> ctswitch = (CtSwitch<?>) parent;
 				// Identifying the case statement used and creating a condition.
 				// The use of orElse(null) is mandatory here (berk!) to avoid a strange compilation bug with generics and casting.
 				CtCase<?> caz = ctswitch.getCases().stream().filter(cas -> cas == elt).findFirst().orElse(null);
 
 				if(caz==null) {
-					LOG.log(Level.SEVERE, "Cannot find the origin of the statement in the switch statement " +
+					LOG.log(Level.SEVERE, "Cannot find the origin of the statement " + elt + " in the switch statement " +
 							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
 				}else {
 					conds.add(new CommandConditionEntry(caz.getCaseExpression(),

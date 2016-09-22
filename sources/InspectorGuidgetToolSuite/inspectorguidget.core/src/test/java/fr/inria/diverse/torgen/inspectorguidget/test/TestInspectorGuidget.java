@@ -14,12 +14,33 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
+import static org.junit.Assert.fail;
 
 public abstract class TestInspectorGuidget<T extends Processor<? extends CtElement>> {
 	protected Collection<T> processors;
 	protected SpoonCompiler modelBuilder;
 
 	public static final boolean SHOW_MODEL = false;
+
+	public static final Handler HANDLER_FAIL = new Handler() {
+		@Override
+		public void publish(final LogRecord record) {
+			if(record.getLevel()== Level.SEVERE)
+				fail();
+		}
+
+		@Override
+		public void flush() {
+		}
+
+		@Override
+		public void close() throws SecurityException {
+		}
+	};
 
 	@Before
 	public void setUp() {

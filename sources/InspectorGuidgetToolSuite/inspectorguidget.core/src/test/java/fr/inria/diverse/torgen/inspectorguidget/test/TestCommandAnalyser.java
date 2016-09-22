@@ -2,10 +2,12 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.InspectorGuidetAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtLiteral;
@@ -21,6 +23,11 @@ import static spoon.testing.Assert.assertThat;
 
 public class TestCommandAnalyser {
 	CommandAnalyser analyser;
+
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		InspectorGuidetAnalyser.LOG.addHandler(TestInspectorGuidget.HANDLER_FAIL);
+	}
 
 	@Before
 	public void setUp() {
@@ -485,5 +492,13 @@ public class TestCommandAnalyser {
 		assertTrue(cmds.get(0).getMainStatmtEntry().isPresent());
 		assertTrue(cmds.get(1).getMainStatmtEntry().isPresent());
 		assertTrue(cmds.get(2).getMainStatmtEntry().isPresent());
+	}
+
+	@Test
+	public void testSwitchCaseStrange() {
+		analyser.addInputResource("src/test/resources/java/analysers/SwitchCaseStrange.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 }
