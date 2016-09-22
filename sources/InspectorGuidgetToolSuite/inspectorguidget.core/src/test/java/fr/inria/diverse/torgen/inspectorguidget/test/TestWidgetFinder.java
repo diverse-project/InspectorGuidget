@@ -6,9 +6,11 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetBugsDetector;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
+import fr.inria.diverse.torgen.inspectorguidget.processor.InspectorGuidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -25,6 +27,11 @@ public class TestWidgetFinder {
 	private WidgetProcessor widgetProc;
 	private CommandWidgetFinder finder;
 	Map<Command, CommandWidgetFinder.WidgetFinderEntry> results;
+
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		InspectorGuidgetProcessor.LOG.addHandler(TestInspectorGuidget.HANDLER_FAIL);
+	}
 
 	@Before
 	public void setUp() throws Exception {

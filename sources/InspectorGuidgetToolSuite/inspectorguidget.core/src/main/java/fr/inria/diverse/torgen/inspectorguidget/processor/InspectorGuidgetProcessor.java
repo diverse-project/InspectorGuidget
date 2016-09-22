@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 public abstract class InspectorGuidgetProcessor <T extends CtElement> extends AbstractProcessor<T> {
-	protected static final @NotNull Logger LOG = Logger.getLogger("InspectorGuidget Processor");
+	public static final @NotNull Logger LOG = Logger.getLogger("InspectorGuidget Processor");
 
 	static {
 		LOG.setLevel(LoggingHelper.INSTANCE.loggingLevel);

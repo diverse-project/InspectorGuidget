@@ -1,7 +1,9 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
+import fr.inria.diverse.torgen.inspectorguidget.processor.InspectorGuidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -18,6 +20,11 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Before
 	public void setUp() {
 		super.setUp();
+	}
+
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		InspectorGuidgetProcessor.LOG.addHandler(TestInspectorGuidget.HANDLER_FAIL);
 	}
 
 

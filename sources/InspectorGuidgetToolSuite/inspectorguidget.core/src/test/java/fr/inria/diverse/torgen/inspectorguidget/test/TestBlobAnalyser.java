@@ -1,7 +1,9 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.BlobListenerAnalyser;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.InspectorGuidetAnalyser;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.stream.Collectors;
@@ -11,6 +13,11 @@ import static org.junit.Assert.assertTrue;
 
 public class TestBlobAnalyser {
 	private BlobListenerAnalyser analyser;
+
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		InspectorGuidetAnalyser.LOG.addHandler(TestInspectorGuidget.HANDLER_FAIL);
+	}
 
 	@Before
 	public void setUp() {

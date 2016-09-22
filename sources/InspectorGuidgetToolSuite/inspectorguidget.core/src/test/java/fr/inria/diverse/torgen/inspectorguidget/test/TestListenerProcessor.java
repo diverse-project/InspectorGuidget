@@ -3,6 +3,7 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.InspectorGuidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import spoon.reflect.declaration.CtElement;
 
@@ -15,6 +16,11 @@ import static org.junit.Assert.assertEquals;
 public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidgetProcessor<? extends CtElement>> {
 	private LambdaListenerProcessor lambdaProc;
 	private ClassListenerProcessor classProc;
+
+	@BeforeClass
+	public static void setUpBeforeClass() {
+		InspectorGuidgetProcessor.LOG.addHandler(TestInspectorGuidget.HANDLER_FAIL);
+	}
 
 	@Override
 	public List<InspectorGuidgetProcessor<? extends CtElement>> createProcessor() {
