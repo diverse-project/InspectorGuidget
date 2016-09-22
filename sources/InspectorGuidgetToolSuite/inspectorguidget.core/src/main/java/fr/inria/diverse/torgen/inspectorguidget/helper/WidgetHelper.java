@@ -97,6 +97,10 @@ public final class WidgetHelper {
 				awtListenersRef.add(factory.Type().createReference(java.awt.event.WindowFocusListener.class));
 				awtListenersRef.add(factory.Type().createReference(java.awt.event.WindowStateListener.class));
 				awtListenersRef.add(factory.Type().createReference(java.awt.event.WindowListener.class));
+				awtListenersRef.add(factory.Type().createReference(java.awt.dnd.DragGestureListener.class));
+				awtListenersRef.add(factory.Type().createReference(java.awt.dnd.DragSourceListener.class));
+				awtListenersRef.add(factory.Type().createReference(java.awt.dnd.DragSourceMotionListener.class));
+				awtListenersRef.add(factory.Type().createReference(java.awt.dnd.DropTargetListener.class));
 				registerListenerMethodsSignatures(awtListenersRef);
 			}
 		}

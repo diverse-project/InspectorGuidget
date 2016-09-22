@@ -139,4 +139,11 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 		assertEquals(0, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 		assertEquals(0, classProc.getAllListenerMethods().size());
 	}
+
+	@Test
+	public void testAWTDragListener() {
+		run("src/test/resources/java/listeners/AWTDragListener.java");
+		assertEquals(4, classProc.getAllListenerMethods().size());
+		assertEquals(12, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
+	}
 }
