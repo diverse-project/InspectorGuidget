@@ -65,7 +65,7 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 		});
 
 		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(clazz, getFactory())) {
-			LOG.log(Level.SEVERE, "Listener not supported " +
+			LOG.log(Level.WARNING, "Listener not supported " +
 					SpoonHelper.INSTANCE.formatPosition(clazz.getPosition()) + ": " + clazz.getQualifiedName());
 		}
 	}
