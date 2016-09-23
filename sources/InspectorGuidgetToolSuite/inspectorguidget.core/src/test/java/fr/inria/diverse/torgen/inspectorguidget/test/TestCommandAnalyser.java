@@ -514,10 +514,18 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	public void testSimpleDispatch2() {
+	public void testEmptyDispatch() {
 		analyser.addInputResource("src/test/resources/java/analysers/EmptyDispatch.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testSimpleDispatch2() {
+		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatch2.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 }
