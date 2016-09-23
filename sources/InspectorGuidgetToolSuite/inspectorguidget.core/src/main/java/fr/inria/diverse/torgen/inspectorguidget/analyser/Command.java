@@ -129,7 +129,7 @@ public class Command {
 
 	public @NotNull List<CodeBlockPos> getOptimalCodeBlocks() {
 		return Stream.concat(
-				statements.stream().map(stat -> new CodeBlockPos(stat.getStatmts().get(0).getPosition().getCompilationUnit().getFile().toString(),
+				statements.stream().filter(stat -> !stat.getStatmts().isEmpty()).map(stat -> new CodeBlockPos(stat.getStatmts().get(0).getPosition().getCompilationUnit().getFile().toString(),
 												stat.getLineStart(), stat.getLineEnd())),
 				conditions.stream().map(stat -> new CodeBlockPos(stat.realStatmt.getPosition().getCompilationUnit().getFile().toString(),
 												stat.realStatmt.getPosition().getLine(), stat.realStatmt.getPosition().getEndLine()))).
@@ -163,10 +163,10 @@ public class Command {
 	}
 
 	public int getNbLines() {
-		Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0)),
-						conditions.stream().map(stat -> stat.realStatmt)).
-						filter(stat -> stat.getPosition() == null).findFirst().ifPresent(statnull -> System.out.println("NO POSITION: " + statnull));
-		return Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0).getPosition()),
+//		Stream.concat(statements.stream().map(stat -> stat.getStatmts().get(0)),
+//						conditions.stream().map(stat -> stat.realStatmt)).
+//						filter(stat -> stat.getPosition() == null).findFirst().ifPresent(statnull -> System.out.println("NO POSITION: " + statnull));
+		return Stream.concat(statements.stream().filter(stat -> !stat.getStatmts().isEmpty()).map(stat -> stat.getStatmts().get(0).getPosition()),
 				conditions.stream().map(stat -> stat.realStatmt.getPosition())).mapToInt(pos-> pos.getEndLine()-pos.getLine()+1).sum();
 	}
 

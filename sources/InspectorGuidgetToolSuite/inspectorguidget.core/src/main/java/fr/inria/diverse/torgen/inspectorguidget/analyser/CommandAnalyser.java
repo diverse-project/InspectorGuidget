@@ -74,6 +74,15 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				}
 			));
 		}
+
+		synchronized(commands) {
+			commands.entrySet().forEach(entry -> {
+				List<Command> badcmd = entry.getValue().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
+									cmd.getMainStatmtEntry().get().statmts.isEmpty()).collect(Collectors.toList());
+				badcmd.forEach(cmd -> LOG.log(Level.SEVERE, "Invalid command extracted: " + cmd));
+				entry.getValue().removeAll(badcmd);
+			});
+		}
 	}
 
 
