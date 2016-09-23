@@ -4,6 +4,7 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.NonAnonymClassFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.*;
 import org.jetbrains.annotations.NotNull;
+import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtClass;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 public class Command {
 	private final @NotNull CtExecutable<?> executable;
 
-	private static final @NotNull CommandStatmtEntry EMPTY_CMD_ENTRY = new CommandStatmtEntry(false);
+	protected static final @NotNull CommandStatmtEntry EMPTY_CMD_ENTRY = new CommandStatmtEntry(false);
 
 	private final @NotNull List<CommandStatmtEntry> statements;
 
@@ -116,10 +117,11 @@ public class Command {
 											flatMap(s -> s.stream()).collect(Collectors.toList());
 
 			if(invoks.size()==1 && main.getStatmts().size()==1) {
-				if(invoks.get(0).getExecutable().getDeclaration().getBody()!=null) {
-					statements.add(new CommandStatmtEntry(true, invoks.get(0).getExecutable().getDeclaration().getBody().getStatements()));
-					statements.remove(main);
+				final CtBlock<?> body = invoks.get(0).getExecutable().getDeclaration().getBody();
+				if(body!=null && !body.getStatements().isEmpty()) {
+					statements.add(new CommandStatmtEntry(true, body.getStatements()));
 				}
+				statements.remove(main);
 			}else {
 				invoks.stream().filter(inv -> inv.getExecutable().getDeclaration().getBody()!=null).
 					forEach(inv -> statements.add(new CommandStatmtEntry(false, inv.getExecutable().getDeclaration().getBody().getStatements())));

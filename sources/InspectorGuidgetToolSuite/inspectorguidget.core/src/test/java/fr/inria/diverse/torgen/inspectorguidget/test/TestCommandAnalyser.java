@@ -416,7 +416,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatchMethodNoBody.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 
 	@Test
@@ -511,5 +511,13 @@ public class TestCommandAnalyser {
 		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
 		assertTrue(cmds.get(0).getMainStatmtEntry().isPresent());
 		assertTrue(cmds.get(1).getMainStatmtEntry().isPresent());
+	}
+
+	@Test
+	public void testSimpleDispatch2() {
+		analyser.addInputResource("src/test/resources/java/analysers/EmptyDispatch.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 }

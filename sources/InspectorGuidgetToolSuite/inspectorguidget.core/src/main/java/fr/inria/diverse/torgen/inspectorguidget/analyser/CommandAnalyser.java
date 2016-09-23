@@ -50,37 +50,36 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				analyseMultipleListenerMethods(entry.getKey(), entry.getValue());
 			}
 		});
-
 		lambdaProc.getAllListenerLambdas().parallelStream().forEach(l -> analyseSingleListenerMethod(Optional.empty(), l));
 
 		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
 		synchronized(commands) {
 			commands.entrySet().parallelStream().forEach(entry -> entry.getValue().forEach(cmd -> {
-					cmd.extractLocalDispatchCallWithoutGUIParam();
+				cmd.extractLocalDispatchCallWithoutGUIParam();
 
-					if(!cmd.getConditions().isEmpty()) {
-						// For each command, adding the required local variable definitions.
-						cmd.addAllStatements(0,
-							// Looking for local variable accesses in the command
-							cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
-								// Selecting the local variable definitions not already contained in the command
-									map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s == v).findFirst().isPresent()).
-									collect(Collectors.toList())).flatMap(s -> s.stream()).
-								// For each var def, creating a command statement entry that will be added to the list of entries of the command.
-									map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) elt))).collect(Collectors.toList()));
+				if(!cmd.getConditions().isEmpty()) {
+					// For each command, adding the required local variable definitions.
+					cmd.addAllStatements(0,
+						// Looking for local variable accesses in the command
+						cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
+							// Selecting the local variable definitions not already contained in the command
+								map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s == v).findFirst().isPresent()).
+								collect(Collectors.toList())).flatMap(s -> s.stream()).
+							// For each var def, creating a command statement entry that will be added to the list of entries of the command.
+								map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) elt))).collect(Collectors.toList()));
 
-						inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
-					}
+					inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
 				}
-			));
+			}));
 		}
 
 		synchronized(commands) {
 			commands.entrySet().forEach(entry -> {
+				entry.getValue().removeIf(cmd -> cmd.getStatements().isEmpty());
 				List<Command> badcmd = entry.getValue().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
-									cmd.getMainStatmtEntry().get().statmts.isEmpty()).collect(Collectors.toList());
+										cmd.getMainStatmtEntry().get().getStatmts().isEmpty()).collect(Collectors.toList());
 				badcmd.forEach(cmd -> LOG.log(Level.SEVERE, "Invalid command extracted: " + cmd));
-				entry.getValue().removeAll(badcmd);
+				if(!badcmd.isEmpty()) entry.getValue().removeAll(badcmd);
 			});
 		}
 	}
@@ -320,15 +319,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
 				synchronized(commands) {
+					List<Command> list = new ArrayList<>();
 					if(listenerMethod.getBody()==null && listenerMethod instanceof CtLambda<?>) {
 						// It means it is a lambda
-						commands.put(listenerMethod, Collections.singletonList(
-							new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
-										Collections.emptyList(), listenerMethod)));
+						list.add(new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
+							Collections.emptyList(), listenerMethod));
+						commands.put(listenerMethod, list);
 					} else {
 						// It means it is a method
-						commands.put(listenerMethod, Collections.singletonList(
-							new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod)));
+						list.add(new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod));
+						commands.put(listenerMethod, list);
 					}
 				}
 			}else {
