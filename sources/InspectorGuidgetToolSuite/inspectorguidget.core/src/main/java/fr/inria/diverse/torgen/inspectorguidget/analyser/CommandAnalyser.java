@@ -384,6 +384,9 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		conds.addAll(exec.getBody().getElements(new ConditionalFilter()).stream().
 						// Keeping those making use of a GUI parameter.
 						filter(cond -> conditionalUsesGUIParam(cond, guiParams)).
+						// a listener may be defined into the current listener.
+						// So, removing the conditional statements that are not contained in the current executable.
+						filter(cond -> cond.getParent(CtExecutable.class)==exec).
 						collect(Collectors.toList()));
 
 		// Removing the GUI conditional statements that contain other GUI conditional statements.

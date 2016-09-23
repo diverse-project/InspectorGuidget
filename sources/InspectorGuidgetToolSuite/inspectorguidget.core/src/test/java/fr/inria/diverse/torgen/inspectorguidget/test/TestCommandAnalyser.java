@@ -501,4 +501,15 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testActionListenerTwice() {
+		analyser.addInputResource("src/test/resources/java/listeners/ActionListenerTwice.java");
+		analyser.run();
+		assertEquals(2, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
+		assertTrue(cmds.get(0).getMainStatmtEntry().isPresent());
+		assertTrue(cmds.get(1).getMainStatmtEntry().isPresent());
+	}
 }
