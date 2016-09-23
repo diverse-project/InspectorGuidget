@@ -98,7 +98,20 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 							}
 							break;
 						case IClasspathEntry.CPE_LIBRARY:
-							libs.add(new File(project.getFile(entry.getPath().makeRelativeTo(project.getFullPath())).getLocation().toString()));
+							File file = entry.getPath().toFile();
+							
+							if(file.exists()) {
+								libs.add(file);	
+							}else {
+								file = new File(project.getFile(entry.getPath().makeRelativeTo(project.getFullPath())).getLocation().toString());
+								
+								if(file.exists()) {
+									libs.add(file);
+								} else {
+									System.err.println("CPE_LIBRARY: cannot find file to add as lib: " + entry.getPath());
+								}
+							}
+							 
 							break;
 						case IClasspathEntry.CPE_PROJECT:
 							IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(entry.getPath().toOSString());
