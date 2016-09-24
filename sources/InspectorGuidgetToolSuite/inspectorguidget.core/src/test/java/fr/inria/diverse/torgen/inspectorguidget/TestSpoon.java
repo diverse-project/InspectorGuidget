@@ -3,13 +3,11 @@ package fr.inria.diverse.torgen.inspectorguidget;
 import org.junit.Ignore;
 import org.junit.Test;
 import spoon.processing.AbstractProcessor;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.visitor.filter.TypeFilter;
 
-import java.util.List;
-
-import static org.junit.Assert.assertNotEquals;
+import java.util.stream.IntStream;
 
 
 class TestProcessor extends AbstractProcessor<CtExecutable<?>> {
@@ -29,22 +27,14 @@ public class TestSpoon {
 		launcher.getEnvironment().setComplianceLevel(8);
 		launcher.buildModel();
 
-		List<CtVariable<?>> vars = launcher.getModel().getElements(new TypeFilter<CtVariable<?>>(CtVariable.class) {
-//			@Override
-//			public boolean matches(CtVariable<?> var) {
-//				return true;
-//			}
+		launcher.getModel().getElements(new TypeFilter<CtClass<?>>(CtClass.class)).forEach(cl -> {
+			final long t = IntStream.range(0, 20).mapToLong(i -> {
+				long time = System.currentTimeMillis();
+				System.out.print(cl.getAllMethods().isEmpty());
+				return System.currentTimeMillis() - time;
+			}).sum();
+
+			System.out.println("\ngetAllMethods in: " + t);
 		});
-
-		assertNotEquals(vars.get(0), vars.get(1));
 	}
-
-
-//	@Test
-//	@Ignore
-//	public void testDeclarationOfVariableReference() throws Exception {
-//		final Launcher launcher = new Launcher();
-//		launcher.addInputResource("./src/test/resources/noclasspath/Foo2.java");
-//
-//	}
 }
