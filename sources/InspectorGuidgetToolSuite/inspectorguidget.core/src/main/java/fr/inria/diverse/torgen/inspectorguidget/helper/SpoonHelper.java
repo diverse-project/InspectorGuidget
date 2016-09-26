@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.*;
+import spoon.reflect.reference.CtTypeReference;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,6 +56,37 @@ public final class SpoonHelper {
 		}catch(final ParentNotInitializedException ex) {
 			return Optional.empty();
 		}
+	}
+
+
+	/**
+	 * Checkes whether the given type has the given executable (by inheritance or not).
+	 * Overriden methods are not considered (only leaf methods).
+	 * @param ty The type to search in.
+	 * @param exec The executable to look for.
+	 * @return True if ty has exec.
+	 */
+	public boolean hasMethod(final @Nullable CtType<?> ty, final @Nullable CtExecutable<?> exec) {
+		if(exec==null || ty==null) return false;
+
+		// Checking whether the parent is the given type ty.
+		try {
+			if(exec.getParent()==ty) return true;
+		}catch(ParentNotInitializedException ex) {
+			return false;
+		}
+
+		// If the method is not the given type and, however, a method with its signature exists, this means
+		// that exec is overriden here. So, we ignore this overriden method.
+		final String over = exec.getSignature();
+		if(ty.getMethods().parallelStream().filter(m -> m.getSignature().equals(over)).findFirst().isPresent())
+			return false;
+
+		// Checking whether the super class has the method.
+		// Finally, checking whether an interface has the method (a default method).
+		final CtTypeReference<?> superCl = ty.getSuperclass();
+		return superCl!=null && hasMethod(superCl.getDeclaration(), exec) ||
+			ty.getSuperInterfaces().parallelStream().filter(interf -> hasMethod(interf.getDeclaration(), exec)).findFirst().isPresent();
 	}
 
 

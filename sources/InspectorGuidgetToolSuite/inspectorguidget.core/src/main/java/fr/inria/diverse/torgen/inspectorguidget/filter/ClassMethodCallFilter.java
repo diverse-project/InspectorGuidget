@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.filter;
 
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtClass;
@@ -25,7 +26,7 @@ public class ClassMethodCallFilter extends AbstractFilter<CtInvocation<?>>{
 	@Override
 	public boolean matches(final CtInvocation<?> element) {
 				// Does the invocated method part of the class
-		return listenerClass.getAllMethods().contains(element.getExecutable().getDeclaration()) &&
+		return SpoonHelper.INSTANCE.hasMethod(listenerClass, element.getExecutable().getDeclaration()) &&
 				// Is there any parameters of the method that is a GUI parameter
 				element.getArguments().stream().filter(arg ->
 					events.stream().filter(evt ->
