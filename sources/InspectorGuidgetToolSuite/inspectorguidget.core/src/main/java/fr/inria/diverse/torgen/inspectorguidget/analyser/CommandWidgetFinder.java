@@ -10,6 +10,8 @@ import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
+import spoon.reflect.visitor.Filter;
+import spoon.reflect.visitor.filter.AbstractFilter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -94,12 +96,18 @@ public class CommandWidgetFinder {
 																			 final @NotNull List<T> cmdWidgetMatches) {
 		if(listenerClass==null) return cmdWidgetMatches;
 
-		SingleTypeRefFilter filter = new SingleTypeRefFilter(listenerClass.getReference());
+		final CtTypeReference<?> listRef = listenerClass.getReference();
+		final Filter<CtTypedElement<?>> filt = new AbstractFilter<CtTypedElement<?>>() {
+			@Override
+			public boolean matches(final CtTypedElement<?> element) {
+				return super.matches(element);
+			}
+		};
 
-		// Removing all the supposed widget matching which listener registration does not match the listener class of the command.
-		// This permits to precise the widget <-> command identification.
-		cmdWidgetMatches.removeIf(m -> !m.usage.accesses.stream().filter(a -> !a.getParent(CtStatement.class).getElements(filter).isEmpty()).findFirst().isPresent());
-
+		cmdWidgetMatches.removeIf(m ->
+			// Removing if in the statement of the acess there is a reference to the current listener class.
+			!m.usage.accesses.stream().filter(a -> a.getParent(CtStatement.class).getElements(filt).stream().
+			map(var -> var.getType()).filter(ty -> ty.equals(listRef)).findFirst().isPresent()).findFirst().isPresent());
 		return cmdWidgetMatches;
 	}
 

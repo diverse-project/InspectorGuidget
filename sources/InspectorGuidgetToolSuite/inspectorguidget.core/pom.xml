@@ -64,7 +64,7 @@
     <dependency>
       <groupId>fr.inria.gforge.spoon</groupId>
       <artifactId>spoon-core</artifactId>
-      <version>5.2.0-20160619.235054-88</version>
+      <version>5.3.0</version>
     </dependency>
       <dependency>
           <groupId>org.jetbrains</groupId>
