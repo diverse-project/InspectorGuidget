@@ -154,6 +154,8 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 		StandardEnvironment evt = new StandardEnvironment();
 		evt.setCommentEnabled(false);
 		evt.setComplianceLevel(8);
+		evt.setSelfChecks(false);
+		evt.setShouldCompile(false);
 		return evt;
 	}
 
