@@ -123,8 +123,8 @@ public class Command {
 				}
 				statements.remove(main);
 			}else {
-				invoks.stream().filter(inv -> inv.getExecutable().getDeclaration().getBody()!=null).
-					forEach(inv -> statements.add(new CommandStatmtEntry(false, inv.getExecutable().getDeclaration().getBody().getStatements())));
+				invoks.stream().map(inv -> inv.getExecutable().getDeclaration().getBody()).filter(body -> body!=null).
+					forEach(body -> statements.add(new CommandStatmtEntry(false, body.getStatements())));
 			}
 		});
 	}
