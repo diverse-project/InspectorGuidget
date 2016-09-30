@@ -318,18 +318,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
-				synchronized(commands) {
-					List<Command> list = new ArrayList<>();
-					if(listenerMethod.getBody()==null && listenerMethod instanceof CtLambda<?>) {
-						// It means it is a lambda
-						list.add(new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
-							Collections.emptyList(), listenerMethod));
-						commands.put(listenerMethod, list);
-					} else {
-						// It means it is a method
-						list.add(new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod));
-						commands.put(listenerMethod, list);
-					}
+				List<Command> list = new ArrayList<>();
+				if(listenerMethod.getBody()==null && listenerMethod instanceof CtLambda<?>) {
+					// It means it is a lambda
+					list.add(new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
+						Collections.emptyList(), listenerMethod));
+					synchronized(commands) { commands.put(listenerMethod, list); }
+				} else {
+					// It means it is a method
+					list.add(new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod));
+					synchronized(commands) { commands.put(listenerMethod, list); }
 				}
 			}else {
 				// For each conditional statements found in the listener method or in its dispatched methods,
@@ -337,7 +335,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				conds.forEach(cond -> extractCommandsFromConditionalStatements(cond, listenerMethod, conds));
 
 				// Treating the potential code block located after the last conditional statement
-				final List<Command> cmds = commands.get(listenerMethod);
+				List<Command> cmds;
+
+				synchronized(commands) {
+					cmds = commands.get(listenerMethod);
+				}
+
 				// Getting the line number of the last statement used in a command or in a conditional block.
 				final int start = cmds.parallelStream().mapToInt(c -> c.getLineEnd()).max().orElseGet(() ->
 							conds.parallelStream().mapToInt(c -> c.getPosition().getEndLine()).max().orElse(Integer.MAX_VALUE));
