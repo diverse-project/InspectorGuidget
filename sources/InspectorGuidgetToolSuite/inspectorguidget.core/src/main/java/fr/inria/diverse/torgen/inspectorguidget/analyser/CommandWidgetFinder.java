@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.*;
+import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
@@ -14,6 +15,8 @@ import spoon.reflect.visitor.Filter;
 import spoon.reflect.visitor.filter.AbstractFilter;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +24,12 @@ import java.util.stream.Stream;
  * An analyser to find the widget(s) that produce(s) a given command.
  */
 public class CommandWidgetFinder {
+	public static final @NotNull Logger LOG = Logger.getLogger("CommandWidgetFinder");
+
+	static {
+		LOG.setLevel(LoggingHelper.INSTANCE.loggingLevel);
+	}
+
 	private final @NotNull List<Command> cmds;
 	private final @NotNull Map<Command, WidgetFinderEntry> results;
 	private final @NotNull List<WidgetProcessor.WidgetUsage> widgetUsages;
@@ -58,7 +67,7 @@ public class CommandWidgetFinder {
 				listenerClass = (CtClass<?>) cmdParent;
 			}
 		}catch(ParentNotInitializedException ex) {
-			ex.printStackTrace();
+			LOG.log(Level.INFO, "ParentNotInitializedException in process", ex);
 		}
 
 //		long time = System.currentTimeMillis();

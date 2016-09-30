@@ -182,11 +182,7 @@ public final class WidgetHelper {
 
 
 	public boolean isListenerClassMethod(final @NotNull CtExecutable<?> exec) {
-		try {
-			return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) && listenerMethodPrototypes.contains(exec.getSignature());
-		}catch(Throwable th) {//FIXME to change when https://github.com/INRIA/spoon/issues/739 wil be fixed
-			return false;
-		}
+		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) && listenerMethodPrototypes.contains(exec.getSignature());
 	}
 
 	public boolean isListenerClass(final @Nullable CtTypeInformation type, final @NotNull Factory factory) {
