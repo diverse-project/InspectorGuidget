@@ -33,6 +33,8 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 
 	protected final @NotNull SpoonCompiler modelBuilder;
 	protected final @NotNull List<Processor<?>> processors;
+	protected StandardEnvironment env;
+	protected  Factory factory;
 
 	public InspectorGuidetAnalyser(final @NotNull Collection<Processor<?>> procs) {
 		super();
@@ -136,27 +138,28 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 
 	@Override
 	public @Nullable Factory getFactory() {
-		return null;
+		return factory;
 	}
 
 	@Override
 	public @Nullable Environment getEnvironment() {
-		return null;
+		return env;
 	}
 
 	@Override
 	public @NotNull Factory createFactory() {
-		return new FactoryImpl(new DefaultCoreFactory(), createEnvironment());
+		factory = new FactoryImpl(new DefaultCoreFactory(), createEnvironment());;
+		return factory;
 	}
 
 	@Override
 	public @NotNull Environment createEnvironment() {
-		StandardEnvironment evt = new StandardEnvironment();
-		evt.setCommentEnabled(false);
-		evt.setComplianceLevel(8);
-		evt.setSelfChecks(false);
-		evt.setShouldCompile(false);
-		return evt;
+		env = new StandardEnvironment();
+		env.setCommentEnabled(false);
+		env.setComplianceLevel(8);
+		env.setSelfChecks(false);
+		env.setShouldCompile(false);
+		return env;
 	}
 
 	@Override
