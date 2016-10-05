@@ -36,7 +36,7 @@ public class TestBlobRefactoring {
 		widgetProc = new WidgetProcessor(true);
 	}
 
-	private void initTest(final int idCommand, final boolean asLambda, final String... paths) {
+	private void initTest(final int startLine, final boolean asLambda, final String... paths) {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
 		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
@@ -49,7 +49,7 @@ public class TestBlobRefactoring {
 			widgetProc.getWidgetUsages());
 		finder.process();
 
-		Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = new ArrayList<>(finder.getResults().entrySet()).get(idCommand);
+		Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==startLine).findAny().get();
 		refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda);
 		refactor.execute();
 	}
@@ -67,20 +67,18 @@ public class TestBlobRefactoring {
 
 	String getRefactoredCode() {
 		DefaultJavaPrettyPrinter printer = new DefaultJavaPrettyPrinter(cmdAnalyser.getEnvironment()).scan(cmdAnalyser.getModel().getAllTypes().iterator().next());
-		return printer.getResult().replace("    ", "\t");
+		return printer.getResult().replace("    ", "\t").replace(" \n", "\n");
 	}
 
-	@Ignore
 	@Test
-	public void testRefactorWithTwoCommands0Lambda() throws IOException {
-		initTest(0, true, "src/test/resources/java/refactoring/B.java");
+	public void testBRefactoredLambdaOneCmd() throws IOException {
+		initTest(28, true, "src/test/resources/java/refactoring/B.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/BRefactoredLambdaOneCmd.java"), getRefactoredCode());
 	}
 
-	@Ignore
 	@Test
-	public void testRefactorWithTwoCommands0AnonClass() throws IOException {
-		initTest(0, false, "src/test/resources/java/refactoring/B.java");
-		assertEquals(getFileCode("src/test/resources/java/refactoring/BRefactoredAnon.java"), getRefactoredCode());
+	public void testBRefactoredAnonOneCmd() throws IOException {
+		initTest(28, false, "src/test/resources/java/refactoring/B.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/BRefactoredAnonOneCmd.java"), getRefactoredCode());
 	}
 }
