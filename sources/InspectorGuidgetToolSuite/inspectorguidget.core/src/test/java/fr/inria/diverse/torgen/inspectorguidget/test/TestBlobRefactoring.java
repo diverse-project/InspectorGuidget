@@ -8,16 +8,15 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import org.apache.log4j.Level;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import spoon.reflect.cu.CompilationUnit;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,6 +36,10 @@ public class TestBlobRefactoring {
 	}
 
 	private void initTest(final int startLine, final boolean asLambda, final String... paths) {
+		initTest(Collections.singletonList(startLine), asLambda, paths);
+	}
+
+	private void initTest(final List<Integer> startLine, final boolean asLambda, final String... paths) {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
 		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
@@ -49,9 +52,11 @@ public class TestBlobRefactoring {
 			widgetProc.getWidgetUsages());
 		finder.process();
 
-		Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==startLine).findAny().get();
-		refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda);
-		refactor.execute();
+		startLine.forEach(line -> {
+			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==line).findAny().get();
+			refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda);
+			refactor.execute();
+		});
 	}
 
 	private String getFileCode(final String path) throws IOException {
@@ -80,5 +85,11 @@ public class TestBlobRefactoring {
 	public void testBRefactoredAnonOneCmd() throws IOException {
 		initTest(28, false, "src/test/resources/java/refactoring/B.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/BRefactoredAnonOneCmd.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testBRefactoredLambdaTwoCmds() throws IOException {
+		initTest(Arrays.asList(24, 28), true, "src/test/resources/java/refactoring/B.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/BRefactoredLambdaTwoCmds.java"), getRefactoredCode());
 	}
 }

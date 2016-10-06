@@ -53,7 +53,7 @@ public class ListenerCommandRefactor {
 				}else {
 					refactorRegistrationAsAnonClass(invok.get(0));
 				}
-				removeOldCommand();
+				removeOldCommand(invok.get(0));
 			} else {
 				LOG.log(Level.SEVERE, "Cannot find a unique widget registraion: " + cmd + " " + invok);
 			}
@@ -61,8 +61,14 @@ public class ListenerCommandRefactor {
 	}
 
 
-	private void removeOldCommand() {
+	private void removeOldCommand(final @NotNull CtInvocation<?> invok) {
 		cmd.getConditions().get(0).realStatmt.getParent(CtStatement.class).delete();
+
+		if(cmd.getExecutable().getBody().getStatements().isEmpty()) {
+			cmd.getExecutable().delete();
+			final CtTypeReference<?> typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
+			cmd.getExecutable().getParent(CtType.class).getSuperInterfaces().remove(typeRef);
+		}
 	}
 
 
