@@ -92,4 +92,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(24, 28), true, "src/test/resources/java/refactoring/B.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/BRefactoredLambdaTwoCmds.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testARefactoredLambda() throws IOException {
+		initTest(18, true, "src/test/resources/java/refactoring/A.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/ARefactoredLambda.java"), getRefactoredCode());
+	}
 }
