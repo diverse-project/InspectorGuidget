@@ -2,6 +2,8 @@ package fr.inria.diverse.torgen.inspectorguidget.refactoring;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
+import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +11,9 @@ import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
+import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.reference.CtVariableReference;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,31 +41,33 @@ public class ListenerCommandRefactor {
 	}
 
 	public void execute() {
-		if(!widgets.getRegisteredWidgets().isEmpty()) {
+		widgets.getFirstWidgetUsage().ifPresent(usage -> {
 			// Getting the accesses of the widgets
-			List<CtInvocation<?>> invok = widgets.getRegisteredWidgets().iterator().next().accesses.stream().
+			List<CtInvocation<?>> invok = usage.accesses.stream().
 				// gathering their parent statement.
-				map(acc -> acc.getParent(CtStatement.class)).filter(stat -> stat != null).
+					map(acc -> acc.getParent(CtStatement.class)).filter(stat -> stat != null).
 				// Gathering the method call that matches listener registration: single parameter that is a listener type.
-				map(stat -> stat.getElements((CtInvocation<?> exec) -> exec.getExecutable().getParameters().size() == 1 &&
-				WidgetHelper.INSTANCE.isListenerClass(exec.getExecutable().getParameters().get(0), exec.getFactory()))).
+					map(stat -> stat.getElements((CtInvocation<?> exec) -> exec.getExecutable().getParameters().size() == 1 &&
+					WidgetHelper.INSTANCE.isListenerClass(exec.getExecutable().getParameters().get(0), exec.getFactory()))).
 					flatMap(s -> s.stream()).collect(Collectors.toList());
 
 			if(invok.size()==1) {
+				final CtExpression<?> oldParam = invok.get(0).getArguments().get(0);
+
 				if(asLambda) {
 					refactorRegistrationAsLambda(invok.get(0));
 				}else {
 					refactorRegistrationAsAnonClass(invok.get(0));
 				}
-				removeOldCommand(invok.get(0));
+				removeOldCommand(invok.get(0), oldParam);
 			} else {
 				LOG.log(Level.SEVERE, "Cannot find a unique widget registraion: " + cmd + " " + invok);
 			}
-		}
+		});
 	}
 
 
-	private void removeOldCommand(final @NotNull CtInvocation<?> invok) {
+	private void removeOldCommand(final @NotNull CtInvocation<?> invok, final @NotNull CtExpression<?> oldParam) {
 		cmd.getAllStatmts().forEach(elt -> elt.delete()); // FIXME vars used by other statements.
 
 		if(!cmd.getConditions().isEmpty()) {
@@ -72,6 +78,20 @@ public class ListenerCommandRefactor {
 			cmd.getExecutable().delete();
 			final CtTypeReference<?> typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
 			cmd.getExecutable().getParent(CtType.class).getSuperInterfaces().remove(typeRef);
+		}
+
+		if(oldParam instanceof CtVariableRead) {
+			final CtVariableReference<?> var = ((CtVariableRead<?>) oldParam).getVariable();
+
+			if(var instanceof CtLocalVariableReference) {
+				final CtLocalVariable<?> varDecl = ((CtLocalVariableReference<?>) var).getDeclaration();
+
+				List<CtVariableAccess<?>> elements = var.getParent(CtBlock.class).getElements(new MyVariableAccessFilter(varDecl));
+
+				if(elements.isEmpty()) {
+					varDecl.delete();
+				}
+			}
 		}
 	}
 

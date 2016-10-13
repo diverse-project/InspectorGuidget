@@ -9,15 +9,13 @@ import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefac
 import org.apache.log4j.Level;
 import org.junit.Before;
 import org.junit.Test;
+import spoon.compiler.Environment;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -71,8 +69,13 @@ public class TestBlobRefactoring {
 	}
 
 	String getRefactoredCode() {
-		DefaultJavaPrettyPrinter printer = new DefaultJavaPrettyPrinter(cmdAnalyser.getEnvironment()).scan(cmdAnalyser.getModel().getAllTypes().iterator().next());
-		return printer.getResult().replace("    ", "\t").replace(" \n", "\n");
+		Environment env = cmdAnalyser.getEnvironment();
+		env.useTabulations(true);
+		env.setAutoImports(true);
+		DefaultJavaPrettyPrinter printer = new DefaultJavaPrettyPrinter(env);
+		System.out.println(cmdAnalyser.getModel().getAllTypes());
+		printer.calculate(null, new ArrayList<>(cmdAnalyser.getModel().getAllTypes()));
+		return printer.getResult().replace(" \n", "\n");
 	}
 
 	@Test
@@ -97,5 +100,17 @@ public class TestBlobRefactoring {
 	public void testARefactoredLambda() throws IOException {
 		initTest(18, true, "src/test/resources/java/refactoring/A.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/ARefactoredLambda.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredExternalListenerClassOneCmd() throws IOException {
+		initTest(11, true, "src/test/resources/java/refactoring/C.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/CRefactoredLambdaOneCmd.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredExternalListenerClassTwoCmds() throws IOException {
+		initTest(Arrays.asList(11, 15), true, "src/test/resources/java/refactoring/C.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/CRefactoredLambdaTwoCmds.java"), getRefactoredCode());
 	}
 }

@@ -1,9 +1,19 @@
+
+
+package java.refactoring;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+
 class A {
-	javax.swing.JButton but;
+	JButton but;
 
 	A() {
-		but = new javax.swing.JButton("foo");
+		but = new JButton("foo");
 		but.setActionCommand("FOO");
-		but.addActionListener((java.awt.event.ActionEvent e) -> java.lang.System.out.println("coucou"));
+		but.addActionListener((ActionEvent e) -> System.out.println("coucou"));
 	}
 }
+
+

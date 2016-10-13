@@ -1,26 +1,36 @@
-class B implements java.awt.event.ActionListener {
-	javax.swing.JButton but1;
 
-	javax.swing.JButton but2;
+
+package java.refactoring;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+
+class B implements ActionListener {
+	JButton but1;
+
+	JButton but2;
 
 	B() {
-		but1 = new javax.swing.JButton("foo1");
+		but1 = new JButton("foo1");
 		but1.setActionCommand("FOO");
-		but1.addActionListener(java.refactoring.B.this);
-		but2 = new javax.swing.JButton("foo2");
+		but1.addActionListener(B.this);
+		but2 = new JButton("foo2");
 		but2.setActionCommand("BAR");
-		but2.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				java.lang.System.out.println("coucou2");
+		but2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("coucou2");
 			}
 		});
 	}
 
-	@java.lang.Override
-	public void actionPerformed(final java.awt.event.ActionEvent e) {
+	@Override
+	public void actionPerformed(final ActionEvent e) {
 		if (e.getActionCommand().equals("FOO")) {
-			java.lang.System.out.println("coucou1");
+			System.out.println("coucou1");
 			return ;
 		}
 	}
 }
+
+

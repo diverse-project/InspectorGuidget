@@ -372,6 +372,22 @@ public class CommandWidgetFinder {
 			widgetsFromStringLiterals = Collections.emptyList();
 		}
 
+		public Optional<WidgetProcessor.WidgetUsage> getFirstWidgetUsage() {
+			if(!registeredWidgets.isEmpty())
+				return Optional.of(registeredWidgets.iterator().next());
+
+			if(!widgetsFromStringLiterals.isEmpty())
+				return Optional.of(widgetsFromStringLiterals.get(0).usage);
+
+			if(!widgetsFromSharedVars.isEmpty())
+				return Optional.of(widgetsFromSharedVars.get(0).usage);
+
+			if(!widgetsUsedInConditions.isEmpty())
+				return Optional.of(widgetsUsedInConditions.iterator().next());
+
+			return Optional.empty();
+		}
+
 		public @NotNull List<StringLitMatch> getWidgetsFromStringLiterals() {
 			return Collections.unmodifiableList(widgetsFromStringLiterals);
 		}

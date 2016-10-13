@@ -1,14 +1,24 @@
-class B {
-	javax.swing.JButton but1;
 
-	javax.swing.JButton but2;
+
+package java.refactoring;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+
+class B {
+	JButton but1;
+
+	JButton but2;
 
 	B() {
-		but1 = new javax.swing.JButton("foo1");
+		but1 = new JButton("foo1");
 		but1.setActionCommand("FOO");
-		but1.addActionListener((java.awt.event.ActionEvent e) -> java.lang.System.out.println("coucou1"));
-		but2 = new javax.swing.JButton("foo2");
+		but1.addActionListener((ActionEvent e) -> System.out.println("coucou1"));
+		but2 = new JButton("foo2");
 		but2.setActionCommand("BAR");
-		but2.addActionListener((java.awt.event.ActionEvent e) -> java.lang.System.out.println("coucou2"));
+		but2.addActionListener((ActionEvent e) -> System.out.println("coucou2"));
 	}
 }
+
+
