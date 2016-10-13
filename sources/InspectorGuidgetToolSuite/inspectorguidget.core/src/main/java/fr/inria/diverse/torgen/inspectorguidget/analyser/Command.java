@@ -4,6 +4,7 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.NonAnonymClassFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtInvocation;
@@ -94,10 +95,30 @@ public class Command {
 		}
 	}
 
+
+	/**
+	 * Checks whether the given code element is already part of the command (i.e. one of its statements or of its conditions).
+	 * @param elt The element to check.
+	 * @return True if the given element is part of the command. False otherwise.
+	 */
+	public boolean hasStatement(final @Nullable CtElement elt) {
+		if(elt==null)
+			return false;
+
+		return Stream.concat(getConditions().stream().map(cond -> cond.realStatmt), getAllStatmts().stream()).filter(stat -> stat==elt).findAny().isPresent();
+	}
+
+
+	/**
+	 * @return All the statements of the command (but not the conditions).
+	 */
 	public @NotNull Set<CtElement> getAllStatmts() {
 		return statements.stream().map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}
 
+	/**
+	 * @return The executable (method or lambda) that contains the command.
+	 */
 	public @NotNull CtExecutable<?> getExecutable() {
 		return executable;
 	}

@@ -528,4 +528,13 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testCorrectStatements() {
+		analyser.addInputResource("src/test/resources/java/analysers/CommandStatements.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(4, analyser.getCommands().values().stream().flatMap(c -> c.stream()).iterator().next().getAllStatmts().size());
+	}
 }

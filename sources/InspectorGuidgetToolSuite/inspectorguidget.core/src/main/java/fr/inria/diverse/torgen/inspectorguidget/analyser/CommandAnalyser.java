@@ -98,7 +98,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			inferLocalVarUsagesRecursive(
 				cmd.getStatements().stream().map(stat -> stat.getStatmts().stream()).flatMap(s -> s).collect(Collectors.toSet()),
 				new HashSet<>(), listener
-			).parallelStream().filter(exp -> !isPartOfMainCommandBlockOrCondition(exp, cmd, cmds)).
+			).parallelStream().filter(exp -> !cmd.hasStatement(exp) && !isPartOfMainCommandBlockOrCondition(exp, cmd, cmds)).
 			map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp))).
 			collect(Collectors.toList())
 		);
