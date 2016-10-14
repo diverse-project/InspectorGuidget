@@ -3,7 +3,6 @@ package fr.inria.diverse.torgen.inspectorguidget.refactoring;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
@@ -100,11 +99,14 @@ public class ListenerCommandRefactor {
 		final Factory fac = invok.getFactory();
 		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
 		final CtLambda<?> lambda = fac.Core().createLambda();
-		final List<CtElement> stats = cmd.getAllStatmts().stream().map(stat -> stat.clone()).collect(Collectors.toList());
+		final List<CtElement> stats = cmd.getAllStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
 
 		if(!stats.isEmpty() && SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size()-1))) {
 			stats.remove(stats.size()-1);
 		}
+
+		// Removing the unused local variables of the command.
+		SpoonHelper.INSTANCE.removeUnusedLocalVariables(stats);
 
 		if(stats.size()==1 && stats.get(0) instanceof CtExpression<?>) {
 			lambda.setExpression((CtExpression)stats.get(0));

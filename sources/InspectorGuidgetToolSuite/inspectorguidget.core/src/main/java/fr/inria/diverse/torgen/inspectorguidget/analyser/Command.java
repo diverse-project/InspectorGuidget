@@ -112,8 +112,16 @@ public class Command {
 	/**
 	 * @return All the statements of the command (but not the conditions).
 	 */
-	public @NotNull Set<CtElement> getAllStatmts() {
-		return statements.stream().map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toSet());
+	public @NotNull List<CtElement> getAllStatmts() {
+		return statements.stream().map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toList());
+	}
+
+	/**
+	 * @return All the ordered statements of the command (using their start line, conditions excluded).
+	 */
+	public @NotNull List<CtElement> getAllStatmtsOrdered() {
+		return statements.stream().sorted((s1, s2) -> s1.getLineStart()<s2.getLineStart()?-1:1).
+			map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toList());
 	}
 
 	/**

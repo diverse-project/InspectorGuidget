@@ -73,7 +73,6 @@ public class TestBlobRefactoring {
 		env.useTabulations(true);
 		env.setAutoImports(true);
 		DefaultJavaPrettyPrinter printer = new DefaultJavaPrettyPrinter(env);
-		System.out.println(cmdAnalyser.getModel().getAllTypes());
 		printer.calculate(null, new ArrayList<>(cmdAnalyser.getModel().getAllTypes()));
 		return printer.getResult().replace(" \n", "\n");
 	}
@@ -112,5 +111,11 @@ public class TestBlobRefactoring {
 	public void testRefactoredExternalListenerClassTwoCmds() throws IOException {
 		initTest(Arrays.asList(11, 15), true, "src/test/resources/java/refactoring/C.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/CRefactoredLambdaTwoCmds.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredCmdsThatUseLocalVar() throws IOException {
+		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/D.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/DRefactored.java"), getRefactoredCode());
 	}
 }
