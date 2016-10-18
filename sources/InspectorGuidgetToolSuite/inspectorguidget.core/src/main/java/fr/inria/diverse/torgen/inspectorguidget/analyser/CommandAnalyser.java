@@ -175,21 +175,19 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	 * @return True if the given element is contained in the main block or in a condition statement of a command.
 	 */
 	private boolean isPartOfMainCommandBlockOrCondition(final @NotNull CtElement elt, final @NotNull Command currCmd, final @NotNull List<Command> cmds) {
-		final FindElementFilter filter = new FindElementFilter(elt, true);
+		final FindElementFilter filter = new FindElementFilter(elt, false);
 
 		// First, check the main blocks
-		boolean ok = cmds.parallelStream().filter(cmd -> cmd!=currCmd). // Ignoring the current command.
-				map(cmd -> cmd.getMainStatmtEntry()). // Getting the main blocks
+		boolean ok = cmds.parallelStream().map(cmd -> cmd.getMainStatmtEntry()). // Getting the main blocks
 				// Searching for the given element in the statements of the main blocks.
 				filter(main -> main.isPresent() && main.get().getStatmts().stream().filter(stat -> !stat.getElements(filter).isEmpty()).findFirst().isPresent()).
 				findFirst().isPresent();
 
 		// If not found, check the conditions.
 		if(!ok) {
-			ok = cmds.parallelStream().filter(cmd -> cmd!=currCmd).// Ignoring the current command.
-				// Searching for the given element in the conditions.
-				filter(cmd -> cmd.getConditions().stream().filter(cond -> !cond.realStatmt.getElements(filter).isEmpty()).findFirst().isPresent()).
-				findFirst().isPresent();
+			ok = cmds.parallelStream().filter(cmd -> cmd.getConditions().stream().filter(cond ->// Searching for the given element in the conditions.
+				!cond.realStatmt.getElements(filter).isEmpty() ||
+					cond.realStatmt!=cond.effectiveStatmt && !cond.effectiveStatmt.getElements(filter).isEmpty()).findFirst().isPresent()).findFirst().isPresent();
 		}
 
 		return ok;

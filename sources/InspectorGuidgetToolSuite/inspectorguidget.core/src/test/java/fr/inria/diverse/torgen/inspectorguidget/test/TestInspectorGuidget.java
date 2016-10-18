@@ -30,7 +30,7 @@ public abstract class TestInspectorGuidget<T extends Processor<? extends CtEleme
 		@Override
 		public void publish(final LogRecord record) {
 			if(record.getLevel()== Level.SEVERE)
-				fail();
+				fail(record.getMessage());
 		}
 
 		@Override

@@ -537,4 +537,13 @@ public class TestCommandAnalyser {
 		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 		assertEquals(4, analyser.getCommands().values().stream().flatMap(c -> c.stream()).iterator().next().getAllStatmts().size());
 	}
+
+	@Test
+	public void testCorrectStatementsFromSwitch() {
+		analyser.addInputResource("src/test/resources/java/refactoring/E.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(4, analyser.getCommands().values().stream().flatMap(c -> c.stream()).iterator().next().getAllStatmts().size());
+	}
 }
