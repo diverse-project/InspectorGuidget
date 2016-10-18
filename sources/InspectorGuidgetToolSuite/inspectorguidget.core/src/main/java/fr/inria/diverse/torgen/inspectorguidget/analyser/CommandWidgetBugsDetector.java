@@ -6,7 +6,11 @@ import org.jetbrains.annotations.Nullable;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtVariable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class CommandWidgetBugsDetector {
 	private final @NotNull Map<Command, CommandWidgetFinder.WidgetFinderEntry> cmds;

@@ -2,7 +2,8 @@ package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.NonAnonymClassFilter;
-import fr.inria.diverse.torgen.inspectorguidget.helper.*;
+import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtBlock;
@@ -13,7 +14,11 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtParameter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

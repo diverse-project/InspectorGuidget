@@ -1,12 +1,27 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
-import fr.inria.diverse.torgen.inspectorguidget.filter.*;
-import fr.inria.diverse.torgen.inspectorguidget.helper.*;
+import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.ConditionalFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.LinePositionFilter;
+import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtCase;
+import spoon.reflect.code.CtCatch;
+import spoon.reflect.code.CtCodeElement;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtLambda;
+import spoon.reflect.code.CtReturn;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtStatementList;
+import spoon.reflect.code.CtSwitch;
+import spoon.reflect.code.CtThrow;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
@@ -14,7 +29,14 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtParameterReference;
 import spoon.reflect.visitor.filter.DirectReferenceFilter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
