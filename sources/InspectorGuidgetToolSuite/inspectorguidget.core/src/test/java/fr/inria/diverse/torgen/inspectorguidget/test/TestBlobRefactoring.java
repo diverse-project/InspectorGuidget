@@ -136,4 +136,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(21, 23), true, "src/test/resources/java/refactoring/G.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/GRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredSharedVar() throws IOException {
+		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/H.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/HRefactored.java"), getRefactoredCode());
+	}
 }

@@ -81,7 +81,7 @@ public class ListenerCommandRefactor {
 
 
 	private void removeOldCommand(final @NotNull CtInvocation<?> invok, final @NotNull CtExpression<?> oldParam) {
-		cmd.getAllLocalStatmtsOrdered().forEach(elt -> elt.delete()); // FIXME vars used by other statements.
+		cmd.getAllLocalStatmtsOrdered().forEach(elt -> elt.delete());
 
 		if(!cmd.getConditions().isEmpty()) {
 			cmd.getConditions().get(0).realStatmt.getParent(CtStatement.class).delete();
