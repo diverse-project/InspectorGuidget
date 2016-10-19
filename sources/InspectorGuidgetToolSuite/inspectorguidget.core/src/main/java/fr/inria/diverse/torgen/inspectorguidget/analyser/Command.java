@@ -122,10 +122,10 @@ public class Command {
 	}
 
 	/**
-	 * @return All the ordered statements of the command (using their start line, conditions excluded).
+	 * @return All the ordered and non-dispatched statements of the command (using their start line, conditions excluded).
 	 */
-	public @NotNull List<CtElement> getAllStatmtsOrdered() {
-		return statements.stream().sorted((s1, s2) -> s1.getLineStart()<s2.getLineStart()?-1:1).
+	public @NotNull List<CtElement> getAllLocalStatmtsOrdered() {
+		return statements.stream().filter(s -> !s.isDispatchedCode()).sorted((s1, s2) -> s1.getLineStart()<s2.getLineStart()?-1:1).
 			map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toList());
 	}
 
@@ -153,12 +153,12 @@ public class Command {
 			if(invoks.size()==1 && main.getStatmts().size()==1) {
 				final CtBlock<?> body = invoks.get(0).getExecutable().getDeclaration().getBody();
 				if(body!=null && !body.getStatements().isEmpty()) {
-					statements.add(new CommandStatmtEntry(true, body.getStatements()));
+					statements.add(new CommandStatmtEntry(true, body.getStatements(), true));
 				}
 				statements.remove(main);
 			}else {
 				invoks.stream().map(inv -> inv.getExecutable().getDeclaration().getBody()).filter(body -> body!=null).
-					forEach(body -> statements.add(new CommandStatmtEntry(false, body.getStatements())));
+					forEach(body -> statements.add(new CommandStatmtEntry(false, body.getStatements(), true)));
 			}
 		});
 	}

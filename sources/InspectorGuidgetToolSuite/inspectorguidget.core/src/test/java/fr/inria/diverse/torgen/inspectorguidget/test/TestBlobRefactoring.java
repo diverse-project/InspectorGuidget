@@ -124,4 +124,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(28, 31), true, "src/test/resources/java/refactoring/E.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/ERefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredDispatchElse() throws IOException {
+		initTest(Arrays.asList(21, 25), true, "src/test/resources/java/refactoring/F.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/FRefactored.java"), getRefactoredCode());
+	}
 }

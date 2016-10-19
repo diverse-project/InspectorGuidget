@@ -15,11 +15,13 @@ import java.util.List;
 public class CommandStatmtEntry {
 	final List<CtElement> statmts;
 	final boolean mainEntry;
+	boolean dispatchMethod;
 
 	public CommandStatmtEntry(final boolean main) {
 		super();
 		statmts = new ArrayList<>();
 		mainEntry = main;
+		dispatchMethod = false;
 	}
 
 	public CommandStatmtEntry(final boolean main, final @NotNull Collection<CtElement> listStatmts) {
@@ -28,8 +30,17 @@ public class CommandStatmtEntry {
 	}
 
 	public CommandStatmtEntry(final boolean main, final @NotNull List<CtStatement> listStatmts) {
+		this(main, listStatmts, false);
+	}
+
+	public CommandStatmtEntry(final boolean main, final @NotNull List<CtStatement> listStatmts, final boolean fromDispatch) {
 		this(main);
+		dispatchMethod = fromDispatch;
 		listStatmts.forEach(s -> addStatement(s));
+	}
+
+	public boolean isDispatchedCode() {
+		return dispatchMethod;
 	}
 
 	public void addStatement(final @NotNull CtElement statmt) {
@@ -66,6 +77,6 @@ public class CommandStatmtEntry {
 
 	@Override
 	public String toString() {
-		return "CommandStatmtEntry{start: " + getLineStart() + ", end: " + getLineEnd() + ", main: " + mainEntry + "}";
+		return "CommandStatmtEntry{start: " + getLineStart() + ", end: " + getLineEnd() + ", main: " + mainEntry + " dispatched: " + dispatchMethod + "}";
 	}
 }
