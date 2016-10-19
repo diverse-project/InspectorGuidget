@@ -1,8 +1,6 @@
 class B {
 	javax.swing.JButton but1;
-
 	javax.swing.JButton but2;
-
 	B() {
 		but1 = new javax.swing.JButton("foo1");
 		but1.setActionCommand("FOO");
@@ -12,3 +10,4 @@ class B {
 		but2.addActionListener(e -> java.lang.System.out.println("coucou2"));
 	}
 }
+

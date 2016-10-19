@@ -74,7 +74,7 @@ public class TestBlobRefactoring {
 		env.setAutoImports(true);
 		DefaultJavaPrettyPrinter printer = new DefaultJavaPrettyPrinter(env);
 		printer.calculate(null, new ArrayList<>(cmdAnalyser.getModel().getAllTypes()));
-		return printer.getResult().replace(" \n", "\n");
+		return printer.getResult().replace(" \n", "\n").replaceAll("(\n)+", "\n");
 	}
 
 	@Test
