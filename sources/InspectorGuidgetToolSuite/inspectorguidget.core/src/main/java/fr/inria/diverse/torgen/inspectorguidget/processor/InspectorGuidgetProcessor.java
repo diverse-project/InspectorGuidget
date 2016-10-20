@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtTypeReference;
@@ -22,7 +23,10 @@ public abstract class InspectorGuidgetProcessor <T extends CtElement> extends Ab
 		super();
 	}
 
-	public static boolean isASubTypeOf(final @NotNull CtTypeReference<?> candidate, final @NotNull Collection<CtTypeReference<?>> types) {
+	public static boolean isASubTypeOf(final @Nullable CtTypeReference<?> candidate, final @NotNull Collection<CtTypeReference<?>> types) {
+		if(candidate==null)
+			return false;
+
 		return types.stream().filter(type -> {
 			try {
 				return candidate.isSubtypeOf(type);

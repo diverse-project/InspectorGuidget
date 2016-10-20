@@ -339,7 +339,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			analyseWidgetAssignment((CtAssignment<?, ?>) invok.getParent());
 		}
 
-		LOG.log(Level.WARNING, "Widget invocation not supported or ignored: " + type.getSimpleName() + " " + invok);
+		LOG.log(Level.WARNING, "Widget invocation not supported or ignored: " + type + " " + invok);
 	}
 
 
