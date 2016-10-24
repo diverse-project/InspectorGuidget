@@ -91,7 +91,7 @@ public class Command {
 			CommandStatmtEntry stat1 = statements.get(i);
 			while(j<statements.size()) {
 				CommandStatmtEntry stat2 = statements.get(j);
-				if(stat1!=stat2 && stat1.contains(stat2) && !stat2.contains(stat1))
+				if(i!=j && stat1.equals(stat2) || stat1.contains(stat2) && !stat2.contains(stat1))
 					statements.remove(j);
 				else
 					j++;

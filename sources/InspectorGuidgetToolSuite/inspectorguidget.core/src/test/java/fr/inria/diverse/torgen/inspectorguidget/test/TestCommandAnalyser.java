@@ -546,4 +546,11 @@ public class TestCommandAnalyser {
 		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 		assertEquals(4, analyser.getCommands().values().stream().flatMap(c -> c.stream()).iterator().next().getAllStatmts().size());
 	}
+
+	@Test
+	public void testNotSameStatementsCollectedInCommand() {
+		analyser.addInputResource("src/test/resources/java/refactoring/I.java");
+		analyser.run();
+		assertEquals(1L, analyser.getCommands().values().iterator().next().get(0).getAllStatmts().stream().filter(stat -> stat.getPosition().getLine()==23).count());
+	}
 }
