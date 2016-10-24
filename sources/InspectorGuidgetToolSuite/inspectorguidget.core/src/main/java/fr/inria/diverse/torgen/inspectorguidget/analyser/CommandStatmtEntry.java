@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementFilter;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtElement;
@@ -71,8 +72,18 @@ public class CommandStatmtEntry {
 		return getStatmts().stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
 	}
 
-	public boolean contains(final @NotNull CommandStatmtEntry entry) {
+	/**
+	 * Checks the line numbers of the entries to state whether the calling one containsLine the given one.
+	 * @param entry The given entry to test against the calling one.
+	 * @return True if the calling entry contains the given one. False otherwise.
+	 */
+	public boolean containsLine(final @NotNull CommandStatmtEntry entry) {
 		return getLineStart()<=entry.getLineStart() && getLineEnd()>=entry.getLineEnd();
+	}
+
+
+	public boolean containsElement(final @NotNull CommandStatmtEntry entry) {
+		return statmts.size()==1 && entry.statmts.size()==1 && !statmts.get(0).getElements(new FindElementFilter(entry.statmts.get(0), true)).isEmpty();
 	}
 
 	@Override

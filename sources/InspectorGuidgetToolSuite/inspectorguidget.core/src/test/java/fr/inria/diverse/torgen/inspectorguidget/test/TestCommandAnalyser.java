@@ -553,4 +553,11 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1L, analyser.getCommands().values().iterator().next().get(0).getAllStatmts().stream().filter(stat -> stat.getPosition().getLine()==23).count());
 	}
+
+	@Test
+	public void testNestedStatementNotPartOfACommand() {
+		analyser.addInputResource("src/test/resources/java/refactoring/I.java");
+		analyser.run();
+		assertEquals(1L, analyser.getCommands().values().iterator().next().get(0).getAllStatmts().stream().filter(stat -> stat.getPosition().getLine()==26).count());
+	}
 }
