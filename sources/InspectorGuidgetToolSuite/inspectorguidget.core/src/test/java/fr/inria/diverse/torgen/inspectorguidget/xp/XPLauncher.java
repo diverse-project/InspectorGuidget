@@ -31,7 +31,7 @@ public abstract class XPLauncher {
 		widgetProc = new WidgetProcessor(true);
 
 		getInputResoures().forEach(p -> blobAnalyser.addInputResource(p));
-//		cmdAnalyser.setSourceClasspath(getSourceClassPath());
+		blobAnalyser.getCmdAnalyser().setSourceClasspath(getSourceClassPath());
 		blobAnalyser.run();
 
 		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), blobAnalyser.getCmdAnalyser().getModelBuilder());

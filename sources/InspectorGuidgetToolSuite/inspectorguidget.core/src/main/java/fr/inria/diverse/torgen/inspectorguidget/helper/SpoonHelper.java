@@ -1,14 +1,17 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.BinaryOperatorKind;
+import spoon.reflect.code.CtAssert;
 import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtBreak;
+import spoon.reflect.code.CtCFlowBreak;
 import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtDo;
 import spoon.reflect.code.CtExpression;
@@ -16,7 +19,9 @@ import spoon.reflect.code.CtFor;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtReturn;
+import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtSwitch;
+import spoon.reflect.code.CtSynchronized;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.code.CtWhile;
@@ -54,6 +59,25 @@ public final class SpoonHelper {
 //								filter(supercall -> exec.getSimpleName().equals(supercall.getExecutable().getSimpleName())).findFirst().isPresent()
 //			).collect(Collectors.toList());
 //	}
+
+	public boolean isEmptyIfStatement(final @Nullable CtIf iff) {
+		if(iff == null) return false;
+		final BasicFilter<CtStatement> filter = new BasicFilter<CtStatement>() {
+			@Override
+			public boolean matches(final CtStatement element) {
+				return !(element instanceof CtBlock) && !(element instanceof CtCFlowBreak) && !(element instanceof CtSynchronized) &&
+					!(element instanceof CtAssert);
+			}
+		};
+
+		return iff.getThenStatement().getElements(filter).isEmpty() && (iff.getElseStatement()==null || iff.getElseStatement().getElements(filter).isEmpty());
+	}
+
+
+	public boolean isEmptySwitch(final @Nullable CtSwitch<?> sw) {
+		return sw != null && sw.getCases().stream().allMatch(caz -> caz.getStatements().isEmpty());
+
+	}
 
 
 	/**

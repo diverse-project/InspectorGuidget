@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.refactoring;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
@@ -8,11 +9,13 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtNewClass;
 import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtSwitch;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtClass;
@@ -34,6 +37,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Refactors GUI listener that contain multiple commands to extract these last in
@@ -74,7 +78,7 @@ public class ListenerCommandRefactor {
 				}
 				removeOldCommand(invok.get(0), oldParam);
 			} else {
-				LOG.log(Level.SEVERE, "Cannot find a unique widget registraion: " + cmd + " " + invok);
+				LOG.log(Level.SEVERE, "Cannot find a unique widget registration: " + cmd + " " + invok);
 			}
 		});
 	}
@@ -83,8 +87,19 @@ public class ListenerCommandRefactor {
 	private void removeOldCommand(final @NotNull CtInvocation<?> invok, final @NotNull CtExpression<?> oldParam) {
 		cmd.getAllLocalStatmtsOrdered().forEach(elt -> elt.delete());
 
-		if(!cmd.getConditions().isEmpty()) {
-			cmd.getConditions().get(0).realStatmt.getParent(CtStatement.class).delete();
+		final List<CommandConditionEntry> conds = cmd.getConditions();
+
+		if(!conds.isEmpty()) {
+			conds.get(0).realStatmt.getParent(CtStatement.class).delete();
+
+			IntStream.range(1, conds.size()).forEach(i -> {
+				CtStatement parent = conds.get(i).realStatmt.getParent(CtStatement.class);
+
+				if(parent instanceof CtIf && SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)parent) ||
+					parent instanceof CtSwitch<?> && SpoonHelper.INSTANCE.isEmptySwitch((CtSwitch<?>)parent)) {
+					parent.delete();
+				}
+			});
 		}
 
 		if(cmd.getExecutable().getBody().getStatements().isEmpty()) {

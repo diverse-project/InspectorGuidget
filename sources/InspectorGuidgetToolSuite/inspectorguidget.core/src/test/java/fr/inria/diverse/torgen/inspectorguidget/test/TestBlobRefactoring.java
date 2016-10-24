@@ -142,4 +142,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/H.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/HRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredMultipleConditions() throws IOException {
+		initTest(Arrays.asList(29, 33), true, "src/test/resources/java/refactoring/I.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/IRefactored.java"), getRefactoredCode());
+	}
 }
