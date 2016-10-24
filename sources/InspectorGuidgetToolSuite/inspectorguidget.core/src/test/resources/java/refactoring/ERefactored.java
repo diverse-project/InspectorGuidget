@@ -8,13 +8,11 @@ class E {
 	JButton but2;
 	E() {
 		but1 = new JButton("foo1");
-		but1.setActionCommand("FOO");
 		but1.addActionListener((ActionEvent e) -> {
 			Object bar = e.getSource();
 			System.out.println((bar + " FOO"));
 		});
 		but2 = new JButton("foo2");
-		but2.setActionCommand("BAR");
 		but2.addActionListener((ActionEvent e) -> {
 			Object bar = e.getSource();
 			System.out.println((bar + " BAR"));

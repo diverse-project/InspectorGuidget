@@ -8,7 +8,6 @@ class A {
 	A() {
 		C c = new C();
 		but1 = new javax.swing.JButton("foo1");
-		but1.setActionCommand("FOO");
 		but1.addActionListener((ActionEvent e) -> System.out.println("coucou1"));
 		but2 = new javax.swing.JButton("foo2");
 		but2.setActionCommand("BAR");

@@ -3,6 +3,7 @@ package fr.inria.diverse.torgen.inspectorguidget.refactoring;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
+import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
@@ -30,6 +31,7 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
+import spoon.reflect.visitor.Filter;
 
 import java.util.Collections;
 import java.util.List;
@@ -124,15 +126,35 @@ public class ListenerCommandRefactor {
 	}
 
 
+	private void removeLastBreakReturn(final @NotNull List<CtElement> stats) {
+		if(!stats.isEmpty() && SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size()-1))) {
+			stats.remove(stats.size()-1);
+		}
+	}
+
+	private void removeActionCommandStatements() {
+		widgets.getFirstWidgetUsage().ifPresent(usage -> {
+			Filter<CtInvocation<?>> filter = new BasicFilter<CtInvocation<?>>() {
+				@Override
+				public boolean matches(final CtInvocation<?> element) {
+					return WidgetHelper.INSTANCE.ACTION_CMD_METHOD_NAMES.stream().
+						filter(elt -> element.getExecutable().getSimpleName().equals(elt)).findAny().isPresent();
+				}
+			};
+
+			usage.accesses.stream().map(access -> access.getParent(CtStatement.class)).
+				filter(stat -> stat != null && !stat.getElements(filter).isEmpty()).forEach(stat -> stat.delete());
+		});
+	}
+
 	private void refactorRegistrationAsLambda(final @NotNull CtInvocation<?> invok) {
 		final Factory fac = invok.getFactory();
 		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
 		final CtLambda<?> lambda = fac.Core().createLambda();
 		final List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
 
-		if(!stats.isEmpty() && SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size()-1))) {
-			stats.remove(stats.size()-1);
-		}
+		removeLastBreakReturn(stats);
+		removeActionCommandStatements();
 
 		// Removing the unused local variables of the command.
 		SpoonHelper.INSTANCE.removeUnusedLocalVariables(stats);
@@ -160,9 +182,8 @@ public class ListenerCommandRefactor {
 		final CtNewClass<?> newCl = fac.Core().createNewClass();
 		final List<CtElement> stats = cmd.getAllStatmts().stream().map(stat -> stat.clone()).collect(Collectors.toList());
 
-		if(!stats.isEmpty() && SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size()-1))) {
-			stats.remove(stats.size()-1);
-		}
+		removeLastBreakReturn(stats);
+		removeActionCommandStatements();
 
 		Optional<CtMethod<?>> m1 = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
 									filter(meth -> meth.getBody() == null).findFirst();

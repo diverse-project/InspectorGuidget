@@ -9,6 +9,7 @@ import spoon.reflect.reference.CtTypeReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
 
 public final class WidgetHelper {
 	public static final @NotNull WidgetHelper INSTANCE = new WidgetHelper();
+
+	public final @NotNull List<String> ACTION_CMD_METHOD_NAMES = Collections.singletonList("setActionCommand");
 
 	private List<CtTypeReference<?>> controlTypes;
 	private Set<String> widgetPackages;

@@ -11,7 +11,6 @@ class B implements ActionListener {
 		but1.setActionCommand("FOO");
 		but1.addActionListener(B.this);
 		but2 = new JButton("foo2");
-		but2.setActionCommand("BAR");
 		but2.addActionListener((ActionEvent e) -> System.out.println("coucou2"));
 	}
 	@Override

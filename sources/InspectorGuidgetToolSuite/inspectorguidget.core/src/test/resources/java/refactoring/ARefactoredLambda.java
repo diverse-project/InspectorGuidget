@@ -7,7 +7,6 @@ class A {
 	JButton but;
 	A() {
 		but = new JButton("foo");
-		but.setActionCommand("FOO");
 		but.addActionListener((ActionEvent e) -> System.out.println("coucou"));
 	}
 }

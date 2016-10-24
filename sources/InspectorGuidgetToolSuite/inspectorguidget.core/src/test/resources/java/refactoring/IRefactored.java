@@ -8,10 +8,8 @@ class I {
 	JButton but2;
 	I() {
 		but1 = new JButton("foo1");
-		but1.setActionCommand("FOO");
 		but1.addActionListener((ActionEvent e) -> System.out.println("coucou1"));
 		but2 = new JButton("foo2");
-		but2.setActionCommand("BAR");
 		but2.addActionListener((ActionEvent e) -> System.out.println("coucou2"));
 	}
 }

@@ -9,13 +9,11 @@ class H {
 	String foo = "fii";
 	H() {
 		but1 = new JButton("foo1");
-		but1.setActionCommand("FOO");
 		but1.addActionListener((ActionEvent e) -> {
 			Object bar = e.getSource();
 			System.out.println((((foo) + " ") + bar));
 		});
 		but2 = new JButton("foo2");
-		but2.setActionCommand("BAR");
 		but2.addActionListener((ActionEvent e) -> {
 			Object bar = e.getSource();
 			System.out.println(bar);
