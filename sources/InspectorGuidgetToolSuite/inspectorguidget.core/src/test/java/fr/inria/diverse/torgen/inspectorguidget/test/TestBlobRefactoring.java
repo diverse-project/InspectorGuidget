@@ -160,4 +160,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/J.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/JRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredReturnsReturns() throws IOException {
+		initTest(Arrays.asList(30, 34), true, "src/test/resources/java/refactoring/L.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/LRefactored.java"), getRefactoredCode());
+	}
 }

@@ -37,6 +37,7 @@ import spoon.reflect.visitor.Filter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -176,7 +177,7 @@ public class ListenerCommandRefactor {
 		removeActionCommandStatements();
 
 		// Removing the unused local variables of the command.
-		SpoonHelper.INSTANCE.removeUnusedLocalVariables(stats);
+		removeUnusedLocalVariables(stats);
 
 		if(stats.size()==1 && stats.get(0) instanceof CtExpression<?>) {
 			lambda.setExpression((CtExpression)stats.get(0));
@@ -192,6 +193,37 @@ public class ListenerCommandRefactor {
 		lambda.setType(typeRef);
 		invok.setArguments(Collections.singletonList(lambda));
 	}
+
+
+
+	/**
+	 * Removed the unused local variables declared in the given statements.
+	 * Variable accesses are identified to check whether local variables are no more used.
+	 * The algorithm continues to check until no more local variables are removed.
+	 * @param stats The statements to analyse.
+	 */
+	private void removeUnusedLocalVariables(final @NotNull List<CtElement> stats) {
+		cmd.getMainStatmtEntry().ifPresent(mainEntry -> {
+			// Getting the main statements of the command.
+			final List<CtElement> mainStats = mainEntry.getStatmts();
+			// Gathering all the variables required by the main statements.
+			final Set<CtVariableReference<?>> varsMain = mainStats.stream().
+				map(stat -> SpoonHelper.INSTANCE.getAllLocalVarDeclaration(stat)).flatMap(s -> s.stream()).
+				map(var -> (CtVariableReference<?>)var.getReference()).collect(Collectors.toSet());
+			final VariableAccessFilter filter = new VariableAccessFilter();
+
+			stats.removeIf(stat ->
+				// Must ignore the local variables used by the main statements.
+				!(stat instanceof CtLocalVariable<?> && varsMain.contains(((CtLocalVariable<?>)stat).getReference())) &&
+				// Must ignore the invocations
+				!(stat instanceof CtInvocation) &&
+				// Must ignore the main statements.
+				!mainStats.contains(stat) &&
+				// Checking whether the statement uses a required variable.
+				stat.getElements(filter).stream().noneMatch(access -> varsMain.contains(access.getVariable())));
+		});
+	}
+
 
 
 	private void refactorRegistrationAsAnonClass(final @NotNull CtInvocation<?> invok) {

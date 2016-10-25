@@ -3,7 +3,6 @@ package fr.inria.diverse.torgen.inspectorguidget.helper;
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.BinaryOperatorKind;
@@ -35,7 +34,6 @@ import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.reflect.reference.CtVariableReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,26 +75,6 @@ public final class SpoonHelper {
 	public boolean isEmptySwitch(final @Nullable CtSwitch<?> sw) {
 		return sw != null && sw.getCases().stream().allMatch(caz -> caz.getStatements().isEmpty());
 
-	}
-
-
-	/**
-	 * Removed the unused local variables declared in the given statements.
-	 * Variable accesses are identified to check whether local variables are no more used.
-	 * The algorithm continues to check until no more local variables are removed.
-	 * @param stats THe statements to analyse.
-	 */
-	public void removeUnusedLocalVariables(final @NotNull List<CtElement> stats) {
-		// Getting the variable accesses used in the statements.
-		final Set<CtVariableReference<?>> vars = stats.stream().map(s -> s.getElements(new VariableAccessFilter())).
-			flatMap(s -> s.stream()).map(varacc -> varacc.getVariable()).collect(Collectors.toSet());
-
-		// Removing the local variables that are no more used in the statements.
-		boolean hasRemoved = stats.removeIf(s -> s instanceof CtLocalVariable<?> && !vars.contains(((CtLocalVariable<?>)s).getReference()));
-
-		// If variables have been removed, checking that these removals do not let some other variables unused.
-		if(hasRemoved)
-			removeUnusedLocalVariables(stats);
 	}
 
 
