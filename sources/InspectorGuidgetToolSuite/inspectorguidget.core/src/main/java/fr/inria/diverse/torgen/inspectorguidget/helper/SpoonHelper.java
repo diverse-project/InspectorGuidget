@@ -58,6 +58,22 @@ public final class SpoonHelper {
 //			).collect(Collectors.toList());
 //	}
 
+	public @Nullable CtType<?> getMainTypeFromElt(final @Nullable CtElement elt) {
+		if(elt==null) return null;
+		return getMainType(elt.getParent(CtType.class));
+	}
+
+
+	public @Nullable CtType<?> getMainType(final @Nullable CtType<?> type) {
+		if(type==null) return null;
+		CtType<?> ty = getMainType(type.getParent(CtType.class));
+		if(ty==null) {
+			return type;
+		}
+		return ty;
+	}
+
+
 	public boolean isEmptyIfStatement(final @Nullable CtIf iff) {
 		if(iff == null) return false;
 		final BasicFilter<CtStatement> filter = new BasicFilter<CtStatement>() {

@@ -52,7 +52,7 @@ public class TestBlobRefactoring {
 
 		startLine.forEach(line -> {
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==line).findAny().get();
-			refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda);
+			refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false);
 			refactor.execute();
 		});
 	}

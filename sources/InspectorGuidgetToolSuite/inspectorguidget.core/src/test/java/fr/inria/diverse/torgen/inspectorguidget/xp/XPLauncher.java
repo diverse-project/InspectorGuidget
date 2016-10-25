@@ -15,8 +15,10 @@ import spoon.support.JavaOutputProcessor;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class XPLauncher {
@@ -42,13 +44,15 @@ public abstract class XPLauncher {
 			widgetProc.getWidgetUsages());
 		finder.process();
 
+		final Set<CtType<?>> collectedTypes = new HashSet<>();
+
 		blobAnalyser.getBlobs().forEach((exec,cmds) -> cmds.forEach(cmd -> {
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
 
-			//FIXME should memorize the classes that are modified to print them only
-			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda());
+			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), true);
 			refactor.execute();
+			collectedTypes.addAll(refactor.getRefactoredTypes());
 		}));
 
 		Factory factory = blobAnalyser.getCmdAnalyser().getFactory();
@@ -58,7 +62,8 @@ public abstract class XPLauncher {
 		env.setShouldCompile(true);
 		env.setComplianceLevel(getCompilianceLevel());
 
-		blobAnalyser.getCmdAnalyser().getModel().getAllTypes().stream().filter(type -> type.getParent(CtType.class)==null).forEach(type -> {
+//		blobAnalyser.getCmdAnalyser().getModel().getAllTypes().stream().filter(type -> type.getParent(CtType.class)==null).forEach(type -> {
+		collectedTypes.forEach(type -> {
 			JavaOutputProcessor processor = new JavaOutputProcessor(new File("/home/foo/Bureau/foo"), new DefaultJavaPrettyPrinter(env));
 			processor.setFactory(factory);
 			processor.createJavaFile(type);

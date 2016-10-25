@@ -9,6 +9,7 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtIf;
@@ -35,6 +36,7 @@ import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -53,15 +55,26 @@ public class ListenerCommandRefactor {
 	private final boolean asLambda;
 	private final Command cmd;
 	private @NotNull CommandWidgetFinder.WidgetFinderEntry widgets;
+	private final Set<CtType<?>> refactoredTypes;
+	private final boolean collectTypes;
 
 	public ListenerCommandRefactor(final @NotNull Command command, final @NotNull CommandWidgetFinder.WidgetFinderEntry entry,
-								   final boolean refactAsLambda) {
+								   final boolean refactAsLambda, final boolean collectRefactoredTypes) {
 		asLambda = refactAsLambda;
 		widgets = entry;
 		cmd = command;
+		collectTypes = collectRefactoredTypes;
+
+		if(collectRefactoredTypes) {
+			refactoredTypes = new HashSet<>();
+		}else {
+			refactoredTypes = Collections.emptySet();
+		}
 	}
 
 	public void execute() {
+		collectRefactoredType(cmd.getExecutable());
+
 		// Removing the possible return located at the end of the listener.
 		if(!cmd.getExecutable().getBody().getStatements().isEmpty() &&
 			SpoonHelper.INSTANCE.isReturnBreakStatement(cmd.getExecutable().getBody().getLastStatement())) {
@@ -133,6 +146,14 @@ public class ListenerCommandRefactor {
 		}
 	}
 
+	private void collectRefactoredType(final @Nullable CtElement elt) {
+		if(collectTypes) {
+			final CtType<?> root = SpoonHelper.INSTANCE.getMainTypeFromElt(elt);
+			if(root!=null) {
+				refactoredTypes.add(root);
+			}
+		}
+	}
 
 	private void removeLastBreakReturn(final @NotNull List<CtElement> stats) {
 		if(!stats.isEmpty() && SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size()-1))) {
@@ -155,7 +176,10 @@ public class ListenerCommandRefactor {
 				filter(stat -> stat != null && !stat.getElements(filter).isEmpty()).collect(Collectors.toList());
 
 			// Deleting each set action command and co statement.
-			actionCmds.forEach(stat -> stat.delete());
+			actionCmds.forEach(stat -> {
+				stat.delete();
+				collectRefactoredType(stat);
+			});
 
 			// Deleting the unused private/protected/package action command names defined as constants or variables (analysing the
 			// usage of public variables is time-consuming).
@@ -163,7 +187,10 @@ public class ListenerCommandRefactor {
 				map(access -> access.getVariable().getDeclaration()).distinct().
 				filter(var -> var!=null && (var.getVisibility()==ModifierKind.PRIVATE || var.getVisibility()==ModifierKind.PROTECTED ||
 					var.getVisibility()==null) && SpoonHelper.INSTANCE.extractUsagesOfVar(var).size()<2).
-				forEach(var -> var.delete());
+				forEach(var -> {
+					var.delete();
+					collectRefactoredType(var);
+				});
 		});
 	}
 
@@ -192,6 +219,7 @@ public class ListenerCommandRefactor {
 		lambda.setParameters(Collections.singletonList(param));
 		lambda.setType(typeRef);
 		invok.setArguments(Collections.singletonList(lambda));
+		collectRefactoredType(invok);
 	}
 
 
@@ -265,5 +293,9 @@ public class ListenerCommandRefactor {
 		newCl.setExecutable(ref);
 
 		invok.setArguments(Collections.singletonList(newCl));
+	}
+
+	public Set<CtType<?>> getRefactoredTypes() {
+		return Collections.unmodifiableSet(refactoredTypes);
 	}
 }
