@@ -60,7 +60,7 @@ public class ListenerCommandRefactor {
 	}
 
 	public void execute() {
-		widgets.getFirstWidgetUsage().ifPresent(usage -> {
+		widgets.getWidgetUsages().forEach(usage -> {
 			// Getting the accesses of the widgets
 			List<CtInvocation<?>> invok = usage.accesses.stream().
 				// gathering their parent statement.
@@ -133,7 +133,7 @@ public class ListenerCommandRefactor {
 	}
 
 	private void removeActionCommandStatements() {
-		widgets.getFirstWidgetUsage().ifPresent(usage -> {
+		widgets.getWidgetUsages().forEach(usage -> {
 			Filter<CtInvocation<?>> filter = new BasicFilter<CtInvocation<?>>() {
 				@Override
 				public boolean matches(final CtInvocation<?> element) {

@@ -401,20 +401,25 @@ public class CommandWidgetFinder {
 			widgetsFromStringLiterals = Collections.emptyList();
 		}
 
-		public Optional<WidgetProcessor.WidgetUsage> getFirstWidgetUsage() {
+		/**
+		 * @return All the usages found. Cannot be null.
+		 */
+		public Set<WidgetProcessor.WidgetUsage> getWidgetUsages() {
+			final Set<WidgetProcessor.WidgetUsage> usages = new HashSet<>();
+
 			if(!registeredWidgets.isEmpty())
-				return Optional.of(registeredWidgets.iterator().next());
+				usages.addAll(registeredWidgets);
 
 			if(!widgetsFromStringLiterals.isEmpty())
-				return Optional.of(widgetsFromStringLiterals.get(0).usage);
+				usages.addAll(widgetsFromStringLiterals.stream().map(lit -> lit.usage).collect(Collectors.toSet()));
 
 			if(!widgetsFromSharedVars.isEmpty())
-				return Optional.of(widgetsFromSharedVars.get(0).usage);
+				usages.addAll(widgetsFromSharedVars.stream().map(lit -> lit.usage).collect(Collectors.toSet()));
 
 			if(!widgetsUsedInConditions.isEmpty())
-				return Optional.of(widgetsUsedInConditions.iterator().next());
+				usages.addAll(widgetsUsedInConditions);
 
-			return Optional.empty();
+			return usages;
 		}
 
 		public @NotNull List<StringLitMatch> getWidgetsFromStringLiterals() {

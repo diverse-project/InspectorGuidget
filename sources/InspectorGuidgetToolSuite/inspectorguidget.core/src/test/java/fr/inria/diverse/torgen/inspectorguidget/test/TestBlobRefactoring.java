@@ -148,4 +148,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(29, 33), true, "src/test/resources/java/refactoring/I.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/IRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredSameCommandForTwoWidgets() throws IOException {
+		initTest(Arrays.asList(38, 42), true, "src/test/resources/java/refactoring/K.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/KRefactored.java"), getRefactoredCode());
+	}
 }
