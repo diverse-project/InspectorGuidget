@@ -5,6 +5,7 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import org.jetbrains.annotations.NotNull;
@@ -142,8 +143,20 @@ public class ListenerCommandRefactor {
 				}
 			};
 
-			usage.accesses.stream().map(access -> access.getParent(CtStatement.class)).
-				filter(stat -> stat != null && !stat.getElements(filter).isEmpty()).forEach(stat -> stat.delete());
+			// Getting all the set action command and co statements.
+			List<CtStatement> actionCmds = usage.accesses.stream().map(access -> access.getParent(CtStatement.class)).
+				filter(stat -> stat != null && !stat.getElements(filter).isEmpty()).collect(Collectors.toList());
+
+			// Deleting each set action command and co statement.
+			actionCmds.forEach(stat -> stat.delete());
+
+			// Deleting the unused private/protected/package action command names defined as constants or variables (analysing the
+			// usage of public variables is time-consuming).
+			actionCmds.stream().map(stat -> stat.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
+				map(access -> access.getVariable().getDeclaration()).distinct().
+				filter(var -> var!=null && (var.getVisibility()==ModifierKind.PRIVATE || var.getVisibility()==ModifierKind.PROTECTED ||
+					var.getVisibility()==null) && SpoonHelper.INSTANCE.extractUsagesOfVar(var).size()<2).
+				forEach(var -> var.delete());
 		});
 	}
 

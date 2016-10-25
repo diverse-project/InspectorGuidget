@@ -154,4 +154,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(38, 42), true, "src/test/resources/java/refactoring/K.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/KRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredRemovePrivateActionCmdNames() throws IOException {
+		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/J.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/JRefactored.java"), getRefactoredCode());
+	}
 }
