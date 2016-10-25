@@ -61,6 +61,12 @@ public class ListenerCommandRefactor {
 	}
 
 	public void execute() {
+		// Removing the possible return located at the end of the listener.
+		if(!cmd.getExecutable().getBody().getStatements().isEmpty() &&
+			SpoonHelper.INSTANCE.isReturnBreakStatement(cmd.getExecutable().getBody().getLastStatement())) {
+			cmd.getExecutable().getBody().getLastStatement().delete();
+		}
+
 		widgets.getWidgetUsages().forEach(usage -> {
 			// Getting the accesses of the widgets
 			List<CtInvocation<?>> invok = usage.accesses.stream().
