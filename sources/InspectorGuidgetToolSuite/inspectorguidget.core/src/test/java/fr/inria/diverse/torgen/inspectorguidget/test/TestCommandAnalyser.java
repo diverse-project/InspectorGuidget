@@ -286,13 +286,11 @@ public class TestCommandAnalyser {
 		assertEquals(46, blocks.get(2).startLine);
 		assertEquals(46, blocks.get(2).endLine);
 		assertEquals(48, blocks.get(3).startLine);
-		assertEquals(50, blocks.get(3).endLine);
-		assertEquals(53, blocks.get(4).startLine);
-		assertEquals(54, blocks.get(4).endLine);
-		assertEquals(58, blocks.get(5).startLine);
-		assertEquals(58, blocks.get(5).endLine);
-		assertEquals(60, blocks.get(6).startLine);
-		assertEquals(64, blocks.get(6).endLine);
+		assertEquals(56, blocks.get(3).endLine);
+		assertEquals(58, blocks.get(4).startLine);
+		assertEquals(58, blocks.get(4).endLine);
+		assertEquals(60, blocks.get(5).startLine);
+		assertEquals(64, blocks.get(5).endLine);
 	}
 
 	@Test
@@ -309,11 +307,9 @@ public class TestCommandAnalyser {
 		assertEquals(46, blocks.get(2).startLine);
 		assertEquals(46, blocks.get(2).endLine);
 		assertEquals(48, blocks.get(3).startLine);
-		assertEquals(51, blocks.get(3).endLine);
-		assertEquals(53, blocks.get(4).startLine);
-		assertEquals(55, blocks.get(4).endLine);
-		assertEquals(67, blocks.get(5).startLine);
-		assertEquals(71, blocks.get(5).endLine);
+		assertEquals(56, blocks.get(3).endLine);
+		assertEquals(67, blocks.get(4).startLine);
+		assertEquals(71, blocks.get(4).endLine);
 	}
 
 	@Test
@@ -330,13 +326,11 @@ public class TestCommandAnalyser {
 		assertEquals(46, blocks.get(2).startLine);
 		assertEquals(46, blocks.get(2).endLine);
 		assertEquals(48, blocks.get(3).startLine);
-		assertEquals(51, blocks.get(3).endLine);
-		assertEquals(53, blocks.get(4).startLine);
-		assertEquals(55, blocks.get(4).endLine);
-		assertEquals(58, blocks.get(5).startLine);
-		assertEquals(58, blocks.get(5).endLine);
-		assertEquals(74, blocks.get(6).startLine);
-		assertEquals(79, blocks.get(6).endLine);
+		assertEquals(56, blocks.get(3).endLine);
+		assertEquals(58, blocks.get(4).startLine);
+		assertEquals(58, blocks.get(4).endLine);
+		assertEquals(74, blocks.get(5).startLine);
+		assertEquals(79, blocks.get(5).endLine);
 	}
 
 	@Test
