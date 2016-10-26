@@ -182,7 +182,6 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	@Ignore
 	public void testRefactoredExternalListenerWithAttributes() throws IOException {
 		initTest(Arrays.asList(22, 30), true, "src/test/resources/java/refactoring/N.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/NRefactored.java"), getRefactoredCode());

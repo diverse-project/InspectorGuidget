@@ -215,6 +215,24 @@ public class ListenerCommandRefactor {
 			// In this case, the target of the invocation (the field read) is removed since the invocation will be moved to
 			// the registration class.
 			forEach(invok -> invok.setTarget(null));
+
+		// The invocation may refer to a attribute that is defined in the listener class but no where the registration occurs.
+		nonLocalInvoks.stream().filter(invok -> invok.getTarget() instanceof CtFieldRead<?>).
+			// Getting such fields.
+			map(invok -> ((CtFieldRead<?>)invok.getTarget()).getVariable().getDeclaration()).
+			filter(f -> f!=null).distinct().forEach(field -> {
+				// Extracting the local usages of these fields
+				field.getParent(CtClass.class).getElements(new MyVariableAccessFilter(field)).stream().
+					map(u -> u instanceof CtStatement ? (CtStatement)u : u.getParent(CtStatement.class)).
+					// Only considering the initialisation of these fields for the moment.
+					filter(stat -> stat.getParent(CtConstructor.class)!=null).
+					forEach(u -> {
+						u.delete(); // Deleting the former usage
+						regInvok.insertBefore(u); // and moving it where the initialisation occurs.
+					});
+				field.delete();
+				listenerRegClass.addField(field);//FIXME check that no field with the same name exists.
+		});
 	}
 
 
