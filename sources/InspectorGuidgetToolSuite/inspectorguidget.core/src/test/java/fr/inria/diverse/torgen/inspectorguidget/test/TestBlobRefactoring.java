@@ -8,6 +8,7 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import org.apache.log4j.Level;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import spoon.compiler.Environment;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -15,7 +16,11 @@ import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +46,9 @@ public class TestBlobRefactoring {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
 		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
+
+//		SpoonStructurePrinter printer = new SpoonStructurePrinter();
+//		printer.scan(Collections.singletonList(cmdAnalyser.getModelBuilder().getFactory().Package().getRootPackage()));
 
 		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), cmdAnalyser.getModelBuilder());
 		launcher.process();
@@ -165,5 +173,25 @@ public class TestBlobRefactoring {
 	public void testRefactoredReturnsReturns() throws IOException {
 		initTest(Arrays.asList(30, 34), true, "src/test/resources/java/refactoring/L.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/LRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredExternalListenerWithInvocations() throws IOException {
+		initTest(Arrays.asList(19, 23), true, "src/test/resources/java/refactoring/M.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/MRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	@Ignore
+	public void testRefactoredExternalListenerWithAttributes() throws IOException {
+		initTest(Arrays.asList(22, 30), true, "src/test/resources/java/refactoring/N.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/NRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	@Ignore
+	public void testRefactoredExternalListenerWithAttrReads() throws IOException {
+		initTest(Arrays.asList(19, 23), true, "src/test/resources/java/refactoring/O.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/ORefactored.java"), getRefactoredCode());
 	}
 }

@@ -205,8 +205,9 @@ public class ListenerCommandRefactor {
 			stats.stream().map(stat -> stat.getElements(filter)).flatMap(s -> s.stream()).
 			// Keeping the invocations that are on fields
 			filter(invok -> invok.getTarget() instanceof CtFieldRead &&
+				((CtFieldRead<?>) invok.getTarget()).getVariable().getDeclaration()!=null &&
 			// Keeping the invocations that calling fields are not part of the class that registers the listener.
-				((CtFieldRead<?>) invok.getTarget()).getVariable().getFieldDeclaration().getParent(CtType.class) != listenerRegClass).
+				((CtFieldRead<?>) invok.getTarget()).getVariable().getDeclaration().getParent(CtType.class) != listenerRegClass).
 			collect(Collectors.toList());
 
 		// The invocation may refer to a method that is defined in the class where the registration occurs.
@@ -287,6 +288,7 @@ public class ListenerCommandRefactor {
 
 		removeLastBreakReturn(stats);
 		removeActionCommandStatements();
+		changeNonLocalMethodInvocations(stats, invok);
 
 		Optional<CtMethod<?>> m1 = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
 									filter(meth -> meth.getBody() == null).findFirst();
