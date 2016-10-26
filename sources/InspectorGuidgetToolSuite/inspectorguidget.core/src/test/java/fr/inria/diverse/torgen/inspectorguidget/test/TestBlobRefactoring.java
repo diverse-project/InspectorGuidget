@@ -8,7 +8,6 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import org.apache.log4j.Level;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import spoon.compiler.Environment;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -188,7 +187,6 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	@Ignore
 	public void testRefactoredExternalListenerWithAttrReads() throws IOException {
 		initTest(Arrays.asList(19, 23), true, "src/test/resources/java/refactoring/O.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/ORefactored.java"), getRefactoredCode());

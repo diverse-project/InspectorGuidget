@@ -9,9 +9,15 @@ class O {
 		foo = 1;
 		bar = 2;
 		but1 = new javax.swing.JButton("foo1");
-		but1.addActionListener((java.awt.event.ActionEvent e) -> System.out.println(foo));
+		but1.addActionListener((java.awt.event.ActionEvent e) -> java.lang.System.out.println(foo));
 		but2 = new javax.swing.JButton("foo2");
-		but2.addActionListener((java.awt.event.ActionEvent e) -> System.out.println(bar));
+		but2.addActionListener((java.awt.event.ActionEvent e) -> java.lang.System.out.println(bar));
+	}
+}
+class OListener {
+	O m;
+	public OListener(final O m) {
+		OListener.this.m = m;
 	}
 }
 

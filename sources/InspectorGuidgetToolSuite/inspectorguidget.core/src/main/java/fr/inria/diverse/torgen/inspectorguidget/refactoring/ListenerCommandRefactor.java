@@ -236,6 +236,26 @@ public class ListenerCommandRefactor {
 	}
 
 
+	private void changeNonLocalFieldAccesses(final @NotNull List<CtElement> stats, final @NotNull CtInvocation<?> regInvok) {
+		final Filter<CtFieldRead<?>> filter = new BasicFilter<>(CtFieldRead.class);
+		// Getting the class where the listener is registered.
+		final CtType<?> listenerRegClass = regInvok.getParent(CtType.class);
+		final List<CtFieldRead<?>> nonLocalFieldAccesses =
+			// Getting all the invocations used in the statements.
+			stats.stream().map(stat -> stat.getElements(filter)).flatMap(s -> s.stream()).
+				// Keeping the invocations that are on fields
+					filter(f -> f.getVariable().getDeclaration()!=null &&
+					// Keeping the invocations that calling fields are not part of the class that registers the listener.
+					f.getVariable().getDeclaration().getParent(CtType.class) != listenerRegClass).
+				collect(Collectors.toList());
+
+		// The invocation may refer to a method that is defined in the class where the registration occurs.
+		nonLocalFieldAccesses.stream().filter(f -> f.getType().getDeclaration()==listenerRegClass).
+			// In this case, the target of the invocation (the field read) is removed since the invocation will be moved to
+			// the registration class.
+			forEach(f -> f.replace(f.getTarget()));
+	}
+
 	private void refactorRegistrationAsLambda(final @NotNull CtInvocation<?> invok) {
 		final Factory fac = invok.getFactory();
 		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
@@ -245,6 +265,7 @@ public class ListenerCommandRefactor {
 		removeLastBreakReturn(stats);
 		removeActionCommandStatements();
 		changeNonLocalMethodInvocations(stats, invok);
+		changeNonLocalFieldAccesses(stats, invok);
 
 		// Removing the unused local variables of the command.
 		removeUnusedLocalVariables(stats);
@@ -265,6 +286,49 @@ public class ListenerCommandRefactor {
 		collectRefactoredType(invok);
 	}
 
+
+	private void refactorRegistrationAsAnonClass(final @NotNull CtInvocation<?> invok) {
+		final Factory fac = invok.getFactory();
+		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
+		final CtClass<?> anonCl = fac.Core().createClass();
+		final CtNewClass<?> newCl = fac.Core().createNewClass();
+		final List<CtElement> stats = cmd.getAllStatmts().stream().map(stat -> stat.clone()).collect(Collectors.toList());
+
+		removeLastBreakReturn(stats);
+		removeActionCommandStatements();
+		changeNonLocalMethodInvocations(stats, invok);
+		changeNonLocalFieldAccesses(stats, invok);
+
+		Optional<CtMethod<?>> m1 = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
+			filter(meth -> meth.getBody() == null).findFirst();
+
+		if(!m1.isPresent()) {
+			LOG.log(Level.SEVERE, "Cannot find an abstract method in the listener interface: " + cmd + " " + invok.getExecutable());
+			return;
+		}
+
+		final CtMethod<?> meth = m1.get().clone();
+		final CtBlock block = fac.Core().createBlock();
+		final CtConstructor cons = fac.Core().createConstructor();
+		cons.setBody(fac.Core().createBlock());
+		cons.setImplicit(true);
+		meth.setBody(block);
+		meth.getParameters().get(0).setSimpleName(cmd.getExecutable().getParameters().get(0).getSimpleName());
+		meth.setModifiers(Collections.singleton(ModifierKind.PUBLIC));
+		stats.stream().filter(stat -> stat instanceof CtStatement).forEach(stat -> block.insertEnd((CtStatement)stat));
+
+		anonCl.setConstructors(Collections.singleton(cons));
+		anonCl.setMethods(Collections.singleton(meth));
+		anonCl.setSuperInterfaces(Collections.singleton(typeRef));
+		anonCl.setSimpleName("1");
+		newCl.setAnonymousClass(anonCl);
+
+		CtExecutableReference ref = cons.getReference();
+		ref.setType(typeRef);
+		newCl.setExecutable(ref);
+
+		invok.setArguments(Collections.singletonList(newCl));
+	}
 
 
 	/**
@@ -295,49 +359,6 @@ public class ListenerCommandRefactor {
 		});
 	}
 
-
-
-	private void refactorRegistrationAsAnonClass(final @NotNull CtInvocation<?> invok) {
-		final Factory fac = invok.getFactory();
-		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
-		final CtClass<?> anonCl = fac.Core().createClass();
-		final CtNewClass<?> newCl = fac.Core().createNewClass();
-		final List<CtElement> stats = cmd.getAllStatmts().stream().map(stat -> stat.clone()).collect(Collectors.toList());
-
-		removeLastBreakReturn(stats);
-		removeActionCommandStatements();
-		changeNonLocalMethodInvocations(stats, invok);
-
-		Optional<CtMethod<?>> m1 = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
-									filter(meth -> meth.getBody() == null).findFirst();
-
-		if(!m1.isPresent()) {
-			LOG.log(Level.SEVERE, "Cannot find an abstract method in the listener interface: " + cmd + " " + invok.getExecutable());
-			return;
-		}
-
-		final CtMethod<?> meth = m1.get().clone();
-		final CtBlock block = fac.Core().createBlock();
-		final CtConstructor cons = fac.Core().createConstructor();
-		cons.setBody(fac.Core().createBlock());
-		cons.setImplicit(true);
-		meth.setBody(block);
-		meth.getParameters().get(0).setSimpleName(cmd.getExecutable().getParameters().get(0).getSimpleName());
-		meth.setModifiers(Collections.singleton(ModifierKind.PUBLIC));
-		stats.stream().filter(stat -> stat instanceof CtStatement).forEach(stat -> block.insertEnd((CtStatement)stat));
-
-		anonCl.setConstructors(Collections.singleton(cons));
-		anonCl.setMethods(Collections.singleton(meth));
-		anonCl.setSuperInterfaces(Collections.singleton(typeRef));
-		anonCl.setSimpleName("1");
-		newCl.setAnonymousClass(anonCl);
-
-		CtExecutableReference ref = cons.getReference();
-		ref.setType(typeRef);
-		newCl.setExecutable(ref);
-
-		invok.setArguments(Collections.singletonList(newCl));
-	}
 
 	public Set<CtType<?>> getRefactoredTypes() {
 		return Collections.unmodifiableSet(refactoredTypes);
