@@ -50,7 +50,7 @@ public abstract class XPLauncher {
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
 
-			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), true);
+			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), false);
 			refactor.execute();
 			collectedTypes.addAll(refactor.getRefactoredTypes());
 		}));
@@ -62,9 +62,9 @@ public abstract class XPLauncher {
 		env.setShouldCompile(true);
 		env.setComplianceLevel(getCompilianceLevel());
 
-//		blobAnalyser.getCmdAnalyser().getModel().getAllTypes().stream().filter(type -> type.getParent(CtType.class)==null).forEach(type -> {
-		collectedTypes.forEach(type -> {
-			JavaOutputProcessor processor = new JavaOutputProcessor(new File("/home/foo/Bureau/foo"), new DefaultJavaPrettyPrinter(env));
+		blobAnalyser.getCmdAnalyser().getModel().getAllTypes().stream().filter(type -> type.getParent(CtType.class)==null).forEach(type -> {
+//		collectedTypes.forEach(type -> {
+			JavaOutputProcessor processor = new JavaOutputProcessor(new File(getOutputFolder()), new DefaultJavaPrettyPrinter(env));
 			processor.setFactory(factory);
 			processor.createJavaFile(type);
 		});
@@ -77,4 +77,6 @@ public abstract class XPLauncher {
 	protected abstract int getCompilianceLevel();
 
 	protected abstract boolean usingLambda();
+
+	protected abstract String getOutputFolder();
 }

@@ -31,4 +31,9 @@ public class LaTeXDrawLauncher extends XPLauncher {
 	protected boolean usingLambda() {
 		return true;
 	}
+
+	@Override
+	protected String getOutputFolder() {
+		return "/home/foo/Bureau/foo/latexdrawRefactor";
+	}
 }
