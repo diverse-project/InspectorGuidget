@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.ReturnFilter;
@@ -34,7 +35,6 @@ import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
-import spoon.reflect.visitor.filter.AbstractFilter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,12 +135,7 @@ public class CommandWidgetFinder {
 		if(listenerClass==null) return cmdWidgetMatches;
 
 		final CtTypeReference<?> listRef = listenerClass.getReference();
-		final Filter<CtTypedElement<?>> filt = new AbstractFilter<CtTypedElement<?>>() {
-			@Override
-			public boolean matches(final CtTypedElement<?> element) {
-				return super.matches(element);
-			}
-		};
+		final Filter<CtTypedElement<?>> filt = new BasicFilter<>(CtTypedElement.class);
 
 		cmdWidgetMatches.removeIf(m ->
 			// Removing if in the statement of the acess there is a reference to the current listener class.

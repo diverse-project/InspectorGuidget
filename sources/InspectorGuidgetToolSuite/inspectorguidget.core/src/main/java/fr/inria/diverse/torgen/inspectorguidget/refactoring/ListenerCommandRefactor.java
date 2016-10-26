@@ -163,7 +163,7 @@ public class ListenerCommandRefactor {
 
 	private void removeActionCommandStatements() {
 		widgets.getWidgetUsages().forEach(usage -> {
-			Filter<CtInvocation<?>> filter = new BasicFilter<CtInvocation<?>>() {
+			Filter<CtInvocation<?>> filter = new BasicFilter<CtInvocation<?>>(CtInvocation.class) {
 				@Override
 				public boolean matches(final CtInvocation<?> element) {
 					return WidgetHelper.INSTANCE.ACTION_CMD_METHOD_NAMES.stream().

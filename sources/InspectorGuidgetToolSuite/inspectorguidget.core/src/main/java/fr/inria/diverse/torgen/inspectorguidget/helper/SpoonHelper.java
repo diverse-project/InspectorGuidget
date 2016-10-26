@@ -76,7 +76,7 @@ public final class SpoonHelper {
 
 	public boolean isEmptyIfStatement(final @Nullable CtIf iff) {
 		if(iff == null) return false;
-		final BasicFilter<CtStatement> filter = new BasicFilter<CtStatement>() {
+		final BasicFilter<CtStatement> filter = new BasicFilter<CtStatement>(CtStatement.class) {
 			@Override
 			public boolean matches(final CtStatement element) {
 				return !(element instanceof CtBlock) && !(element instanceof CtCFlowBreak) && !(element instanceof CtSynchronized) &&
