@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -22,11 +23,23 @@ import spoon.reflect.declaration.CtExecutable;
 public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyser> {
 	/** Link Markers to their methods */
 	private static final Map<IMarker, Entry<CtExecutable<?>, List<Command>>> INFO_MARKERS = new HashMap<>();
+	
+	public static BlobListenerAnalyser currentAnalyser;
 
 	public DetectBlobListenerAction() {
 		super();
 	}
 	
+	
+	
+	@Override
+	protected void initAction(IProgressMonitor monitor, IProject project) {
+		super.initAction(monitor, project);
+		currentAnalyser = analyser;
+	}
+
+
+
 	@Override
 	protected BlobListenerAnalyser createAnalyser() {
 		return new BlobListenerAnalyser();
@@ -77,7 +90,7 @@ public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyse
 		if(r!=null) {
 			IMarker m;
 			try {
-				m = r.createMarker(IMarker.PROBLEM);
+				m = r.createMarker(ClearMarkersAction.INSPECTOR_MARKER_NAME);
 				m.setAttribute(IMarker.MARKER, ClearMarkersAction.INSPECTOR_MARKER_NAME);
 				m.setAttribute(IMarker.MESSAGE, "Blob Listener detected here with " + entry.getValue().size() + " commands");
 				m.setAttribute(IMarker.LINE_NUMBER, SpoonHelper.INSTANCE.getLinePosition(entry.getKey()));
@@ -90,6 +103,10 @@ public class DetectBlobListenerAction extends AbstractAction<BlobListenerAnalyse
 		}
 	}
 
+	
+	public static Entry<CtExecutable<?>, List<Command>> getBlobCommands(final IMarker marker) {
+		return INFO_MARKERS.get(marker);
+	}
 	
 	public static String getMethod(IMarker marker) {
 		Entry<CtExecutable<?>, List<Command>> entry = INFO_MARKERS.get(marker);

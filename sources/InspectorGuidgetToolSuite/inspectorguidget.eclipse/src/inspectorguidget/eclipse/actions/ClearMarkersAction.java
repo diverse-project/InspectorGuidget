@@ -10,7 +10,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 public class ClearMarkersAction implements IObjectActionDelegate {
-	public static String INSPECTOR_MARKER_NAME = "inspectorguidgetMarker";
+	public static String INSPECTOR_MARKER_NAME = "inspectorguidget.eclipse.inspectorguidgetMarker";
 	
 	@Override
 	public void run(final IAction action) {

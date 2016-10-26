@@ -15,6 +15,20 @@
 		</menuContribution> 
 	</extension>
    
+  <extension id="inspectorguidget.eclipse.inspectorguidgetMarker" point="org.eclipse.core.resources.markers" name="InspectorGuidget"> 
+      <persistent value="true"/> 
+      <super type="org.eclipse.core.resources.problemmarker"/> 
+      <super type="org.eclipse.core.resources.textmarker"/> 
+   </extension> 
+   
+   <extension
+	point="org.eclipse.ui.ide.markerResolution">
+	<markerResolutionGenerator
+		markerType="inspectorguidget.eclipse.inspectorguidgetMarker"
+		class="inspectorguidget.eclipse.resolutions.BlobRefactoringGenerator">
+	</markerResolutionGenerator>
+	</extension>
+   
 	<extension point="org.eclipse.ui.handlers">
 		<handler
 			class="inspectorguidget.eclipse.actions.DetectGUIListenerHandler"
