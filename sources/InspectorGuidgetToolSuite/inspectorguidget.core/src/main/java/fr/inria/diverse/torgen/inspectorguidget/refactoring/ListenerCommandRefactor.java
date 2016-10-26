@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLambda;
@@ -194,6 +195,28 @@ public class ListenerCommandRefactor {
 		});
 	}
 
+
+	private void changeNonLocalMethodInvocations(final @NotNull List<CtElement> stats, final @NotNull CtInvocation<?> regInvok) {
+		final Filter<CtInvocation<?>> filter = new BasicFilter<>(CtInvocation.class);
+		// Getting the class where the listener is registered.
+		final CtType<?> listenerRegClass = regInvok.getParent(CtType.class);
+		final List<CtInvocation<?>> nonLocalInvoks =
+			// Getting all the invocations used in the statements.
+			stats.stream().map(stat -> stat.getElements(filter)).flatMap(s -> s.stream()).
+			// Keeping the invocations that are on fields
+			filter(invok -> invok.getTarget() instanceof CtFieldRead &&
+			// Keeping the invocations that calling fields are not part of the class that registers the listener.
+				((CtFieldRead<?>) invok.getTarget()).getVariable().getFieldDeclaration().getParent(CtType.class) != listenerRegClass).
+			collect(Collectors.toList());
+
+		// The invocation may refer to a method that is defined in the class where the registration occurs.
+		nonLocalInvoks.stream().filter(invok -> invok.getTarget().getType().getDeclaration()==listenerRegClass).
+			// In this case, the target of the invocation (the field read) is removed since the invocation will be moved to
+			// the registration class.
+			forEach(invok -> invok.setTarget(null));
+	}
+
+
 	private void refactorRegistrationAsLambda(final @NotNull CtInvocation<?> invok) {
 		final Factory fac = invok.getFactory();
 		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
@@ -202,6 +225,7 @@ public class ListenerCommandRefactor {
 
 		removeLastBreakReturn(stats);
 		removeActionCommandStatements();
+		changeNonLocalMethodInvocations(stats, invok);
 
 		// Removing the unused local variables of the command.
 		removeUnusedLocalVariables(stats);
