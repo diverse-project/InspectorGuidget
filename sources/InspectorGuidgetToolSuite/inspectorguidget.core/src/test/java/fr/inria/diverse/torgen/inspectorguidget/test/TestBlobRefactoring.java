@@ -8,6 +8,7 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import org.apache.log4j.Level;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import spoon.compiler.Environment;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -43,7 +44,7 @@ public class TestBlobRefactoring {
 
 	private void initTest(final List<Integer> startLine, final boolean asLambda, final String... paths) {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
-		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.INFO);
+		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.OFF);
 		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
 
@@ -191,5 +192,18 @@ public class TestBlobRefactoring {
 	public void testRefactoredExternalListenerWithAttrReads() throws IOException {
 		initTest(Arrays.asList(19, 23), true, "src/test/resources/java/refactoring/O.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/ORefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredLocalWidgetRemoveActionNames() throws IOException {
+		initTest(17, true, "src/test/resources/java/refactoring/Q.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/QRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	@Ignore
+	public void testRefactoredSharedActionNames() throws IOException {
+		initTest(16, true, "src/test/resources/java/refactoring/P.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/PRefactored.java"), getRefactoredCode());
 	}
 }

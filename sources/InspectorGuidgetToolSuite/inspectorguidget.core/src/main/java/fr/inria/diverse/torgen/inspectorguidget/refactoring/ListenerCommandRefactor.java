@@ -201,7 +201,10 @@ public class ListenerCommandRefactor {
 
 			// Deleting the unused private/protected/package action command names defined as constants or variables (analysing the
 			// usage of public variables is time-consuming).
-			actionCmds.stream().map(stat -> stat.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
+			actionCmds.stream().filter(cmds -> cmds instanceof CtInvocation<?>).
+				// Considering the arguments of the invocation only.
+				map(invok -> ((CtInvocation<?>)invok).getArguments()).flatMap(s -> s.stream()).
+				map(arg -> arg.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
 				map(access -> access.getVariable().getDeclaration()).distinct().
 				filter(var -> var!=null && (var.getVisibility()==ModifierKind.PRIVATE || var.getVisibility()==ModifierKind.PROTECTED ||
 					var.getVisibility()==null) && SpoonHelper.INSTANCE.extractUsagesOfVar(var).size()<2).
