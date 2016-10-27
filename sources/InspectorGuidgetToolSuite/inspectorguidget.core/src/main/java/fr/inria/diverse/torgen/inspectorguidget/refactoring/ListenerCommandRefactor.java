@@ -252,12 +252,15 @@ public class ListenerCommandRefactor {
 					filter(stat -> stat.getParent(CtConstructor.class)!=null).
 					forEach(u -> {
 						LOG.log(Level.INFO, () -> cmd + ": moving a listener attribute: " + u + " before " + regInvok);
-						u.delete(); // Deleting the former usage
-						regInvok.insertBefore(u); // and moving it where the initialisation occurs.
+						if(!regInvok.getParent(CtBlock.class).getStatements().parallelStream().filter(s -> s.equals(u)).findAny().isPresent()) {
+							regInvok.insertBefore(u.clone()); // and moving it where the initialisation occurs.
+						}
 					});
-				LOG.log(Level.INFO, () -> cmd + ": moving a listener attribute: " + field + " in " + listenerRegClass.getSimpleName());
-				field.delete();
-				listenerRegClass.addField(field);//FIXME check that no field with the same name exists.
+
+				LOG.log(Level.INFO, () -> cmd + ": moving a listener attribute: " + field + " from " + field.getParent(CtType.class).getSimpleName() + " to " + listenerRegClass.getSimpleName());
+				if(listenerRegClass.getField(field.getSimpleName())==null) {
+					listenerRegClass.addField(field.clone());
+				}
 		});
 	}
 

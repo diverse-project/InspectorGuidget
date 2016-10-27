@@ -1,11 +1,10 @@
 
 package java.refactoring;
 import javax.swing.JFileChooser;
-class N {
+class R1 {
 	protected JFileChooser fileChooser;
 	javax.swing.JButton but1;
-	javax.swing.JButton but2;
-	N() {
+	R1() {
 		but1 = new javax.swing.JButton("foo1");
 		fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -16,7 +15,16 @@ class N {
 				java.lang.System.out.println("foo");
 			}
 		});
+	}
+}
+class R2 {
+	protected JFileChooser fileChooser;
+	javax.swing.JButton but2;
+	R2() {
 		but2 = new javax.swing.JButton("foo2");
+		fileChooser = new JFileChooser();
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
 		but2.addActionListener((java.awt.event.ActionEvent e) -> {
 			int id = fileChooser.showDialog(null, "bar");
 			if (id == (JFileChooser.APPROVE_OPTION)) {
@@ -25,9 +33,9 @@ class N {
 		});
 	}
 }
-class NListener {
+class RListener {
 	protected JFileChooser fileChooser;
-	public NListener() {
+	public RListener() {
 		fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setMultiSelectionEnabled(false);

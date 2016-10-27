@@ -31,7 +31,7 @@ public abstract class XPLauncher {
 
 	public void run() {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
-		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.INFO);
+		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.OFF);
 
 		try {
 			FileHandler fh = new FileHandler("refactoring.log");

@@ -8,7 +8,6 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import org.apache.log4j.Level;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import spoon.compiler.Environment;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -201,9 +200,14 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	@Ignore
-	public void testRefactoredSharedActionNames() throws IOException {
-		initTest(16, true, "src/test/resources/java/refactoring/P.java");
+	public void testRefactoredUseAttributeFromAnotherListener() throws IOException {
+		initTest(51, true, "src/test/resources/java/refactoring/P.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/PRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredFoo() throws IOException {
+		initTest(Arrays.asList(22, 30), true, "src/test/resources/java/refactoring/R.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/RRefactored.java"), getRefactoredCode());
 	}
 }
