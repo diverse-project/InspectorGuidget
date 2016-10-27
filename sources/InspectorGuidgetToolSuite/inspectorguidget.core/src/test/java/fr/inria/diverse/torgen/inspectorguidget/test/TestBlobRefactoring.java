@@ -43,6 +43,7 @@ public class TestBlobRefactoring {
 
 	private void initTest(final List<Integer> startLine, final boolean asLambda, final String... paths) {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
+		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.INFO);
 		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
 

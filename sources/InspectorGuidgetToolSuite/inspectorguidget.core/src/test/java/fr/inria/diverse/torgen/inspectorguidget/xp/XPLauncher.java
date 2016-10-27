@@ -14,11 +14,14 @@ import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 import spoon.support.JavaOutputProcessor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
+import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 public abstract class XPLauncher {
@@ -28,6 +31,15 @@ public abstract class XPLauncher {
 
 	public void run() {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
+		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.INFO);
+
+		try {
+			FileHandler fh = new FileHandler("refactoring.log");
+			fh.setFormatter(new SimpleFormatter());
+			ListenerCommandRefactor.LOG.addHandler(fh);
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
 
 		blobAnalyser = new BlobListenerAnalyser();
 		widgetProc = new WidgetProcessor(true);

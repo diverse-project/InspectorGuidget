@@ -51,7 +51,7 @@ import java.util.stream.IntStream;
  * dedicated listeners.
  */
 public class ListenerCommandRefactor {
-	private static final Logger LOG = Logger.getLogger("ListenerCommandRefactor");
+	public static final Logger LOG = Logger.getLogger("ListenerCommandRefactor");
 
 	private final boolean asLambda;
 	private final Command cmd;
@@ -79,6 +79,7 @@ public class ListenerCommandRefactor {
 		// Removing the possible return located at the end of the listener.
 		if(!cmd.getExecutable().getBody().getStatements().isEmpty() &&
 			SpoonHelper.INSTANCE.isReturnBreakStatement(cmd.getExecutable().getBody().getLastStatement())) {
+			LOG.log(Level.INFO, () -> cmd + ": removing the return: " + cmd.getExecutable().getBody().getLastStatement());
 			cmd.getExecutable().getBody().getLastStatement().delete();
 		}
 
@@ -108,8 +109,16 @@ public class ListenerCommandRefactor {
 	}
 
 
+	/**
+	 * Removes the old command.
+	 * @param invok The invocation that registers the listener.
+	 * @param oldParam The parameter of the invocation.
+	 */
 	private void removeOldCommand(final @NotNull CtInvocation<?> invok, final @NotNull CtExpression<?> oldParam) {
-		cmd.getAllLocalStatmtsOrdered().forEach(elt -> elt.delete());
+		cmd.getAllLocalStatmtsOrdered().forEach(elt -> {
+			LOG.log(Level.INFO, () -> cmd + ": removing the old command: " + elt);
+			elt.delete();
+		});
 
 		final List<CommandConditionEntry> conds = cmd.getConditions();
 
@@ -121,17 +130,22 @@ public class ListenerCommandRefactor {
 
 				if(parent instanceof CtIf && SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)parent) ||
 					parent instanceof CtSwitch<?> && SpoonHelper.INSTANCE.isEmptySwitch((CtSwitch<?>)parent)) {
+					LOG.log(Level.INFO, () -> cmd + ": removing the empty old cmd conditional: " + parent);
 					parent.delete();
 				}
 			});
 		}
 
 		if(cmd.getExecutable().getBody().getStatements().isEmpty()) {
+			LOG.log(Level.INFO, () -> cmd + ": removing the listener method: " + cmd.getExecutable());
 			cmd.getExecutable().delete();
 			final CtTypeReference<?> typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
+			LOG.log(Level.INFO, () -> cmd + ": removing the implemented interface " + typeRef + " from " + cmd.getExecutable().getParent(CtType.class).getSimpleName());
 			cmd.getExecutable().getParent(CtType.class).getSuperInterfaces().remove(typeRef);
 		}
 
+		// The parameter of the registration invocation may be a variable of an external listener.
+		// If so, the variable is deleted.
 		if(oldParam instanceof CtVariableRead) {
 			final CtVariableReference<?> var = ((CtVariableRead<?>) oldParam).getVariable();
 
@@ -141,6 +155,7 @@ public class ListenerCommandRefactor {
 				List<CtVariableAccess<?>> elements = var.getParent(CtBlock.class).getElements(new MyVariableAccessFilter(varDecl));
 
 				if(elements.isEmpty()) {
+					LOG.log(Level.INFO, () -> cmd + ": removing the listener variable: " + varDecl);
 					varDecl.delete();
 				}
 			}
@@ -158,6 +173,7 @@ public class ListenerCommandRefactor {
 
 	private void removeLastBreakReturn(final @NotNull List<CtElement> stats) {
 		if(!stats.isEmpty() && SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size()-1))) {
+			LOG.log(Level.INFO, () -> cmd + ": removing a return/break: " + stats.get(stats.size()-1));
 			stats.remove(stats.size()-1);
 		}
 	}
@@ -178,6 +194,7 @@ public class ListenerCommandRefactor {
 
 			// Deleting each set action command and co statement.
 			actionCmds.forEach(stat -> {
+				LOG.log(Level.INFO, () -> cmd + ": removing setActionCmd: " + stat);
 				stat.delete();
 				collectRefactoredType(stat);
 			});
@@ -189,6 +206,7 @@ public class ListenerCommandRefactor {
 				filter(var -> var!=null && (var.getVisibility()==ModifierKind.PRIVATE || var.getVisibility()==ModifierKind.PROTECTED ||
 					var.getVisibility()==null) && SpoonHelper.INSTANCE.extractUsagesOfVar(var).size()<2).
 				forEach(var -> {
+					LOG.log(Level.INFO, () -> cmd + ": removing action cmd names: " + var);
 					var.delete();
 					collectRefactoredType(var);
 				});
@@ -214,7 +232,10 @@ public class ListenerCommandRefactor {
 		nonLocalInvoks.stream().filter(invok -> invok.getTarget().getType().getDeclaration()==listenerRegClass).
 			// In this case, the target of the invocation (the field read) is removed since the invocation will be moved to
 			// the registration class.
-			forEach(invok -> invok.setTarget(null));
+			forEach(invok -> {
+				LOG.log(Level.INFO, () -> cmd + ": removing the target of the invocation: " + invok);
+				invok.setTarget(null);
+			});
 
 		// The invocation may refer to a attribute that is defined in the listener class but no where the registration occurs.
 		nonLocalInvoks.stream().filter(invok -> invok.getTarget() instanceof CtFieldRead<?>).
@@ -227,9 +248,11 @@ public class ListenerCommandRefactor {
 					// Only considering the initialisation of these fields for the moment.
 					filter(stat -> stat.getParent(CtConstructor.class)!=null).
 					forEach(u -> {
+						LOG.log(Level.INFO, () -> cmd + ": moving a listener attribute: " + u + " before " + regInvok);
 						u.delete(); // Deleting the former usage
 						regInvok.insertBefore(u); // and moving it where the initialisation occurs.
 					});
+				LOG.log(Level.INFO, () -> cmd + ": moving a listener attribute: " + field + " in " + listenerRegClass.getSimpleName());
 				field.delete();
 				listenerRegClass.addField(field);//FIXME check that no field with the same name exists.
 		});
@@ -253,7 +276,10 @@ public class ListenerCommandRefactor {
 		nonLocalFieldAccesses.stream().filter(f -> f.getType().getDeclaration()==listenerRegClass).
 			// In this case, the target of the invocation (the field read) is removed since the invocation will be moved to
 			// the registration class.
-			forEach(f -> f.replace(f.getTarget()));
+			forEach(f -> {
+				LOG.log(Level.INFO, () -> cmd + ": removing a field access by its target: " + f);
+				f.replace(f.getTarget());
+			});
 	}
 
 	private void refactorRegistrationAsLambda(final @NotNull CtInvocation<?> invok) {
@@ -347,15 +373,22 @@ public class ListenerCommandRefactor {
 				map(var -> (CtVariableReference<?>)var.getReference()).collect(Collectors.toSet());
 			final VariableAccessFilter filter = new VariableAccessFilter();
 
-			stats.removeIf(stat ->
-				// Must ignore the local variables used by the main statements.
-				!(stat instanceof CtLocalVariable<?> && varsMain.contains(((CtLocalVariable<?>)stat).getReference())) &&
-				// Must ignore the invocations
-				!(stat instanceof CtInvocation) &&
-				// Must ignore the main statements.
-				!mainStats.contains(stat) &&
-				// Checking whether the statement uses a required variable.
-				stat.getElements(filter).stream().noneMatch(access -> varsMain.contains(access.getVariable())));
+			stats.removeIf(stat -> {
+				final boolean toRemove = // Must ignore the local variables used by the main statements.
+					!(stat instanceof CtLocalVariable<?> && varsMain.contains(((CtLocalVariable<?>)stat).getReference())) &&
+						// Must ignore the invocations
+						!(stat instanceof CtInvocation) &&
+						// Must ignore the main statements.
+						!mainStats.contains(stat) &&
+						// Checking whether the statement uses a required variable.
+						stat.getElements(filter).stream().noneMatch(access -> varsMain.contains(access.getVariable()));
+
+				if(toRemove) {
+					LOG.log(Level.INFO, () -> cmd + ": removing a statement: " + stat);
+				}
+
+				return toRemove;
+			});
 		});
 	}
 

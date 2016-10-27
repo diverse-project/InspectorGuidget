@@ -38,6 +38,6 @@ public class ArgoUMLLauncher extends XPLauncher {
 
 	@Override
 	protected String getOutputFolder() {
-		return "/home/foo/Bureau/foo/argoUMLRefactor";
+		return "/home/foo/Bureau/argoUMLRefactor";
 	}
 }
