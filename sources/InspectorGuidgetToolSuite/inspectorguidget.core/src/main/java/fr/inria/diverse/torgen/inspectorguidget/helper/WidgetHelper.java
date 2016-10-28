@@ -6,6 +6,7 @@ import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.reference.SpoonClassNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -226,7 +227,11 @@ public final class WidgetHelper {
 	}
 
 	public boolean isTypeRefAWidget(final @NotNull CtTypeReference<?> typeref) {
-		return getWidgetTypes(typeref.getFactory()).stream().filter(type -> type==typeref || typeref.isSubtypeOf(type)).findFirst().isPresent();
+		try {
+			return getWidgetTypes(typeref.getFactory()).stream().filter(type -> type == typeref || typeref.isSubtypeOf(type)).findFirst().isPresent();
+		}catch(final SpoonClassNotFoundException ex) {
+			return false;
+		}
 	}
 
 	public boolean isTypeRefAToolkitWidget(final @NotNull CtTypeReference<?> typeref) {

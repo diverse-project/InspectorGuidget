@@ -349,7 +349,13 @@ public class CommandWidgetFinder {
 			// First instanceof: 'This' accesses are supported in getWidgetClass.
 			// Second instanceof: For example: JOptionPane.showConfirmDialog(...), so not related to a variable.
 		} else if(target instanceof CtInvocation<?>) {
-			CtClass<Object> clazz = target.getFactory().Class().get(((CtInvocation<?>) target).getExecutable().getDeclaringType().getQualifiedName());
+			final CtClass<Object> clazz = target.getFactory().Class().get(((CtInvocation<?>) target).getExecutable().getDeclaringType().getQualifiedName());
+
+			if(clazz==null) {
+				LOG.log(Level.SEVERE, () -> "Cannot find the class " + ((CtInvocation<?>) target).getExecutable().getDeclaringType().getQualifiedName());
+				return Optional.empty();
+			}
+
 			List<CtMethod<?>> methods = clazz.getMethodsByName(((CtInvocation<?>) target).getExecutable().getSimpleName());
 
 			if(methods.size()==1) {
@@ -358,13 +364,14 @@ public class CommandWidgetFinder {
 				if(returns.size()==1 && returns.get(0).getReturnedExpression() instanceof CtVariableAccess<?>) {
 					return getMatchingWidgetUsage(((CtVariableAccess<?>)returns.get(0).getReturnedExpression()).getVariable().getDeclaration());
 				}
-				System.err.println("Unsupported return statement(s): " + returns + " in " + methods.get(0));
+				LOG.log(Level.SEVERE, () -> "Unsupported return statement(s): " + returns + " in " + methods.get(0) +
+					(returns.get(0).getReturnedExpression()==null ? "" : ", " + returns.get(0).getReturnedExpression().getClass()));
 			}else {
-				System.err.println("Incorrect number of methods found for the invocation: " + target + ", methods: " + methods);
+				LOG.log(Level.SEVERE, () -> "Incorrect number of methods found for the invocation: " + target + ", methods: " + methods);
 			}
 		}
 		else {
-			System.err.println("INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok + " " +
+			LOG.log(Level.SEVERE, () -> "INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok + " " +
 								SpoonHelper.INSTANCE.formatPosition(invok.getPosition()));
 		}
 
