@@ -6,13 +6,6 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
-import org.apache.log4j.Level;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import spoon.compiler.Environment;
-import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,6 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.log4j.Level;
+import org.junit.Before;
+import org.junit.Test;
+import spoon.compiler.Environment;
+import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 
 import static org.junit.Assert.assertEquals;
 
@@ -213,9 +211,14 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	@Ignore
 	public void testRefactoredThisInExternalListener() throws IOException {
 		initTest(20, true, "src/test/resources/java/refactoring/S.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/SRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredThisInLocalListener() throws IOException {
+		initTest(24, true, "src/test/resources/java/refactoring/T.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/TRefactored.java"), getRefactoredCode());
 	}
 }
