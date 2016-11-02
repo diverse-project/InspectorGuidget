@@ -1,6 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.xp;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ArgoUMLLauncher extends XPLauncher {
@@ -11,8 +11,7 @@ public class ArgoUMLLauncher extends XPLauncher {
 
 	@Override
 	protected List<String> getInputResoures() {
-		return Arrays.asList("/media/data/dev/repoAnalysisBlob/argouml/src_new/",
-					"/media/data/dev/repoAnalysisBlob/argouml/src/model/src/org/argouml/model");
+		return Collections.singletonList("/media/data/dev/repoAnalysisBlob/argouml/src_new/");
 	}
 
 	@Override
@@ -23,7 +22,8 @@ public class ArgoUMLLauncher extends XPLauncher {
 						"/media/data/dev/repoAnalysisBlob/argouml/lib/ocl-argo-1.1.jar",
 						"/media/data/dev/repoAnalysisBlob/argouml/lib/toolbar-1.3.jar",
 						"/media/data/dev/repoAnalysisBlob/argouml/lib/swidgets-0.1.4.jar",
-						"/media/data/dev/repoAnalysisBlob/argouml/lib/commons-logging-1.0.2.jar"};
+						"/media/data/dev/repoAnalysisBlob/argouml/lib/commons-logging-1.0.2.jar",
+						"/media/data/dev/repoAnalysisBlob/argouml/src/model/build/classes"};
 	}
 
 	@Override
@@ -38,6 +38,6 @@ public class ArgoUMLLauncher extends XPLauncher {
 
 	@Override
 	protected String getOutputFolder() {
-		return "/home/foo/Bureau/argoUMLRefactor";
+		return "/media/data/dev/refactor/argoUMLRefactor";
 	}
 }

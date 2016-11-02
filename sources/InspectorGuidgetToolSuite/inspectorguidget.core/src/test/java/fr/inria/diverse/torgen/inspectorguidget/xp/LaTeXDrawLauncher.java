@@ -34,6 +34,6 @@ public class LaTeXDrawLauncher extends XPLauncher {
 
 	@Override
 	protected String getOutputFolder() {
-		return "/home/foo/Bureau/latexdrawRefactor";
+		return "/media/data/dev/refactor/latexdrawRefactor";
 	}
 }

@@ -59,6 +59,7 @@ public abstract class XPLauncher {
 		final Set<CtType<?>> collectedTypes = new HashSet<>();
 
 		blobAnalyser.getBlobs().forEach((exec,cmds) -> cmds.forEach(cmd -> {
+			System.out.println("Blob found in " + cmd);
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
 
