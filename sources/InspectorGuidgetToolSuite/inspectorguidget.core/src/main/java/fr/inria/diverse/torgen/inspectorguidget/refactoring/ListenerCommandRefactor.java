@@ -41,6 +41,7 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.ModifierKind;
+import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtLocalVariableReference;
@@ -281,7 +282,13 @@ public class ListenerCommandRefactor {
 				collect(Collectors.toList());
 
 		// The invocation may refer to a method that is defined in the class where the registration occurs.
-		nonLocalFieldAccesses.stream().filter(f -> f.getType().getDeclaration()==listenerRegClass).
+		nonLocalFieldAccesses.stream().filter(field -> {
+			try {
+				return field.getType().getDeclaration() == listenerRegClass;
+			}catch(final ParentNotInitializedException ex) {
+				return false;
+			}
+		}).
 			// In this case, the target of the invocation (the field read) is removed since the invocation will be moved to
 			// the registration class.
 			forEach(f -> {
