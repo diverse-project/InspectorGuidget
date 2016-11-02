@@ -8,6 +8,7 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import org.apache.log4j.Level;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import spoon.compiler.Environment;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -206,8 +207,15 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	public void testRefactoredFoo() throws IOException {
+	public void testRefactoredCopyExternalFields() throws IOException {
 		initTest(Arrays.asList(22, 30), true, "src/test/resources/java/refactoring/R.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/RRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	@Ignore
+	public void testRefactoredThisInExternalListener() throws IOException {
+		initTest(20, true, "src/test/resources/java/refactoring/S.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/SRefactored.java"), getRefactoredCode());
 	}
 }

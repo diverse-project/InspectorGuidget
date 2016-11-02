@@ -5,9 +5,19 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.ThisAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtBlock;
@@ -20,11 +30,13 @@ import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtNewClass;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtSwitch;
+import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtType;
@@ -35,16 +47,6 @@ import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Refactors GUI listener that contain multiple commands to extract these last in
@@ -288,6 +290,31 @@ public class ListenerCommandRefactor {
 			});
 	}
 
+
+	/**
+	 * The statements of the command may refer to the external listener through 'this'. In such a case, the 'this' has to be changed
+	 * in a variable access.
+	 */
+	private void changeThisAccesses(final @NotNull List<CtElement> stats, final @NotNull CtInvocation<?> regInvok) {
+		final Filter<CtThisAccess<?>> filter = new ThisAccessFilter(false);
+		final CtExecutable<?> regMethod = regInvok.getParent(CtExecutable.class);
+
+		stats.stream().map(stat -> stat.getElements(filter)).flatMap(s -> s.stream()).forEach(th -> {
+			List<CtLocalVariable<?>> thisVar = regMethod.getElements(new BasicFilter<CtLocalVariable<?>>(CtLocalVariable.class) {
+				@Override
+				public boolean matches(final CtLocalVariable<?> element) {
+					return element.getType().getDeclaration().equals(th.getType().getDeclaration());
+				}
+			});
+			if(thisVar.isEmpty()) {
+				LOG.log(Level.SEVERE, "Cannot find a local variable for a 'this' access: " + thisVar);
+			}else {
+				th.replace(regInvok.getFactory().Code().createVariableRead(thisVar.get(0).getReference(), false));
+			}
+		});
+	}
+
+
 	private void refactorRegistrationAsLambda(final @NotNull CtInvocation<?> invok) {
 		final Factory fac = invok.getFactory();
 		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
@@ -316,6 +343,8 @@ public class ListenerCommandRefactor {
 		lambda.setType(typeRef);
 		invok.setArguments(Collections.singletonList(lambda));
 		collectRefactoredType(invok);
+
+		changeThisAccesses(stats, invok);
 	}
 
 
