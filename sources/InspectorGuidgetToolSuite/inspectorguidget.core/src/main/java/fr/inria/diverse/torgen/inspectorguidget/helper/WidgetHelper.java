@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.factory.Factory;
@@ -190,7 +191,8 @@ public final class WidgetHelper {
 
 
 	public boolean isListenerClassMethod(final @NotNull CtExecutable<?> exec) {
-		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) && listenerMethodPrototypes.contains(exec.getSignature());
+		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) &&
+			(exec instanceof CtLambda<?> || listenerMethodPrototypes.contains(exec.getSignature()));
 	}
 
 	public boolean isListenerClass(final @Nullable CtTypeInformation type, final @NotNull Factory factory) {
