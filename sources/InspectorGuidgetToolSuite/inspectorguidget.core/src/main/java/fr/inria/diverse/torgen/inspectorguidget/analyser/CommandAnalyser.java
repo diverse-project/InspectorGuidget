@@ -155,7 +155,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 							exps.add(var.getDeclaration());
 							return exps;
 						}).flatMap(s -> s.stream())
-				).flatMap(s -> s)).flatMap(s -> s).distinct().collect(Collectors.toSet());
+				).flatMap(s -> s)).flatMap(s -> s).filter(s -> s!=null).distinct().collect(Collectors.toSet());
 
 		if(!inferred.isEmpty()) {
 			analysedStats.addAll(stats);
