@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * This processor find listener methods in the source code
  */
 public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>> {
-	private final @NotNull Map<CtClass<?>, List<CtMethod<?>>> listenerMethods;
+	private final @NotNull Map<CtClass<?>, Set<CtMethod<?>>> listenerMethods;
 
 
 	public ClassListenerProcessor() {
@@ -26,7 +26,7 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 		listenerMethods = new IdentityHashMap<>();
 	}
 
-	public @NotNull Map<CtClass<?>, List<CtMethod<?>>> getAllListenerMethods() {
+	public @NotNull Map<CtClass<?>, Set<CtMethod<?>>> getAllListenerMethods() {
 		return Collections.unmodifiableMap(listenerMethods);
 	}
 
@@ -40,34 +40,36 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 		// Case SWING
 		WidgetHelper.INSTANCE.getSwingListenersRef(getFactory()).stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			if(!listenerMethods.containsKey(clazz)) {
-				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
-				listenerMethods.put(clazz, methds);
-			}
+			addListenerMethodsFrom(ref, clazz);
 		});
 
 		// Case AWT
 		WidgetHelper.INSTANCE.getAWTListenersRef(getFactory()).stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			if(!listenerMethods.containsKey(clazz)) {
-				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
-				listenerMethods.put(clazz, methds);
-			}
+			addListenerMethodsFrom(ref, clazz);
 		});
 
 		// Case JFX
 		WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).stream().filter(clazz::isSubtypeOf).forEach(ref -> {
 			isAdded.setValue(true);
-			if(!listenerMethods.containsKey(clazz)) {
-				List<CtMethod<?>> methds = getImplementedListenerMethods(clazz, ref);
-				listenerMethods.put(clazz, methds);
-			}
+			addListenerMethodsFrom(ref, clazz);
 		});
 
 		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(clazz, getFactory())) {
 			LOG.log(Level.WARNING, "Listener not supported " +
 					SpoonHelper.INSTANCE.formatPosition(clazz.getPosition()) + ": " + clazz.getQualifiedName());
 		}
+	}
+
+
+	private void addListenerMethodsFrom(final @NotNull CtTypeReference<?> ref, final @NotNull CtClass<?> clazz) {
+		final Set<CtMethod<?>> methods = getImplementedListenerMethods(clazz, ref);
+		final Set<CtMethod<?>> savedMethods = listenerMethods.get(clazz);
+
+		if(savedMethods!=null)
+			methods.addAll(savedMethods);
+
+		listenerMethods.put(clazz, methods);
 	}
 
 
@@ -86,7 +88,7 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 	/**
 	 * Store each method from cl that implements interf
 	 */
-	private List<CtMethod<?>> getImplementedListenerMethods(final @NotNull CtClass<?> cl, final @NotNull CtTypeReference<?> interf) {
+	private Set<CtMethod<?>> getImplementedListenerMethods(final @NotNull CtClass<?> cl, final @NotNull CtTypeReference<?> interf) {
 		return Arrays.stream(interf.getActualClass().getMethods()).parallel().map(interfM -> {
 			CtMethod<?> m = cl.getMethod(interfM.getName(), getTypeRefFromClasses(interfM.getParameterTypes()));
 
@@ -99,6 +101,6 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 //				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfM + " from the interface: " + interf + " "  +
 //						SpoonHelper.INSTANCE.formatPosition(cl.getPosition()));
 			return m;
-		}).filter(m -> m!=null).collect(Collectors.toList());
+		}).filter(m -> m!=null).collect(Collectors.toSet());
 	}
 }

@@ -562,4 +562,12 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testClassWithMultipleListeners() {
+		analyser.addInputResource("src/test/resources/java/listeners/MultipleListener.java");
+		analyser.run();
+		assertEquals(2, analyser.getCommands().values().size());
+		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

@@ -26,7 +26,7 @@ public class GUIListenerAnalyser extends InspectorGuidetAnalyser {
 		addProcessor(lambdaProc);
 	}
 
-	public @NotNull Map<CtClass<?>, List<CtMethod<?>>> getClassListeners() {
+	public @NotNull Map<CtClass<?>, Set<CtMethod<?>>> getClassListeners() {
 		return Collections.unmodifiableMap(classProc.getAllListenerMethods());
 	}
 

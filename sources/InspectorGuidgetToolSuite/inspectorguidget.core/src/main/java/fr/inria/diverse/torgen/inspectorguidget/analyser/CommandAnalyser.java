@@ -63,11 +63,11 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	@Override
 	public void process() {
 		super.process();
-		final Map<CtClass<?>, List<CtMethod<?>>> methods = classProc.getAllListenerMethods();
+		final Map<CtClass<?>, Set<CtMethod<?>>> methods = classProc.getAllListenerMethods();
 
 		methods.entrySet().parallelStream().forEach(entry -> {
 			if(entry.getValue().size()==1) {
-				analyseSingleListenerMethod(Optional.of(entry.getKey()), entry.getValue().get(0));
+				analyseSingleListenerMethod(Optional.of(entry.getKey()), entry.getValue().iterator().next());
 			}else {
 				analyseMultipleListenerMethods(entry.getKey(), entry.getValue());
 			}
@@ -465,7 +465,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void analyseMultipleListenerMethods(final @NotNull CtClass<?> listenerClass, final @NotNull List<CtMethod<?>> listenerMethods) {
+	private void analyseMultipleListenerMethods(final @NotNull CtClass<?> listenerClass, final @NotNull Set<CtMethod<?>> listenerMethods) {
 		final List<CtMethod<?>> nonEmptyM=listenerMethods.stream().
 				filter(l -> l.getBody() != null && !l.getBody().getStatements().isEmpty()).collect(Collectors.toList());
 

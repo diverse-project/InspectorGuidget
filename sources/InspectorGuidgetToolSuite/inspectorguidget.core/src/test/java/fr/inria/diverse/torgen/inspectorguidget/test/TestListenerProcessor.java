@@ -146,4 +146,12 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 		assertEquals(4, classProc.getAllListenerMethods().size());
 		assertEquals(12, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
+
+
+	@Test
+	public void testClassWithMultipleListeners() {
+		run("src/test/resources/java/listeners/MultipleListener.java");
+		assertEquals(1, classProc.getAllListenerMethods().size());
+		assertEquals(2L, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
+	}
 }
