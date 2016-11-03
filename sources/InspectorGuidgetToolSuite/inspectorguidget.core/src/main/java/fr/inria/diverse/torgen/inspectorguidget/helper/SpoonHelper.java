@@ -84,7 +84,8 @@ public final class SpoonHelper {
 			}
 		};
 
-		return iff.getThenStatement().getElements(filter).isEmpty() && (iff.getElseStatement()==null || iff.getElseStatement().getElements(filter).isEmpty());
+		return iff.getThenStatement()==null || iff.getThenStatement().getElements(filter).isEmpty() && (iff.getElseStatement()==null ||
+			iff.getElseStatement().getElements(filter).isEmpty());
 	}
 
 
