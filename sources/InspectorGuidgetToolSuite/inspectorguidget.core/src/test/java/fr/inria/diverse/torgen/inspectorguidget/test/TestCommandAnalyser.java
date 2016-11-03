@@ -554,4 +554,12 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1L, analyser.getCommands().values().iterator().next().get(0).getAllStatmts().stream().filter(stat -> stat.getPosition().getLine()==26).count());
 	}
+
+	@Test
+	public void testStrangeListener() {
+		analyser.addInputResource("src/test/resources/java/analysers/NoIfStatement.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

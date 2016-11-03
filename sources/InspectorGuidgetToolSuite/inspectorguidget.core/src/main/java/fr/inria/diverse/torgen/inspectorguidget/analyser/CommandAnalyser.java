@@ -248,10 +248,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		final CtStatement thenStat = ifStat.getThenStatement();
 		List<CtElement> stats = new ArrayList<>();
 
-		if(thenStat instanceof CtStatementList)
-			stats.addAll(((CtStatementList)thenStat).getStatements());
-		else
-			stats.add(thenStat);
+		if(thenStat instanceof CtStatementList) {
+			stats.addAll(((CtStatementList) thenStat).getStatements());
+		} else
+			if(thenStat!=null) {
+				stats.add(thenStat);
+			}
 
 		if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
 			final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
@@ -425,7 +427,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		conds.removeAll(conds.stream().filter(cond -> {
 			List<CtStatement> elements;
 			if(cond instanceof CtIf) {
-				elements = ((CtIf)cond).getThenStatement().getElements(new ConditionalFilter());
+				final CtIf ctIf = (CtIf) cond;
+				elements = ctIf.getThenStatement()==null ? Collections.emptyList() : ctIf.getThenStatement().getElements(new ConditionalFilter());
 			}else {
 				elements = cond.getElements(new ConditionalFilter());
 			}
