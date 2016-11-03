@@ -310,7 +310,8 @@ public class ListenerCommandRefactor {
 			List<CtLocalVariable<?>> thisVar = regMethod.getElements(new BasicFilter<CtLocalVariable<?>>(CtLocalVariable.class) {
 				@Override
 				public boolean matches(final CtLocalVariable<?> element) {
-					return element.getType().getDeclaration().equals(th.getType().getDeclaration());
+					final CtType<?> decl = element.getType().getDeclaration();
+					return decl!=null && decl.equals(th.getType().getDeclaration());
 				}
 			});
 			if(thisVar.isEmpty()) {
