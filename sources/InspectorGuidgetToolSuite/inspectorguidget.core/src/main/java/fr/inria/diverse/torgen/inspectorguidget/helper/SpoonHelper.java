@@ -29,6 +29,7 @@ import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtInterface;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtVariable;
@@ -51,12 +52,6 @@ public final class SpoonHelper {
 	}
 
 
-//	public @NotNull List<CtExecutable<?>> getExecUsingSuperCall(final @NotNull List<CtExecutable<?>> execs) {
-//		final SuperMethodInvocationFilter filter = new SuperMethodInvocationFilter();
-//		return execs.parallelStream().filter(exec -> exec.getElements(filter).stream().
-//								filter(supercall -> exec.getSimpleName().equals(supercall.getExecutable().getSimpleName())).findFirst().isPresent()
-//			).collect(Collectors.toList());
-//	}
 
 	public @Nullable CtType<?> getMainTypeFromElt(final @Nullable CtElement elt) {
 		if(elt==null) return null;

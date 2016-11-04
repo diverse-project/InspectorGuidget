@@ -32,6 +32,7 @@ import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ParentNotInitializedException;
+import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
@@ -78,7 +79,7 @@ public class CommandWidgetFinder {
 	 * Executes the analysis.
 	 */
 	public void process() {
-		cmds.parallelStream().forEach(cmd -> process(cmd));
+		cmds.stream().forEach(cmd -> process(cmd));
 	}
 
 	private void process(final @NotNull Command cmd) {
@@ -295,7 +296,7 @@ public class CommandWidgetFinder {
 
 		if(invok==null) {
 			if(listenerMethod.isParentInitialized() && listenerMethod.getParent() instanceof CtClass<?>)
-				return getAssociatedListenerVariableThroughClass((CtClass<?>)listenerMethod.getParent());
+				return getAssociatedListenerVariableThroughClass((CtClass<?>)listenerMethod.getParent(), cmd);
 			return Collections.emptySet();
 		}
 
@@ -309,18 +310,24 @@ public class CommandWidgetFinder {
 	 * @param clazz The class to analyse.
 	 * @return The possible widget.
 	 */
-	private Set<WidgetProcessor.WidgetUsage> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz) {
+	private Set<WidgetProcessor.WidgetUsage> getAssociatedListenerVariableThroughClass(final @NotNull CtClass<?> clazz, final @NotNull Command cmd) {
 		// Looking for 'this' usages
+		final CtType<?> interf = WidgetHelper.INSTANCE.getListenerInterface(cmd.getExecutable()).orElse(null);
+
 		Set<WidgetProcessor.WidgetUsage> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
 			// Keeping the 'this' usages that are parameters of a method call
-				filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
+				filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?> &&
+					// Checking that the type of the listener widget matches the listener method of the command
+					((CtInvocation<?>)thisacc.getParent()).getExecutable().getParameters().size()==1 &&
+					((CtInvocation<?>)thisacc.getParent()).getExecutable().getParameters().get(0).getTypeDeclaration().equals(interf)).
 				map(thisacc -> getAssociatedListenerVariableThroughInvocation((CtInvocation<?>) thisacc.getParent())).
 				filter(usage -> usage.isPresent()).map(usage -> usage.get()).collect(Collectors.toSet());
 
 		// Looking for associations in super classes.
-		final CtType<?> superclass = clazz.getSuperclass()==null?null:clazz.getSuperclass().getDeclaration();
-		if(superclass instanceof CtClass<?>)
-			ref.addAll(getAssociatedListenerVariableThroughClass((CtClass<?>)superclass));
+		final CtType<?> superclass = clazz.getSuperclass()==null ? null : clazz.getSuperclass().getDeclaration();
+		if(superclass instanceof CtClass<?>) {
+			ref.addAll(getAssociatedListenerVariableThroughClass((CtClass<?>) superclass, cmd));
+		}
 
 		return ref;
 	}

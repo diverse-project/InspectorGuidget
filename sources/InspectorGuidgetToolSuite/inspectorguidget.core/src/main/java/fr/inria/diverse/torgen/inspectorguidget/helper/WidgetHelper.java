@@ -1,11 +1,19 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtInterface;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.reference.SpoonClassNotFoundException;
 
@@ -28,7 +36,7 @@ public final class WidgetHelper {
 	private List<CtTypeReference<?>> awtListenersRef;
 	private List<CtTypeReference<?>> jfxListenersRef;
 	private CtTypeReference<?> eventListenerRef;
-	private Set<String> listenerMethodPrototypes;
+	private Map<String, CtExecutable<?>> listenerMethodPrototypes;
 	private CtTypeReference<?> actionRef;
 
 	private final Object LOCK = new Object();
@@ -79,10 +87,10 @@ public final class WidgetHelper {
 
 	private void registerListenerMethodsSignatures(final @NotNull List<CtTypeReference<?>> types) {
 		synchronized(LOCK) {
-			if(listenerMethodPrototypes == null) listenerMethodPrototypes = new HashSet<>();
+			if(listenerMethodPrototypes == null) listenerMethodPrototypes = new HashMap<>();
 
-			listenerMethodPrototypes.addAll(types.stream().map(typ -> typ.getDeclaredExecutables().stream().
-				map(exec -> exec.getExecutableDeclaration().getSignature())).flatMap(s -> s).collect(Collectors.toSet()));
+			listenerMethodPrototypes.putAll(types.stream().map(typ -> typ.getDeclaredExecutables()).flatMap(s -> s.stream()).collect(Collectors.
+				toMap(exec -> exec.getExecutableDeclaration().getSignature(), exec -> exec.getExecutableDeclaration())));
 		}
 	}
 
@@ -190,9 +198,29 @@ public final class WidgetHelper {
 	//		swtListenersRef.add(getFactory().Type().createReference(org.eclipse.swt.browser.VisibilityWindowListener.class));
 
 
+	/**
+	 * Looks for the listener interface that implements the given executable.
+	 * @param exec The executable to search in the interfaces.
+	 * @return The found interface or nothing. Cannot be null.
+	 */
+	public @NotNull Optional<CtType<?>> getListenerInterface(@Nullable CtExecutable<?> exec) {
+		if(exec==null) {
+			return Optional.empty();
+		}
+
+		CtExecutable<?> listenerExec = listenerMethodPrototypes.get(exec.getSignature());
+
+		if(listenerExec==null) {
+			return Optional.empty();
+		}
+
+		return Optional.of(listenerExec.getReference().getDeclaringType().getDeclaration());
+	}
+
+
 	public boolean isListenerClassMethod(final @NotNull CtExecutable<?> exec) {
 		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) &&
-			(exec instanceof CtLambda<?> || listenerMethodPrototypes.contains(exec.getSignature()));
+			(exec instanceof CtLambda<?> || listenerMethodPrototypes.get(exec.getSignature())!=null);
 	}
 
 	public boolean isListenerClass(final @Nullable CtTypeInformation type, final @NotNull Factory factory) {
