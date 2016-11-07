@@ -47,6 +47,7 @@ import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
+import spoon.support.reflect.reference.SpoonClassNotFoundException;
 
 /**
  * An analyser to find the widget(s) that produce(s) a given command.
@@ -314,10 +315,16 @@ public class CommandWidgetFinder {
 
 		Set<WidgetProcessor.WidgetUsage> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
 			// Keeping the 'this' usages that are parameters of a method call
-				filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?> &&
-					// Checking that the type of the listener widget matches the listener method of the command
-					((CtInvocation<?>)thisacc.getParent()).getExecutable().getParameters().size()==1 &&
-					((CtInvocation<?>)thisacc.getParent()).getExecutable().getParameters().get(0).getTypeDeclaration().equals(interf)).
+				filter(thisacc -> {
+				try {
+					return thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?> &&
+						// Checking that the type of the listener widget matches the listener method of the command
+						((CtInvocation<?>)thisacc.getParent()).getExecutable().getParameters().size()==1 &&
+						((CtInvocation<?>)thisacc.getParent()).getExecutable().getParameters().get(0).getTypeDeclaration().equals(interf);
+				}catch(SpoonClassNotFoundException ex) {
+					return true;
+				}
+			}).
 				map(thisacc -> getAssociatedListenerVariableThroughInvocation((CtInvocation<?>) thisacc.getParent())).
 				filter(usage -> usage.isPresent()).map(usage -> usage.get()).collect(Collectors.toSet());
 
@@ -350,7 +357,8 @@ public class CommandWidgetFinder {
 		if(target instanceof CtVariableAccess<?>) {
 			// Looking in the widget usages which widget matches this variable.
 			return getMatchingWidgetUsage(((CtVariableAccess<?>)target).getVariable().getDeclaration());
-		}else if(target instanceof CtThisAccess<?> || target instanceof CtTypeAccess<?>) {
+		}
+		if(target instanceof CtThisAccess<?> || target instanceof CtTypeAccess<?>) {
 			// First instanceof: 'This' accesses are supported in getWidgetClass.
 			// Second instanceof: For example: JOptionPane.showConfirmDialog(...), so not related to a variable.
 		} else if(target instanceof CtInvocation<?>) {
