@@ -227,4 +227,10 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(28, 37, 39), true, "src/test/resources/java/listeners/MultipleListener.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testTryCatchListener() throws IOException {
+		initTest(24, true, "src/test/resources/java/refactoring/U.java");
+		assertEquals(getFileCode("src/test/resources/java/refactoring/URefactored.java"), getRefactoredCode());
+	}
 }
