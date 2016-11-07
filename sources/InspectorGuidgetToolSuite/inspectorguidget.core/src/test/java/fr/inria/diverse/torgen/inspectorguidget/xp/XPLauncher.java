@@ -28,6 +28,7 @@ public abstract class XPLauncher {
 	private WidgetProcessor widgetProc;
 	private CommandWidgetFinder finder;
 	private BlobListenerAnalyser blobAnalyser;
+	private final boolean genRefacClassesOnly = true;
 
 	public void run() {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
@@ -63,7 +64,7 @@ public abstract class XPLauncher {
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
 
-			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), false);
+			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), genRefacClassesOnly);
 			refactor.execute();
 			collectedTypes.addAll(refactor.getRefactoredTypes());
 		}));
@@ -75,12 +76,19 @@ public abstract class XPLauncher {
 		env.setShouldCompile(true);
 		env.setComplianceLevel(getCompilianceLevel());
 
-		blobAnalyser.getCmdAnalyser().getModel().getAllTypes().stream().filter(type -> type.getParent(CtType.class)==null).forEach(type -> {
-//		collectedTypes.forEach(type -> {
-			JavaOutputProcessor processor = new JavaOutputProcessor(new File(getOutputFolder()), new DefaultJavaPrettyPrinter(env));
-			processor.setFactory(factory);
-			processor.createJavaFile(type);
-		});
+		if(genRefacClassesOnly) {
+			collectedTypes.forEach(type -> {
+				JavaOutputProcessor processor = new JavaOutputProcessor(new File(getOutputFolder()), new DefaultJavaPrettyPrinter(env));
+				processor.setFactory(factory);
+				processor.createJavaFile(type);
+			});
+		}else {
+			blobAnalyser.getCmdAnalyser().getModel().getAllTypes().stream().filter(type -> type.getParent(CtType.class)==null).forEach(type -> {
+				JavaOutputProcessor processor = new JavaOutputProcessor(new File(getOutputFolder()), new DefaultJavaPrettyPrinter(env));
+				processor.setFactory(factory);
+				processor.createJavaFile(type);
+			});
+		}
 	}
 
 	protected abstract List<String> getInputResoures();
