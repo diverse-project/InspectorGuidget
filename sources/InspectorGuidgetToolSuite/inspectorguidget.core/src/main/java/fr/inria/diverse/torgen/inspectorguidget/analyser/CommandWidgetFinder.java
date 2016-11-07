@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import spoon.reflect.code.CtArrayRead;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
@@ -382,6 +383,8 @@ public class CommandWidgetFinder {
 			}else {
 				LOG.log(Level.SEVERE, () -> "Incorrect number of methods found for the invocation: " + target + ", methods: " + methods);
 			}
+		} else if(target instanceof CtArrayRead<?> && ((CtArrayRead<?>)target).getTarget() instanceof CtVariableAccess<?>) {
+			return getMatchingWidgetUsage(((CtVariableAccess<?>)((CtArrayRead<?>)target).getTarget()).getVariable().getDeclaration());
 		}
 		else {
 			LOG.log(Level.SEVERE, () -> "INVOCATION TARGET TYPE NOT SUPPORTED: " + target.getClass() + " : " + invok + " " +

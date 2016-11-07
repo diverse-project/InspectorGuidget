@@ -5,17 +5,16 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.InspectorGuidetAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtLiteral;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -569,5 +568,13 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(2, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
+
+	@Test
+	public void testNonDeterministActionCmd() {
+		analyser.addInputResource("src/test/resources/java/refactoring/ListenerTab.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
 }

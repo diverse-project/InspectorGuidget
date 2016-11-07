@@ -11,6 +11,7 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -294,6 +295,14 @@ public class TestWidgetFinder {
 	@Test
 	public void testWidgetsWithSameName() {
 		initTest("src/test/resources/java/widgetsIdentification/WidgetsWithSameName.java");
+		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
+		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
+	}
+
+	@Test
+	@Ignore
+	public void testNonDeterministActionCmd() {
+		initTest("src/test/resources/java/refactoring/ListenerTab.java");
 		assertEquals(1, new ArrayList<>(results.values()).get(0).getSuppostedAssociatedWidget().size());
 		assertEquals(1, new ArrayList<>(results.values()).get(1).getSuppostedAssociatedWidget().size());
 	}
