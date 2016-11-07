@@ -13,6 +13,18 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtExpression;
@@ -32,23 +44,9 @@ import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ParentNotInitializedException;
-import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * An analyser to find the widget(s) that produce(s) a given command.
@@ -416,17 +414,22 @@ public class CommandWidgetFinder {
 		public Set<WidgetProcessor.WidgetUsage> getWidgetUsages() {
 			final Set<WidgetProcessor.WidgetUsage> usages = new HashSet<>();
 
-			if(!registeredWidgets.isEmpty())
-				usages.addAll(registeredWidgets);
-
-			if(!widgetsFromStringLiterals.isEmpty())
+			if(!widgetsFromStringLiterals.isEmpty()) {
 				usages.addAll(widgetsFromStringLiterals.stream().map(lit -> lit.usage).collect(Collectors.toSet()));
+			}
 
-			if(!widgetsFromSharedVars.isEmpty())
+			if(!widgetsFromSharedVars.isEmpty()) {
 				usages.addAll(widgetsFromSharedVars.stream().map(lit -> lit.usage).collect(Collectors.toSet()));
+			}
 
-			if(!widgetsUsedInConditions.isEmpty())
+			if(!widgetsUsedInConditions.isEmpty()) {
 				usages.addAll(widgetsUsedInConditions);
+			}
+
+			// Getting the widget registration only if no widget has already been identified.
+			if(usages.isEmpty() && !registeredWidgets.isEmpty()) {
+				usages.addAll(registeredWidgets);
+			}
 
 			return usages;
 		}
