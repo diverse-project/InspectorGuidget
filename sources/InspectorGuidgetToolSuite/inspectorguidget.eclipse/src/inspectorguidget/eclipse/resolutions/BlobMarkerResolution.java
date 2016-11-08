@@ -50,7 +50,7 @@ public class BlobMarkerResolution implements IMarkerResolution {
 		System.out.println("Widgets finder ended");
 		
 		entry.getValue().forEach(cmd -> {
-			final ListenerCommandRefactor ref = new ListenerCommandRefactor(cmd, null, false);
+			final ListenerCommandRefactor ref = new ListenerCommandRefactor(cmd, null, false, false);
 			ref.execute();
 			
 			Environment env = widgetProc.getEnvironment();
