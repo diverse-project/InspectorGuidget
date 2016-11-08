@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.log4j.Level;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import spoon.compiler.Environment;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -229,6 +230,7 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
+	@Ignore
 	public void testTryCatchListener() throws IOException {
 		initTest(24, true, "src/test/resources/java/refactoring/U.java");
 		assertEquals(getFileCode("src/test/resources/java/refactoring/URefactored.java"), getRefactoredCode());
