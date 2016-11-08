@@ -336,7 +336,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			// Empty so no command
 			synchronized(commands) { commands.put(listenerMethod, Collections.emptyList()); }
 		}else {
-			final List<CtElement> conds = getConditionalStatements(listenerMethod, listenerClass);
+			final List<CtElement> conds = getConditionalStatements(listenerMethod, listenerClass, new HashSet<>());
 
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
@@ -396,19 +396,26 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private @NotNull List<CtElement> getConditionalStatements(final @Nullable CtExecutable<?> exec,
-																final @NotNull Optional<CtClass<?>> listenerClass) {
+																final @NotNull Optional<CtClass<?>> listenerClass,
+															  final @NotNull Set<CtExecutable<?>> execAnalysed) {
 		if(exec==null || exec.getBody()==null)
 			return Collections.emptyList();
 
 		final List<CtElement> conds = new ArrayList<>();
 
 		if(listenerClass.isPresent()) { // Searching for dispatched methods is not performed on lambdas.
+//			System.out.println(listenerClass.get().getQualifiedName() + " " + exec.getSimpleName());
 			conds.addAll(
 					// Getting all the methods called in the current method that use a parameter of this last.
 					// The goal is to identify the dispatched methods, recursively.
 					exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get(), true)).stream().
+					filter(dispatchM -> !execAnalysed.contains(dispatchM.getExecutable().getDeclaration())).
 					// For each dispatched methods, looking for conditional statements.
-					map(dispatchM -> getConditionalStatements(dispatchM.getExecutable().getDeclaration(), listenerClass)).
+					map(dispatchM -> {
+						final CtExecutable<?> theExec = dispatchM.getExecutable().getDeclaration();
+						execAnalysed.add(theExec);
+						return getConditionalStatements(theExec, listenerClass, execAnalysed);
+					}).
 					flatMap(c -> c.stream()).collect(Collectors.toList()));
 		}
 
