@@ -1,6 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.xp;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class BasexLauncher extends XPLauncher {
@@ -13,9 +13,7 @@ public class BasexLauncher extends XPLauncher {
 
 	@Override
 	protected List<String> getInputResoures() {
-		return Arrays.asList("/media/data/dev/repoAnalysisBlob/basex/basex-core/src/main/java" //,
-//			"/media/data/dev/repoAnalysisBlob/basex/basex-api/src/main/java"
-		);
+		return Collections.singletonList("/media/data/dev/repoAnalysisBlob/basex/basex-core/src/main/java");
 	}
 
 	@Override
