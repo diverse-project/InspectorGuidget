@@ -141,7 +141,7 @@ public class CommandWidgetFinder {
 		cmdWidgetMatches.removeIf(m ->
 			// Removing if in the statement of the acess there is a reference to the current listener class.
 			!m.usage.accesses.stream().filter(a -> a.getParent(CtStatement.class).getElements(filt).stream().
-			map(var -> var.getType()).filter(ty -> ty.equals(listRef)).findFirst().isPresent()).findFirst().isPresent());
+			map(var -> var.getType()).filter(ty -> ty!=null && ty.equals(listRef)).findFirst().isPresent()).findFirst().isPresent());
 		return cmdWidgetMatches;
 	}
 
