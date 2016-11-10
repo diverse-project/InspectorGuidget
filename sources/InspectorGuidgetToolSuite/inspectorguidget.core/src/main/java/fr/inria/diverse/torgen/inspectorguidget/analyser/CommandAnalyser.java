@@ -97,7 +97,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		synchronized(commands) {
 			commands.entrySet().forEach(entry -> {
-				entry.getValue().removeIf(cmd -> cmd.getStatements().isEmpty());
+				entry.getValue().removeIf(cmd -> cmd.getStatements().isEmpty() || SpoonHelper.INSTANCE.hasASuperCall(cmd.getExecutable(), cmd.getAllLocalStatmtsOrdered()));
 				List<Command> badcmd = entry.getValue().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
 										cmd.getMainStatmtEntry().get().getStatmts().isEmpty()).collect(Collectors.toList());
 				badcmd.forEach(cmd -> LOG.log(Level.SEVERE, "Invalid command extracted: " + cmd));

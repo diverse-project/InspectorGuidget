@@ -3,6 +3,12 @@ package fr.inria.diverse.torgen.inspectorguidget.helper;
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.BinaryOperatorKind;
@@ -16,9 +22,11 @@ import spoon.reflect.code.CtDo;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFor;
 import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtSuperAccess;
 import spoon.reflect.code.CtSwitch;
 import spoon.reflect.code.CtSynchronized;
 import spoon.reflect.code.CtUnaryOperator;
@@ -29,19 +37,11 @@ import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtInterface;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtTypeReference;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public final class SpoonHelper {
 	public static final SpoonHelper INSTANCE = new SpoonHelper();
@@ -49,6 +49,20 @@ public final class SpoonHelper {
 
 	private SpoonHelper() {
 		super();
+	}
+
+
+	/**
+	 * Checkes whether the list of code statements given as argument contains a super call to the upper executable of exec.
+	 * @param exec The overridden executable.
+	 * @param statements The list of statements to analyse.
+	 * @return True whether "statements" contains a super call to the super methof of "exec". False otherwise.
+	 */
+	public boolean hasASuperCall(final @NotNull CtExecutable<?> exec, final @NotNull List<CtElement> statements) {
+		final String execName = exec.getSimpleName();
+		return statements.parallelStream().filter(stat -> stat instanceof CtInvocation<?> &&
+			((CtInvocation<?>)stat).getTarget() instanceof CtSuperAccess<?> &&
+			((CtInvocation<?>)stat).getExecutable().getSimpleName().equals(execName)).findAny().isPresent();
 	}
 
 
