@@ -585,4 +585,12 @@ public class TestCommandAnalyser {
 		assertEquals(2, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testIrrelevantCommandStatements() {
+		analyser.addInputResource("src/test/resources/java/analysers/IrrelevantCommandStatements.java");
+		analyser.run();
+		assertEquals(2, analyser.getCommands().values().size());
+		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+	}
 }

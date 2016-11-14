@@ -53,16 +53,24 @@ public final class SpoonHelper {
 
 
 	/**
-	 * Checkes whether the list of code statements given as argument contains a super call to the upper executable of exec.
+	 * Checkes whether the given code statement contains a super call to the upper executable of exec.
 	 * @param exec The overridden executable.
-	 * @param statements The list of statements to analyse.
-	 * @return True whether "statements" contains a super call to the super methof of "exec". False otherwise.
+	 * @param stat The code statement to analyse.
+	 * @return True whether the code statement contains a super call to the super methof of "exec". False otherwise.
 	 */
-	public boolean hasASuperCall(final @NotNull CtExecutable<?> exec, final @NotNull List<CtElement> statements) {
+	public boolean isSuperCall(final @NotNull CtExecutable<?> exec, final @NotNull CtElement stat) {
 		final String execName = exec.getSimpleName();
-		return statements.parallelStream().filter(stat -> stat instanceof CtInvocation<?> &&
-			((CtInvocation<?>)stat).getTarget() instanceof CtSuperAccess<?> &&
-			((CtInvocation<?>)stat).getExecutable().getSimpleName().equals(execName)).findAny().isPresent();
+		return stat instanceof CtInvocation<?> && ((CtInvocation<?>)stat).getTarget() instanceof CtSuperAccess<?> &&
+			((CtInvocation<?>)stat).getExecutable().getSimpleName().equals(execName);
+	}
+
+	/**
+	 * Checkes whether the given code statement is probably a log statement.
+	 * @param stat The code statement to analyse.
+	 * @return True whether the code statement is probably a log statement. False otherwise.
+	 */
+	public boolean isLogStatement(final @NotNull CtElement stat) {
+		return stat instanceof CtInvocation<?> && ((CtInvocation<?>)stat).getExecutable().getSimpleName().equalsIgnoreCase("log");
 	}
 
 

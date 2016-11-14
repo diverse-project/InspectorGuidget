@@ -1,29 +1,26 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import spoon.reflect.code.CtLambda;
-import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtInterface;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtType;
-import spoon.reflect.declaration.CtTypeInformation;
-import spoon.reflect.factory.Factory;
-import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.reference.SpoonClassNotFoundException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import spoon.reflect.code.CtLambda;
+import spoon.reflect.code.CtThrow;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.CtTypeInformation;
+import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.reference.SpoonClassNotFoundException;
 
 public final class WidgetHelper {
 	public static final @NotNull WidgetHelper INSTANCE = new WidgetHelper();
@@ -268,15 +265,9 @@ public final class WidgetHelper {
 		final String qName = typeref.getQualifiedName();
 		return getWidgetPackages().stream().filter(pkg -> qName.startsWith(pkg)).findFirst().isPresent();
 	}
-//
-//
-//	public boolean isTypeRefAToolkitWidget(final @NotNull CtTypeReference<?> typeref) {
-//		return getWidgetTypes(typeref.getFactory()).stream().filter(type -> {
-//			try {
-//				return type == typeref || type.isSubtypeOf(typeref);
-//			}
-//			catch(Throwable ex) { }
-//			return false;
-//		}).findFirst().isPresent();
-//	}
+
+	public boolean hasRelevantCommandStatement(final @NotNull CtExecutable<?> exec, final @NotNull List<CtElement> stats) {
+		return stats.isEmpty() || stats.parallelStream().filter(stat -> !(stat instanceof CtThrow) && !SpoonHelper.INSTANCE.isReturnBreakStatement(stat) &&
+			!SpoonHelper.INSTANCE.isSuperCall(exec, stat) && !SpoonHelper.INSTANCE.isLogStatement(stat)).findAny().isPresent();
+	}
 }

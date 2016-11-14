@@ -7,6 +7,7 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.LinePositionFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import org.jetbrains.annotations.NotNull;
@@ -97,7 +98,9 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		synchronized(commands) {
 			commands.entrySet().forEach(entry -> {
-				entry.getValue().removeIf(cmd -> cmd.getStatements().isEmpty() || SpoonHelper.INSTANCE.hasASuperCall(cmd.getExecutable(), cmd.getAllLocalStatmtsOrdered()));
+				entry.getValue().removeIf(
+					cmd -> cmd.getStatements().isEmpty() || !WidgetHelper.INSTANCE.hasRelevantCommandStatement(cmd.getExecutable(), cmd.getAllLocalStatmtsOrdered()));
+
 				List<Command> badcmd = entry.getValue().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
 										cmd.getMainStatmtEntry().get().getStatmts().isEmpty()).collect(Collectors.toList());
 				badcmd.forEach(cmd -> LOG.log(Level.SEVERE, "Invalid command extracted: " + cmd));
