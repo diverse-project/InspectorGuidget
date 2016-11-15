@@ -4,7 +4,9 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -46,9 +48,12 @@ import spoon.reflect.reference.CtTypeReference;
 public final class SpoonHelper {
 	public static final SpoonHelper INSTANCE = new SpoonHelper();
 
+	private final Set<String> logNames;
+
 
 	private SpoonHelper() {
 		super();
+		logNames = new HashSet<>(Arrays.asList("log", "debug", "warning", "error", "severe", "fine", "debug", "finest", "finer", "info"));
 	}
 
 
@@ -70,7 +75,7 @@ public final class SpoonHelper {
 	 * @return True whether the code statement is probably a log statement. False otherwise.
 	 */
 	public boolean isLogStatement(final @NotNull CtElement stat) {
-		return stat instanceof CtInvocation<?> && ((CtInvocation<?>)stat).getExecutable().getSimpleName().equalsIgnoreCase("log");
+		return stat instanceof CtInvocation<?> && logNames.contains(((CtInvocation<?>)stat).getExecutable().getSimpleName());
 	}
 
 

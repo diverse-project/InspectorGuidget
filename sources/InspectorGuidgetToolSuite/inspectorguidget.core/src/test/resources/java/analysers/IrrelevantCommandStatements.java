@@ -20,6 +20,7 @@ class Bar implements ActionListener{
 		}
 		if("foob2".equals(e.getActionCommand())) {
 			LOG.log(Level.SEVERE, "foo");
+			LOG.severe("foo");
 			return;
 		}
 	}
