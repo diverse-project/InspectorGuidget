@@ -53,7 +53,7 @@ public final class SpoonHelper {
 
 	private SpoonHelper() {
 		super();
-		logNames = new HashSet<>(Arrays.asList("log", "debug", "warning", "error", "severe", "fine", "debug", "finest", "finer", "info"));
+		logNames = new HashSet<>(Arrays.asList("log", "debug", "warning", "error", "severe", "fine", "finest", "finer", "info"));
 	}
 
 
