@@ -401,25 +401,25 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private @NotNull List<CtElement> getConditionalStatements(final @Nullable CtExecutable<?> exec,
 																final @NotNull Optional<CtClass<?>> listenerClass,
 															  final @NotNull Set<CtExecutable<?>> execAnalysed) {
-		if(exec==null || exec.getBody()==null)
+		if(exec==null || exec.getBody()==null) {
 			return Collections.emptyList();
+		}
 
 		final List<CtElement> conds = new ArrayList<>();
 
 		if(listenerClass.isPresent()) { // Searching for dispatched methods is not performed on lambdas.
-//			System.out.println(listenerClass.get().getQualifiedName() + " " + exec.getSimpleName());
 			conds.addAll(
-					// Getting all the methods called in the current method that use a parameter of this last.
-					// The goal is to identify the dispatched methods, recursively.
-					exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get(), true)).stream().
-					filter(dispatchM -> !execAnalysed.contains(dispatchM.getExecutable().getDeclaration())).
-					// For each dispatched methods, looking for conditional statements.
-					map(dispatchM -> {
-						final CtExecutable<?> theExec = dispatchM.getExecutable().getDeclaration();
-						execAnalysed.add(theExec);
-						return getConditionalStatements(theExec, listenerClass, execAnalysed);
-					}).
-					flatMap(c -> c.stream()).collect(Collectors.toList()));
+				// Getting all the methods called in the current method that use a parameter of this last.
+				// The goal is to identify the dispatched methods, recursively.
+				exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get(), true)).stream().
+				filter(dispatchM -> !execAnalysed.contains(dispatchM.getExecutable().getDeclaration())).
+				// For each dispatched methods, looking for conditional statements.
+				map(dispatchM -> {
+					final CtExecutable<?> theExec = dispatchM.getExecutable().getDeclaration();
+					execAnalysed.add(theExec);
+					return getConditionalStatements(theExec, listenerClass, execAnalysed);
+				}).
+				flatMap(c -> c.stream()).collect(Collectors.toList()));
 		}
 
 		final List<CtParameterReference<?>> guiParams = exec.getParameters().stream().map(param -> param.getReference()).collect(Collectors.toList());
@@ -444,8 +444,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			}
 			return !elements.isEmpty() &&
 					// Ignoring 'cond'
-					elements.stream().filter(cond2 -> cond!=cond2).
-					anyMatch(cond2 -> conds.contains(cond2));
+					elements.stream().filter(cond2 -> cond!=cond2).anyMatch(cond2 -> conds.contains(cond2));
 		}).collect(Collectors.toList()));
 
 		return conds;
@@ -453,20 +452,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private boolean conditionalUsesGUIParam(final CtStatement stat, final List<CtParameterReference<?>> guiParams) {
-		CtExpression<?> condition;
-
-		if(stat instanceof CtIf) condition = ((CtIf) stat).getCondition();
-		else if(stat instanceof CtSwitch<?>) condition = ((CtSwitch<?>) stat).getSelector();
-		else condition = null;
-
+		final CtExpression<?> condition = stat instanceof CtIf ? ((CtIf) stat).getCondition() : stat instanceof CtSwitch<?> ? ((CtSwitch<?>) stat).getSelector() : null;
 		return condition != null && elementUsesGUIParam(condition, guiParams);
 	}
 
 
 	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams) {
 		// Check whether a GUI parameter is directly used in the statement.
-		if(guiParams.stream().filter(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty()).findFirst().isPresent())
+		if(guiParams.stream().filter(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty()).findFirst().isPresent()) {
 			return true;
+		}
 
 		// Otherwise, looking for local variables that use a GUI parameter.
 		return elt.getElements(new LocalVariableAccessFilter()).stream().
