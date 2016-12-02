@@ -140,8 +140,8 @@ public class CommandWidgetFinder {
 
 		cmdWidgetMatches.removeIf(m ->
 			// Removing if in the statement of the acess there is a reference to the current listener class.
-			!m.usage.accesses.stream().filter(a -> a.getParent(CtStatement.class).getElements(filt).stream().
-			map(var -> var.getType()).filter(ty -> ty!=null && ty.equals(listRef)).findFirst().isPresent()).findFirst().isPresent());
+			m.usage.accesses.stream().noneMatch(a -> a.getParent(CtStatement.class).getElements(filt).stream().
+			map(var -> var.getType()).anyMatch(ty -> ty!=null && ty.equals(listRef))));
 		return cmdWidgetMatches;
 	}
 
@@ -265,15 +265,14 @@ public class CommandWidgetFinder {
 											flatMap(s -> s.stream()).distinct().collect(Collectors.toList());
 
 		// Getting the widget usages which variable is used in the conditions.
-		return widgetUsages.parallelStream().filter(u ->
-			types.stream().filter(w -> {
-				try{
-					final CtVariableReference<?> parent = w.getParent(CtVariableReference.class);
-					return parent != null && u.widgetVar == parent.getDeclaration();
-				}catch(ParentNotInitializedException ex) {
-					return false;
-				}
-			}).findFirst().isPresent()).collect(Collectors.toSet());
+		return widgetUsages.parallelStream().filter(u -> types.stream().anyMatch(w -> {
+			try{
+				final CtVariableReference<?> parent = w.getParent(CtVariableReference.class);
+				return parent != null && u.widgetVar == parent.getDeclaration();
+			}catch(ParentNotInitializedException ex) {
+				return false;
+			}
+		})).collect(Collectors.toSet());
 	}
 
 
@@ -527,20 +526,18 @@ public class CommandWidgetFinder {
 			registeredWidgets.removeIf(w -> {
 				if(widgetsFromSharedVars.isEmpty() && widgetsFromStringLiterals.isEmpty()) return false;
 
-				boolean ok = widgetsFromSharedVars.stream().map(u -> u.vars).flatMap(s -> s.stream()).filter(var -> {
+				boolean ok = widgetsFromSharedVars.stream().map(u -> u.vars).flatMap(s -> s.stream()).anyMatch(var -> {
 					final MyVariableAccessFilter filter = new MyVariableAccessFilter(var);
 					// Looking the usages a variable access that corresponds to the variable used to register the widget to the listener.
-					return w.accesses.stream().map(a -> a.getParent(CtStatement.class)).
-						filter(a -> !a.getElements(filter).isEmpty()).findFirst().isPresent();
-				}).findFirst().isPresent();
+					return w.accesses.stream().map(a -> a.getParent(CtStatement.class)).anyMatch(a -> !a.getElements(filter).isEmpty());
+				});
 
 				// If no usage found
 				if(!ok) // Try with the string literals.
-					ok = widgetsFromStringLiterals.stream().map(u -> u.stringlit).flatMap(s -> s.stream()).filter(var -> {
+					ok = widgetsFromStringLiterals.stream().map(u -> u.stringlit).flatMap(s -> s.stream()).anyMatch(var -> {
 						final SpecificStringLiteralFilter filter = new SpecificStringLiteralFilter(var);
-						return w.accesses.stream().map(a -> a.getParent(CtStatement.class)).
-							filter(a -> !a.getElements(filter).isEmpty()).findFirst().isPresent();
-					}).findFirst().isPresent();
+						return w.accesses.stream().map(a -> a.getParent(CtStatement.class)).anyMatch(a -> !a.getElements(filter).isEmpty());
+					});
 
 				// If no usage found
 //				if(!ok) // Try with the widgets used in the conditions (this optimisation seems to be already done.

@@ -186,8 +186,7 @@ public class ListenerCommandRefactor {
 			Filter<CtInvocation<?>> filter = new BasicFilter<CtInvocation<?>>(CtInvocation.class) {
 				@Override
 				public boolean matches(final CtInvocation<?> element) {
-					return WidgetHelper.INSTANCE.ACTION_CMD_METHOD_NAMES.stream().
-						filter(elt -> element.getExecutable().getSimpleName().equals(elt)).findAny().isPresent();
+					return WidgetHelper.INSTANCE.ACTION_CMD_METHOD_NAMES.stream().anyMatch(elt -> element.getExecutable().getSimpleName().equals(elt));
 				}
 			};
 
@@ -255,7 +254,7 @@ public class ListenerCommandRefactor {
 					filter(stat -> stat.getParent(CtConstructor.class)!=null).
 					forEach(u -> {
 						LOG.log(Level.INFO, () -> cmd + ": moving a listener attribute: " + u + " before " + regInvok);
-						if(!regInvok.getParent(CtBlock.class).getStatements().parallelStream().filter(s -> s.equals(u)).findAny().isPresent()) {
+						if(regInvok.getParent(CtBlock.class).getStatements().parallelStream().noneMatch(s -> s.equals(u))) {
 							regInvok.insertBefore(u.clone()); // and moving it where the initialisation occurs.
 						}
 					});

@@ -167,14 +167,14 @@ public final class SpoonHelper {
 		// If the method is not the given type and, however, a method with its signature exists, this means
 		// that exec is overriden here. So, we ignore this overriden method.
 		final String over = exec.getSignature();
-		if(ty.getMethods().parallelStream().filter(m -> m.getSignature().equals(over)).findFirst().isPresent())
+		if(ty.getMethods().parallelStream().anyMatch(m -> m.getSignature().equals(over)))
 			return false;
 
 		// Checking whether the super class has the method.
 		// Finally, checking whether an interface has the method (a default method).
 		final CtTypeReference<?> superCl = ty.getSuperclass();
 		return superCl!=null && hasMethod(superCl.getDeclaration(), exec) ||
-			ty.getSuperInterfaces().parallelStream().filter(interf -> hasMethod(interf.getDeclaration(), exec)).findFirst().isPresent();
+			ty.getSuperInterfaces().parallelStream().anyMatch(interf -> hasMethod(interf.getDeclaration(), exec));
 	}
 
 

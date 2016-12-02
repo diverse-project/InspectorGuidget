@@ -86,7 +86,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						// Looking for local variable accesses in the command
 						cmd.getAllStatmts().stream().map(stat -> stat.getElements(new LocalVariableAccessFilter()).stream().
 							// Selecting the local variable definitions not already contained in the command
-								map(v -> v.getDeclaration()).filter(v -> !cmd.getAllStatmts().stream().filter(s -> s == v).findFirst().isPresent()).
+								map(v -> v.getDeclaration()).filter(v -> cmd.getAllStatmts().stream().noneMatch(s -> s == v)).
 								collect(Collectors.toList())).flatMap(s -> s.stream()).
 							// For each var def, creating a command statement entry that will be added to the list of entries of the command.
 								map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) elt))).collect(Collectors.toList()));
@@ -123,7 +123,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			inferLocalVarUsagesRecursive(
 				cmd.getStatements().stream().map(stat -> stat.getStatmts().stream()).flatMap(s -> s).collect(Collectors.toSet()),
 				new HashSet<>(), listener
-			).parallelStream().filter(exp -> !cmd.hasStatement(exp) && !isPartOfMainCommandBlockOrCondition(exp, cmd, cmds)).
+			).parallelStream().filter(exp -> !cmd.hasStatement(exp) && !isPartOfMainCommandBlockOrCondition(exp, cmds)).
 			map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp instanceof CtStatement ? exp : exp.getParent(CtStatement.class)))).
 			collect(Collectors.toList())
 		);
@@ -173,24 +173,22 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	/**
 	 * Checks whether the given element 'elt' is contained in the main block or in a condition statement of a command.
 	 * @param elt The element to test.
-	 * @param currCmd The command from which the element comes from.
 	 * @param cmds The set of commands to look into.
 	 * @return True if the given element is contained in the main block or in a condition statement of a command.
 	 */
-	private boolean isPartOfMainCommandBlockOrCondition(final @NotNull CtElement elt, final @NotNull Command currCmd, final @NotNull List<Command> cmds) {
+	private boolean isPartOfMainCommandBlockOrCondition(final @NotNull CtElement elt, final @NotNull List<Command> cmds) {
 		final FindElementFilter filter = new FindElementFilter(elt, false);
 
 		// First, check the main blocks
 		boolean ok = cmds.parallelStream().map(cmd -> cmd.getMainStatmtEntry()). // Getting the main blocks
 				// Searching for the given element in the statements of the main blocks.
-				filter(main -> main.isPresent() && main.get().getStatmts().stream().filter(stat -> !stat.getElements(filter).isEmpty()).findFirst().isPresent()).
-				findFirst().isPresent();
+					anyMatch(main -> main.isPresent() && main.get().getStatmts().stream().anyMatch(stat -> !stat.getElements(filter).isEmpty()));
 
 		// If not found, check the conditions.
 		if(!ok) {
-			ok = cmds.parallelStream().filter(cmd -> cmd.getConditions().stream().filter(cond ->// Searching for the given element in the conditions.
+			ok = cmds.parallelStream().anyMatch(cmd -> cmd.getConditions().stream().anyMatch(cond ->// Searching for the given element in the conditions.
 				!cond.realStatmt.getElements(filter).isEmpty() ||
-					cond.realStatmt!=cond.effectiveStatmt && !cond.effectiveStatmt.getElements(filter).isEmpty()).findFirst().isPresent()).findFirst().isPresent();
+					cond.realStatmt!=cond.effectiveStatmt && !cond.effectiveStatmt.getElements(filter).isEmpty()));
 		}
 
 		return ok;
@@ -201,12 +199,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 														  final @NotNull List<CtElement> conds) {
 		List<Command> cmds;
 		synchronized(commands) {
-			cmds = commands.get(listenerMethod);
-
-			if(cmds == null) {
-				cmds = new ArrayList<>();
-				commands.put(listenerMethod, cmds);
-			}
+			cmds = commands.computeIfAbsent(listenerMethod, k -> new ArrayList<>());
 		}
 
 		if(condStat instanceof CtIf) {
@@ -264,7 +257,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 		}
 
-		if(elseStat!=null && !otherConds.stream().filter(c -> !elseStat.getElements(new FindElementFilter(c, true)).isEmpty()).findFirst().isPresent()) {
+		if(elseStat!=null && otherConds.stream().allMatch(c -> elseStat.getElements(new FindElementFilter(c, true)).isEmpty())) {
 			// For the else block, creating a negation of the condition.
 			stats = new ArrayList<>();
 
@@ -459,14 +452,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams) {
 		// Check whether a GUI parameter is directly used in the statement.
-		if(guiParams.stream().filter(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty()).findFirst().isPresent()) {
+		if(guiParams.stream().anyMatch(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty())) {
 			return true;
 		}
 
 		// Otherwise, looking for local variables that use a GUI parameter.
-		return elt.getElements(new LocalVariableAccessFilter()).stream().
-				filter(var -> elementUsesGUIParam(var.getDeclaration(), guiParams)).
-				findFirst().isPresent();
+		return elt.getElements(new LocalVariableAccessFilter()).stream().anyMatch(var -> elementUsesGUIParam(var.getDeclaration(), guiParams));
 	}
 
 

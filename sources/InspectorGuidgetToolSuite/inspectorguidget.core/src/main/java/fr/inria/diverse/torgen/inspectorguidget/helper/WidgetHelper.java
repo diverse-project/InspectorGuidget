@@ -255,7 +255,7 @@ public final class WidgetHelper {
 
 	public boolean isTypeRefAWidget(final @NotNull CtTypeReference<?> typeref) {
 		try {
-			return getWidgetTypes(typeref.getFactory()).stream().filter(type -> type == typeref || typeref.isSubtypeOf(type)).findFirst().isPresent();
+			return getWidgetTypes(typeref.getFactory()).stream().anyMatch(type -> type == typeref || typeref.isSubtypeOf(type));
 		}catch(final SpoonClassNotFoundException ex) {
 			return false;
 		}
@@ -263,11 +263,11 @@ public final class WidgetHelper {
 
 	public boolean isTypeRefAToolkitWidget(final @NotNull CtTypeReference<?> typeref) {
 		final String qName = typeref.getQualifiedName();
-		return getWidgetPackages().stream().filter(pkg -> qName.startsWith(pkg)).findFirst().isPresent();
+		return getWidgetPackages().stream().anyMatch(pkg -> qName.startsWith(pkg));
 	}
 
 	public boolean hasRelevantCommandStatement(final @NotNull CtExecutable<?> exec, final @NotNull List<CtElement> stats) {
-		return stats.isEmpty() || stats.parallelStream().filter(stat -> !(stat instanceof CtThrow) && !SpoonHelper.INSTANCE.isReturnBreakStatement(stat) &&
-			!SpoonHelper.INSTANCE.isSuperCall(exec, stat) && !SpoonHelper.INSTANCE.isLogStatement(stat)).findAny().isPresent();
+		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> !(stat instanceof CtThrow) && !SpoonHelper.INSTANCE.isReturnBreakStatement(stat) &&
+			!SpoonHelper.INSTANCE.isSuperCall(exec, stat) && !SpoonHelper.INSTANCE.isLogStatement(stat));
 	}
 }
