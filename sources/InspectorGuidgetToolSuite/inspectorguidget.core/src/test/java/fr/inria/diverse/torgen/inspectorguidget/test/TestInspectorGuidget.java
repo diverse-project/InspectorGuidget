@@ -1,6 +1,13 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.junit.Before;
 import spoon.compiler.SpoonCompiler;
 import spoon.processing.Processor;
@@ -9,14 +16,6 @@ import spoon.reflect.factory.FactoryImpl;
 import spoon.support.DefaultCoreFactory;
 import spoon.support.StandardEnvironment;
 import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import static org.junit.Assert.fail;
 
@@ -29,8 +28,9 @@ public abstract class TestInspectorGuidget<T extends Processor<? extends CtEleme
 	public static final Handler HANDLER_FAIL = new Handler() {
 		@Override
 		public void publish(final LogRecord record) {
-			if(record.getLevel()== Level.SEVERE)
+			if(record.getLevel() == Level.SEVERE) {
 				fail(record.getMessage());
+			}
 		}
 
 		@Override

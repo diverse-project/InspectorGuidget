@@ -593,4 +593,15 @@ public class TestCommandAnalyser {
 		assertEquals(2, analyser.getCommands().values().size());
 		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
 	}
+
+	@Test
+	public void testFalseDispatch() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerLambdaFalseDispatch.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
+		assertEquals(13, cmds.get(0).getMainStatmtEntry().get().getLineStart());
+		assertEquals(13, cmds.get(0).getMainStatmtEntry().get().getLineEnd());
+	}
 }
