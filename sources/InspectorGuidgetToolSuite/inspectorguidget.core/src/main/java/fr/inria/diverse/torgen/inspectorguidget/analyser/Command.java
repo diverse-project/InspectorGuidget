@@ -150,7 +150,7 @@ public class Command {
 											map(stat -> stat.getElements(new ClassMethodCallFilter(params, parent, false))).
 											flatMap(s -> s.stream()).collect(Collectors.toList());
 
-			if(invoks.size()==1 && main.getStatmts().size()==1 &&
+			if(invoks.size()==1 && main.getStatmts().size()==1 && main.getStatmts().get(0)==invoks.get(0) &&
 				invoks.get(0).isParentInitialized() && !(invoks.get(0).getParent() instanceof CtInvocation<?>)) {
 				final CtBlock<?> body = invoks.get(0).getExecutable().getDeclaration().getBody();
 				if(body!=null && !body.getStatements().isEmpty()) {
