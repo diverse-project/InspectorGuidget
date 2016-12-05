@@ -46,7 +46,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerEmptyClass.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -54,7 +54,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerEmptyLambda.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -62,7 +62,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditClass.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -70,7 +70,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerNoConditLambda.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -78,7 +78,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/widgetsIdentification/LambdaOnSingleFieldWidgetNoCond.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/MouseInputListOneMethodUsed.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -94,7 +94,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/listeners/MouseInputListClass.java");
 		analyser.run();
 		assertEquals(7, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -102,7 +102,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOf.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -110,7 +110,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondOneInstanceOfElse.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -118,7 +118,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfReturn.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(17, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(18, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
@@ -132,7 +132,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerSimpleDelegation.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(27, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(27, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(12, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
@@ -144,7 +144,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSwitch.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(18, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(19, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
@@ -168,7 +168,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSimpleNestedIf.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 
 		Command cmd = new ArrayList<>(analyser.getCommands().values()).get(0).get(0);
 
@@ -220,7 +220,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfEmptyReturn.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -228,7 +228,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondInstanceOfLocalVar.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(20, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(24, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
@@ -242,7 +242,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondFragmentedCommand.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(18, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineStart());
 		assertEquals(21, new ArrayList<>(analyser.getCommands().values()).get(0).get(0).getLineEnd());
 		assertEquals(25, new ArrayList<>(analyser.getCommands().values()).get(0).get(1).getLineStart());
@@ -254,7 +254,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/RealComplexCommandExample1.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(4L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(4L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -391,7 +391,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSwitchDefault.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertTrue(analyser.getCommands().values().iterator().next().iterator().next().getConditions().get(0).effectiveStatmt instanceof CtBinaryOperator);
 	}
 
@@ -400,7 +400,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerCondSwitchDefault2.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertTrue(analyser.getCommands().values().iterator().next().iterator().next().getConditions().get(0).effectiveStatmt instanceof CtLiteral);
 	}
 
@@ -409,7 +409,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatchMethodNoBody.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -417,7 +417,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatchMethodNoBody2.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -432,7 +432,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockAllReturns.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(10, analyser.getCommands().values().iterator().next().iterator().next().getLineEnd());
 	}
 
@@ -441,7 +441,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockNoReturn.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(3, analyser.getCommands().values().iterator().next().iterator().next().getNbLines());
 	}
 
@@ -449,7 +449,7 @@ public class TestCommandAnalyser {
 	public void testFinalBlockJustReturn() {
 		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockJustReturn.java");
 		analyser.run();
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -457,7 +457,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockIsCatch.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -465,7 +465,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/FinalBlockIsThrow.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -480,7 +480,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/LocalVarOutsideListener.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
 		assertTrue(cmds.get(0).getMainStatmtEntry().isPresent());
 		assertTrue(cmds.get(1).getMainStatmtEntry().isPresent());
@@ -492,7 +492,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/SwitchCaseStrange.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -500,7 +500,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/listeners/ActionListenerTwice.java");
 		analyser.run();
 		assertEquals(2, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
 		assertTrue(cmds.get(0).getMainStatmtEntry().isPresent());
 		assertTrue(cmds.get(1).getMainStatmtEntry().isPresent());
@@ -511,7 +511,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/EmptyDispatch.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -519,7 +519,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatch2.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -527,7 +527,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/CommandStatements.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(4, analyser.getCommands().values().stream().flatMap(c -> c.stream()).iterator().next().getAllStatmts().size());
 	}
 
@@ -536,7 +536,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/refactoring/E.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		assertEquals(4, analyser.getCommands().values().stream().flatMap(c -> c.stream()).iterator().next().getAllStatmts().size());
 	}
 
@@ -559,7 +559,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/NoIfStatement.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -567,7 +567,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/listeners/MultipleListener.java");
 		analyser.run();
 		assertEquals(2, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -575,7 +575,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/refactoring/ListenerTab.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -583,7 +583,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/SuperActionListener.java");
 		analyser.run();
 		assertEquals(2, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -591,7 +591,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/IrrelevantCommandStatements.java");
 		analyser.run();
 		assertEquals(2, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -599,9 +599,28 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerLambdaFalseDispatch.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(1L, analyser.getCommands().values().stream().flatMap(c -> c.stream()).count());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
 		assertEquals(13, cmds.get(0).getMainStatmtEntry().get().getLineStart());
 		assertEquals(13, cmds.get(0).getMainStatmtEntry().get().getLineEnd());
+	}
+
+	@Test
+	public void testFalseDispatch2() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerLambdaFalseDispatch2.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
+		assertEquals(14, cmds.get(0).getMainStatmtEntry().get().getLineStart());
+		assertEquals(16, cmds.get(0).getMainStatmtEntry().get().getLineEnd());
+	}
+
+	@Test
+	public void testFalseDispatch3() {
+		analyser.addInputResource("src/test/resources/java/analysers/ActionListenerFalseDispatch3.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 }

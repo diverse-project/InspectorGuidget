@@ -3,13 +3,25 @@ package fr.inria.diverse.torgen.inspectorguidget.analyser;
 import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.ConditionalFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementsFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.LinePositionFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import fr.inria.diverse.torgen.inspectorguidget.helper.Tuple;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtCase;
@@ -29,17 +41,6 @@ import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtParameterReference;
 import spoon.reflect.visitor.filter.DirectReferenceFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private final @NotNull ClassListenerProcessor classProc;
@@ -196,7 +197,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod,
-														  final @NotNull List<CtElement> conds) {
+														  final @NotNull List<CtStatement> conds) {
 		List<Command> cmds;
 		synchronized(commands) {
 			cmds = commands.computeIfAbsent(listenerMethod, k -> new ArrayList<>());
@@ -239,7 +240,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec,
-									   final @NotNull List<CtElement> otherConds) {
+									   final @NotNull List<CtStatement> otherConds) {
 		final CtStatement elseStat =  ifStat.getElseStatement();
 		final CtStatement thenStat = ifStat.getThenStatement();
 		List<CtElement> stats = new ArrayList<>();
@@ -332,7 +333,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			// Empty so no command
 			synchronized(commands) { commands.put(listenerMethod, Collections.emptyList()); }
 		}else {
-			final List<CtElement> conds = getConditionalStatements(listenerMethod, listenerClass, new HashSet<>());
+			final List<CtStatement> conds = getConditionalStatements(listenerMethod, listenerClass, new HashSet<>());
 
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
@@ -391,28 +392,27 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private @NotNull List<CtElement> getConditionalStatements(final @Nullable CtExecutable<?> exec,
+	private @NotNull List<CtStatement> getConditionalStatements(final @Nullable CtExecutable<?> exec,
 																final @NotNull Optional<CtClass<?>> listenerClass,
-															  final @NotNull Set<CtExecutable<?>> execAnalysed) {
+															    final @NotNull Set<CtExecutable<?>> execAnalysed) {
 		if(exec==null || exec.getBody()==null) {
 			return Collections.emptyList();
 		}
 
-		final List<CtElement> conds = new ArrayList<>();
+		final List<Tuple<CtStatement, CtStatement>> conds = new ArrayList<>();
 
 		if(listenerClass.isPresent()) { // Searching for dispatched methods is not performed on lambdas.
 			conds.addAll(
 				// Getting all the methods called in the current method that use a parameter of this last.
 				// The goal is to identify the dispatched methods, recursively.
-				exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get(), true)).stream().
+			exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get(), true)).stream().
 				filter(dispatchM -> !execAnalysed.contains(dispatchM.getExecutable().getDeclaration())).
 				// For each dispatched methods, looking for conditional statements.
-				map(dispatchM -> {
+					map(dispatchM -> {
 					final CtExecutable<?> theExec = dispatchM.getExecutable().getDeclaration();
 					execAnalysed.add(theExec);
-					return getConditionalStatements(theExec, listenerClass, execAnalysed);
-				}).
-				flatMap(c -> c.stream()).collect(Collectors.toList()));
+					return getConditionalStatements(theExec, listenerClass, execAnalysed).stream().map(v -> new Tuple<>(v, (CtStatement)dispatchM));
+				}).flatMap(s -> s).collect(Collectors.toList()));
 		}
 
 		final List<CtParameterReference<?>> guiParams = exec.getParameters().stream().map(param -> param.getReference()).collect(Collectors.toList());
@@ -424,23 +424,25 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						// a listener may be defined into the current listener.
 						// So, removing the conditional statements that are not contained in the current executable.
 						filter(cond -> cond.getParent(CtExecutable.class)==exec).
+						map(v -> new Tuple<>(v, v)).
 						collect(Collectors.toList()));
 
-		// Removing the GUI conditional statements that contain other GUI conditional statements.
-		conds.removeAll(conds.stream().filter(cond -> {
+		final Set<CtStatement> condsSet = conds.stream().map(c -> c.b).collect(Collectors.toSet());
+
+		conds.removeAll(conds.parallelStream().filter(cond -> {
 			List<CtStatement> elements;
-			if(cond instanceof CtIf) {
-				final CtIf ctIf = (CtIf) cond;
-				elements = ctIf.getThenStatement()==null ? Collections.emptyList() : ctIf.getThenStatement().getElements(new ConditionalFilter());
+			if(cond.a instanceof CtIf) {
+				final CtIf ctIf = (CtIf) cond.a;
+				elements = ctIf.getThenStatement()==null ? Collections.emptyList() : ctIf.getThenStatement().getElements(new FindElementsFilter<>(condsSet));
 			}else {
-				elements = cond.getElements(new ConditionalFilter());
+				elements = cond.a.getElements(new FindElementsFilter<>(condsSet));
 			}
-			return !elements.isEmpty() &&
-					// Ignoring 'cond'
-					elements.stream().filter(cond2 -> cond!=cond2).anyMatch(cond2 -> conds.contains(cond2));
+
+			elements.remove(cond.b);
+			return !elements.isEmpty();
 		}).collect(Collectors.toList()));
 
-		return conds;
+		return conds.stream().map(t -> t.a).collect(Collectors.toList());
 	}
 
 
