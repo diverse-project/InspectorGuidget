@@ -261,6 +261,7 @@ public final class SpoonHelper {
 		final CtUnaryOperator<Boolean> neg = exp.getFactory().Core().createUnaryOperator();
 		neg.setKind(UnaryOperatorKind.NOT);
 		neg.setOperand(exp.clone());
+		neg.setPosition(exp.getPosition());
 		return neg;
 	}
 

@@ -12,6 +12,7 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 
 import java.util.ArrayList;
@@ -231,6 +232,7 @@ public class Command {
 
 	@Override
 	public String toString() {
-		return executable.getSignature()+";"+getNbLines()+";"+getOptimalCodeBlocks().stream().map(b -> b.toString()).collect(Collectors.joining(";"));
+		return (executable instanceof CtMethod<?> ? executable.getSignature() : executable.getClass().getSimpleName() ) +";"+getNbLines()+";"+
+			getOptimalCodeBlocks().stream().map(b -> b.toString()).collect(Collectors.joining(";"));
 	}
 }
