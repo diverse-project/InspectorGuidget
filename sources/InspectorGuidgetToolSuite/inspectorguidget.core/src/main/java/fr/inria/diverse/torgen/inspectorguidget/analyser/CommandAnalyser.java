@@ -247,10 +247,11 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		if(thenStat instanceof CtStatementList) {
 			stats.addAll(((CtStatementList) thenStat).getStatements());
-		} else
-			if(thenStat!=null) {
+		} else {
+			if(thenStat != null) {
 				stats.add(thenStat);
 			}
+		}
 
 		if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
 			final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
@@ -262,10 +263,11 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			// For the else block, creating a negation of the condition.
 			stats = new ArrayList<>();
 
-			if(elseStat instanceof CtStatementList)
-				stats.addAll(((CtStatementList)elseStat).getStatements());
-			else
+			if(elseStat instanceof CtStatementList) {
+				stats.addAll(((CtStatementList) elseStat).getStatements());
+			}else {
 				stats.add(elseStat);
+			}
 
 			if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
@@ -427,6 +429,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						map(v -> new Tuple<>(v, v)).
 						collect(Collectors.toList()));
 
+		// The conditionals statements that are empty are removed not to be considered furthermore.
+		conds.removeIf(cond -> cond.a instanceof CtIf && SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)cond.a));
 		final Set<CtStatement> condsSet = conds.stream().map(c -> c.b).collect(Collectors.toSet());
 
 		conds.removeAll(conds.parallelStream().filter(cond -> {
@@ -475,7 +479,6 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				analyseSingleListenerMethod(Optional.of(listenerClass), nonEmptyM.get(0));
 				break;
 			default:
-				//FIXME for the refactoring step, this step has to be improved.
 				nonEmptyM.forEach(m -> analyseSingleListenerMethod(Optional.of(listenerClass), m));
 				break;
 		}
