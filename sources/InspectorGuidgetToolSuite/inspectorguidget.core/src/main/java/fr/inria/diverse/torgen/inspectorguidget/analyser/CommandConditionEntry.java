@@ -35,6 +35,7 @@ public class CommandConditionEntry {
 
 	@Override
 	public String toString() {
-		return "CommandConditionEntry{line: " + realStatmt + " " + SpoonHelper.INSTANCE.getLinePosition(realStatmt) + "}";
+		return "CommandConditionEntry{real: " + realStatmt + ", line " + SpoonHelper.INSTANCE.getLinePosition(realStatmt) +
+			(isSameCondition() ? "" : ", effective: " + effectiveStatmt) + "}";
 	}
 }
