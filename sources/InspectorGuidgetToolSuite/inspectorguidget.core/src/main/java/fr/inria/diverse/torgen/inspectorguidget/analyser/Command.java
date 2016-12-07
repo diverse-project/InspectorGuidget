@@ -155,8 +155,8 @@ public class Command {
 				final CtBlock<?> body = invoks.get(0).getExecutable().getDeclaration().getBody();
 				if(body!=null && !body.getStatements().isEmpty()) {
 					statements.add(new CommandStatmtEntry(true, body.getStatements(), true));
+					statements.remove(main);
 				}
-				statements.remove(main);
 			}else {
 				invoks.stream().map(inv -> inv.getExecutable().getDeclaration().getBody()).filter(body -> body!=null).
 					forEach(body -> statements.add(new CommandStatmtEntry(false, body.getStatements(), true)));

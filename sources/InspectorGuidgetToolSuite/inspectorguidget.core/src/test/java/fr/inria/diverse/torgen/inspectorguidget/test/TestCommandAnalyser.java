@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtLiteral;
@@ -409,7 +410,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/SimpleDispatchMethodNoBody.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 
 	@Test
@@ -511,7 +512,10 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/EmptyDispatch.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(0L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+		Command cmd = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).get(0);
+		assertEquals(11, cmd.getMainStatmtEntry().get().getLineStart());
+		assertEquals(11, cmd.getMainStatmtEntry().get().getLineEnd());
 	}
 
 	@Test
@@ -622,5 +626,17 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
+
+	@Test
+	@Ignore
+	public void testComplexConditionalStatements() {
+		analyser.addInputResource("src/test/resources/java/analysers/ComplexConditionalStatements.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(4L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+		Command cmd = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).get(0);
+		assertEquals(25, cmd.getMainStatmtEntry().get().getLineStart());
+		assertEquals(30, cmd.getMainStatmtEntry().get().getLineEnd());
 	}
 }
