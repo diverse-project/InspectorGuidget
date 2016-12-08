@@ -1,20 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
-import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.NonAnonymClassFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import spoon.reflect.code.CtBlock;
-import spoon.reflect.code.CtCodeElement;
-import spoon.reflect.code.CtInvocation;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtParameter;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +9,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import spoon.reflect.code.CtCodeElement;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtMethod;
 
 public class Command {
 	private final @NotNull CtExecutable<?> executable;
@@ -135,34 +128,6 @@ public class Command {
 	 */
 	public @NotNull CtExecutable<?> getExecutable() {
 		return executable;
-	}
-
-	/**
-	 * Identifies local methods of the GUI controller that are used by some statements in the main entry.
-	 * The code of the identified local methods is added to the command.
-	 */
-	public void extractLocalDispatchCallWithoutGUIParam() {
-		getMainStatmtEntry().ifPresent(main -> {
-			final CtClass<?> parent = executable.getParent(new NonAnonymClassFilter());
-			final List<CtParameter<?>> params = executable.getParameters();
-
-			// Getting all the statements that are invocation of a local method without GUI parameter.
-			List<CtInvocation<?>> invoks = main.getStatmts().stream().
-											map(stat -> stat.getElements(new ClassMethodCallFilter(params, parent, false))).
-											flatMap(s -> s.stream()).collect(Collectors.toList());
-
-			if(invoks.size()==1 && main.getStatmts().size()==1 && main.getStatmts().get(0)==invoks.get(0) &&
-				invoks.get(0).isParentInitialized() && !(invoks.get(0).getParent() instanceof CtInvocation<?>)) {
-				final CtBlock<?> body = invoks.get(0).getExecutable().getDeclaration().getBody();
-				if(body!=null && !body.getStatements().isEmpty()) {
-					statements.add(new CommandStatmtEntry(true, body.getStatements(), true));
-					statements.remove(main);
-				}
-			}else {
-				invoks.stream().map(inv -> inv.getExecutable().getDeclaration().getBody()).filter(body -> body!=null).
-					forEach(body -> statements.add(new CommandStatmtEntry(false, body.getStatements(), true)));
-			}
-		});
 	}
 
 	public @NotNull List<CodeBlockPos> getOptimalCodeBlocks() {

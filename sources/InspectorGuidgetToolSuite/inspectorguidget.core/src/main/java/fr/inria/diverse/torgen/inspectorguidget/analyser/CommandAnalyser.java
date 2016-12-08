@@ -79,8 +79,6 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
 		synchronized(commands) {
 			commands.entrySet().parallelStream().forEach(entry -> entry.getValue().forEach(cmd -> {
-				cmd.extractLocalDispatchCallWithoutGUIParam();
-
 				if(!cmd.getConditions().isEmpty()) {
 					// For each command, adding the required local variable definitions.
 					cmd.addAllStatements(0,

@@ -341,7 +341,7 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
 		assertEquals(1L, cmds.size());
-		assertEquals(19, cmds.get(0).getMainStatmtEntry().get().getStatmts().get(0).getPosition().getLine());
+		assertEquals(11, cmds.get(0).getMainStatmtEntry().get().getStatmts().get(0).getPosition().getLine());
 	}
 
 	@Test
@@ -526,6 +526,8 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
+		assertEquals(9, cmds.get(0).getMainStatmtEntry().get().getStatmts().get(0).getPosition().getLine());
 	}
 
 	@Test
@@ -662,5 +664,14 @@ public class TestCommandAnalyser {
 		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
 		assertEquals(27, cmds.get(1).getMainStatmtEntry().get().getLineStart());
 		assertEquals(30, cmds.get(1).getMainStatmtEntry().get().getLineEnd());
+	}
+
+	@Test
+	@Ignore
+	public void testComplexBlob() {
+		analyser.addInputResource("src/test/resources/java/refactoring/ComplexBlobs.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(6L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 }
