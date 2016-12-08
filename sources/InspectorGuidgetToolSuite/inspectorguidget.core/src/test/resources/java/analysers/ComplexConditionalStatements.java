@@ -4,8 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Objects;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
 
 class D implements ActionListener {
 	JButton but1;

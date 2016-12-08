@@ -660,7 +660,7 @@ public class TestCommandAnalyser {
 		analyser.addInputResource("src/test/resources/java/analysers/ComplexConditionalStatements.java");
 		analyser.run();
 		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList());
-		assertEquals(29, cmds.get(1).getMainStatmtEntry().get().getLineStart());
-		assertEquals(32, cmds.get(1).getMainStatmtEntry().get().getLineEnd());
+		assertEquals(27, cmds.get(1).getMainStatmtEntry().get().getLineStart());
+		assertEquals(30, cmds.get(1).getMainStatmtEntry().get().getLineEnd());
 	}
 }
