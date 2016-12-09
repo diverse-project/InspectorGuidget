@@ -24,6 +24,7 @@ import spoon.compiler.Environment;
 import spoon.reflect.CtModel;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 
+import static org.junit.Assert.assertEquals;
 import static spoon.testing.Assert.assertThat;
 
 public class TestBlobRefactoring {
@@ -282,9 +283,9 @@ public class TestBlobRefactoring {
 	@Test
 	public void testRefactoredIfElseMultipleWidgets() throws IOException {
 		initTest(Arrays.asList(28, 37, 39), true, "src/test/resources/java/listeners/MultipleListener.java");
-		assertThat(cmdAnalyser.getModel().getRootPackage()).
-			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MultipleListenerRefactored.java").getRootPackage());
-//		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRefactored.java"), getRefactoredCode());
+//		assertThat(cmdAnalyser.getModel().getRootPackage()).
+//			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MultipleListenerRefactored.java").getRootPackage());
+		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRefactored.java"), getRefactoredCode());
 	}
 
 	@Test
@@ -297,11 +298,18 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	@Ignore
 	public void testRefactoredComplexConditionalStatements() throws IOException {
 		initTest(Arrays.asList(24, 27), true, "src/test/resources/java/analysers/ComplexConditionalStatements.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexConditionalStatements.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexConditionalStatements.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredComplexBlobs() throws IOException {
+		initTest(Arrays.asList(45, 63, 65, 56, 52, 54), true, "src/test/resources/java/refactoring/ComplexBlobs.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexBlobs.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexBlobs.java"), getRefactoredCode());
 	}
 }

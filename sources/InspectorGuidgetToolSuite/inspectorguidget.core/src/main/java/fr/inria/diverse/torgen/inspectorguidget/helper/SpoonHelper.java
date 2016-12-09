@@ -20,17 +20,20 @@ import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtBreak;
 import spoon.reflect.code.CtCFlowBreak;
 import spoon.reflect.code.CtCase;
+import spoon.reflect.code.CtCatch;
 import spoon.reflect.code.CtDo;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFor;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtLoop;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtSuperAccess;
 import spoon.reflect.code.CtSwitch;
 import spoon.reflect.code.CtSynchronized;
+import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.code.CtWhile;
@@ -315,6 +318,38 @@ public final class SpoonHelper {
 //		}
 //		System.out.println();
 //	}
+
+	/**
+	 * Returns the first parent statement or the element before this statement if the statement is a control flow statement.
+	 * @param elt The element to analyse.
+	 * @return The found element.
+	 */
+	public Optional<CtElement> getStatementParentNotCtrlFlow(@Nullable CtElement elt) {
+		CtElement res = elt;
+		boolean found = false;
+
+		while(!found && res!=null) {
+			if(res instanceof CtStatement) {
+				found = true;
+			}else {
+				if(res.isParentInitialized()) {
+					CtElement parent = res.getParent();
+					// FIXME use CtBodyHolder Spoon 5.5
+					if(parent instanceof CtIf || parent instanceof CtSwitch || parent instanceof CtLoop || parent instanceof CtTry ||
+						parent instanceof CtCatch || parent instanceof CtCase) {
+						found = true;
+					}else {
+						res = parent;
+						System.out.println(res);
+					}
+				}else {
+					res = null;
+				}
+			}
+		}
+
+		return Optional.ofNullable(res);
+	}
 
 	public List<CtVariableAccess<?>> extractUsagesOfVar(final @NotNull CtVariable<?> var) {
 		CtElement parent;

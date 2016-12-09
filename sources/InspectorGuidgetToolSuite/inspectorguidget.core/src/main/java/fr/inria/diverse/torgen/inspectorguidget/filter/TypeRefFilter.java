@@ -23,6 +23,6 @@ public class TypeRefFilter extends AbstractFilter<CtTypeReference<?>> {
 
 	@Override
 	public boolean matches(final CtTypeReference<?> element) {
-		return types.parallelStream().filter(type -> element==type || element.isSubtypeOf(type)).findFirst().isPresent();
+		return types.parallelStream().anyMatch(type -> element==type || element.isSubtypeOf(type));
 	}
 }

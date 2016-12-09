@@ -116,6 +116,6 @@ public class JabrefLauncher extends XPLauncher {
 
 	@Override
 	protected String getOutputFolder() {
-		return "/media/data/dev/refactor/jphototagger-refactored/src";
+		return "/media/data/dev/refactor/jabref-refactored/src";
 	}
 }
