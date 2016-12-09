@@ -328,7 +328,6 @@ public final class SpoonHelper {
 						found = true;
 					}else {
 						res = parent;
-						System.out.println(res);
 					}
 				}else {
 					res = null;
