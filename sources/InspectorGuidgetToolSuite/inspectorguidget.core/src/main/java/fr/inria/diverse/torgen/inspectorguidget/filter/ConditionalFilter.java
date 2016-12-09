@@ -7,7 +7,7 @@ import spoon.reflect.code.CtSwitch;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.filter.AbstractFilter;
 
-public class ConditionalFilter extends AbstractFilter<CtStatement>{
+public class ConditionalFilter extends AbstractFilter<CtStatement> {
 	public ConditionalFilter() {
 		super(CtStatement.class);
 	}

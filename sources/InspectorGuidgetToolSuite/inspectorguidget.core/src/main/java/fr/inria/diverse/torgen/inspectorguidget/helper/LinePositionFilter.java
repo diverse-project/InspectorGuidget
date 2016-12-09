@@ -14,6 +14,6 @@ public class LinePositionFilter extends LineFilter {
 
 	@Override
 	public boolean matches(final CtStatement element) {
-		return super.matches(element) && element.getPosition().getLine()>start && element.getPosition().getLine()<end;
+		return super.matches(element) && element.getPosition().getLine() > start && element.getPosition().getLine() < end;
 	}
 }

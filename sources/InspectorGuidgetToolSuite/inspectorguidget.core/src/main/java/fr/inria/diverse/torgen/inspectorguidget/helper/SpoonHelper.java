@@ -68,8 +68,8 @@ public final class SpoonHelper {
 	 */
 	public boolean isSuperCall(final @NotNull CtExecutable<?> exec, final @NotNull CtElement stat) {
 		final String execName = exec.getSimpleName();
-		return stat instanceof CtInvocation<?> && ((CtInvocation<?>)stat).getTarget() instanceof CtSuperAccess<?> &&
-			((CtInvocation<?>)stat).getExecutable().getSimpleName().equals(execName);
+		return stat instanceof CtInvocation<?> && ((CtInvocation<?>) stat).getTarget() instanceof CtSuperAccess<?> &&
+			((CtInvocation<?>) stat).getExecutable().getSimpleName().equals(execName);
 	}
 
 	/**
@@ -78,21 +78,20 @@ public final class SpoonHelper {
 	 * @return True whether the code statement is probably a log statement. False otherwise.
 	 */
 	public boolean isLogStatement(final @NotNull CtElement stat) {
-		return stat instanceof CtInvocation<?> && logNames.contains(((CtInvocation<?>)stat).getExecutable().getSimpleName());
+		return stat instanceof CtInvocation<?> && logNames.contains(((CtInvocation<?>) stat).getExecutable().getSimpleName());
 	}
 
 
-
 	public @Nullable CtType<?> getMainTypeFromElt(final @Nullable CtElement elt) {
-		if(elt==null) return null;
+		if(elt == null) return null;
 		return getMainType(elt.getParent(CtType.class));
 	}
 
 
 	public @Nullable CtType<?> getMainType(final @Nullable CtType<?> type) {
-		if(type==null) return null;
+		if(type == null) return null;
 		CtType<?> ty = getMainType(type.getParent(CtType.class));
-		if(ty==null) {
+		if(ty == null) {
 			return type;
 		}
 		return ty;
@@ -104,13 +103,12 @@ public final class SpoonHelper {
 		final BasicFilter<CtStatement> filter = new BasicFilter<CtStatement>(CtStatement.class) {
 			@Override
 			public boolean matches(final CtStatement element) {
-				return !(element instanceof CtBlock) && !(element instanceof CtCFlowBreak) && !(element instanceof CtSynchronized) &&
-					!(element instanceof CtAssert);
+				return !(element instanceof CtBlock) && !(element instanceof CtCFlowBreak) && !(element instanceof CtSynchronized) && !(element instanceof CtAssert);
 			}
 		};
 
-		return iff.getThenStatement()==null || iff.getThenStatement().getElements(filter).isEmpty() && (iff.getElseStatement()==null ||
-			iff.getElseStatement().getElements(filter).isEmpty());
+		return iff.getThenStatement() == null || iff.getThenStatement().getElements(filter).isEmpty() &&
+			(iff.getElseStatement() == null || iff.getElseStatement().getElements(filter).isEmpty());
 	}
 
 
@@ -127,20 +125,18 @@ public final class SpoonHelper {
 	 * @param butNot The research will stop as soon as the current parent is this element. Can be null.
 	 * @return The found element or nothing.
 	 */
-	public <T extends CtElement> @NotNull Optional<CtElement> getParentOf(final @Nullable CtElement elt,
-																		  final @NotNull Class<T> typeParent, final @Nullable CtElement butNot) {
-		if(elt==null)
-			return Optional.empty();
+	public <T extends CtElement> @NotNull Optional<CtElement> getParentOf(final @Nullable CtElement elt, final @NotNull Class<T> typeParent,
+																		  final @Nullable CtElement butNot) {
+		if(elt == null) return Optional.empty();
 
 		try {
 			CtElement parent = elt.getParent();
 
-			while(!typeParent.isInstance(parent) && parent!=butNot) {
+			while(!typeParent.isInstance(parent) && parent != butNot) {
 				parent = parent.getParent();
 			}
 
-			if(parent==butNot || !typeParent.isInstance(parent))
-				return Optional.empty();
+			if(parent == butNot || !typeParent.isInstance(parent)) return Optional.empty();
 
 			return Optional.of(parent);
 
@@ -158,11 +154,11 @@ public final class SpoonHelper {
 	 * @return True if ty has exec.
 	 */
 	public boolean hasMethod(final @Nullable CtType<?> ty, final @Nullable CtExecutable<?> exec) {
-		if(exec==null || ty==null) return false;
+		if(exec == null || ty == null) return false;
 
 		// Checking whether the parent is the given type ty.
 		try {
-			if(exec.getParent()==ty) return true;
+			if(exec.getParent() == ty) return true;
 		}catch(ParentNotInitializedException ex) {
 			return false;
 		}
@@ -170,13 +166,12 @@ public final class SpoonHelper {
 		// If the method is not the given type and, however, a method with its signature exists, this means
 		// that exec is overriden here. So, we ignore this overriden method.
 		final String over = exec.getSignature();
-		if(ty.getMethods().parallelStream().anyMatch(m -> m.getSignature().equals(over)))
-			return false;
+		if(ty.getMethods().parallelStream().anyMatch(m -> m.getSignature().equals(over))) return false;
 
 		// Checking whether the super class has the method.
 		// Finally, checking whether an interface has the method (a default method).
 		final CtTypeReference<?> superCl = ty.getSuperclass();
-		return superCl!=null && hasMethod(superCl.getDeclaration(), exec) ||
+		return superCl != null && hasMethod(superCl.getDeclaration(), exec) ||
 			ty.getSuperInterfaces().parallelStream().anyMatch(interf -> hasMethod(interf.getDeclaration(), exec));
 	}
 
@@ -190,16 +185,14 @@ public final class SpoonHelper {
 		List<CtElement> conds = new ArrayList<>();
 
 		// Exploring the parents to identify the conditional statements
-		while(parent!=null) {
+		while(parent != null) {
 			if(parent instanceof CtIf) {
 				conds.add(((CtIf) parent).getCondition());
 			}else if(parent instanceof CtCase<?>) {
 				conds.add(((CtCase<?>) parent).getCaseExpression());
 				CtSwitch<?> switzh = parent.getParent(CtSwitch.class);
-				if(switzh==null)
-					System.err.println("Cannot find the switch statement from the case statement: " + parent);
-				else
-					conds.add(switzh.getSelector());
+				if(switzh == null) System.err.println("Cannot find the switch statement from the case statement: " + parent);
+				else conds.add(switzh.getSelector());
 			}else if(parent instanceof CtWhile) {
 				conds.add(((CtWhile) parent).getLoopingExpression());
 			}else if(parent instanceof CtDo) {
@@ -216,36 +209,32 @@ public final class SpoonHelper {
 
 
 	public int getLinePosition(final CtElement elt) {
-		if(elt==null)
-			return -1;
+		if(elt == null) return -1;
 
 		SourcePosition pos = elt.getPosition();
 		CtElement parent = elt.isParentInitialized() ? elt.getParent() : null;
 
-		while(pos==null && parent!=null) {
+		while(pos == null && parent != null) {
 			pos = parent.getPosition();
 			parent = parent.isParentInitialized() ? parent.getParent() : null;
 		}
 
-		if(pos==null)
-			return -1;
+		if(pos == null) return -1;
 		return pos.getLine();
 	}
 
 	public @NotNull String formatPosition(final @Nullable SourcePosition position) {
-		if(position==null)
-			return "";
+		if(position == null) return "";
 
-		return "in " + position.getFile().getName()+":L"+position.getLine()+":"+position.getEndLine()
-				+",C"+position.getColumn()+":"+position.getEndColumn();
+		return "in " + position.getFile().getName() + ":L" + position.getLine() + ":" + position.getEndLine() + ",C" +
+			position.getColumn() + ":" + position.getEndColumn();
 	}
 
 
 	public @NotNull Set<CtLocalVariable<?>> getAllLocalVarDeclaration(final @NotNull CtElement elt) {
 		return elt.getElements(new LocalVariableAccessFilter()).stream().map(varRef -> {
 			Set<CtLocalVariable<?>> localVars = getAllLocalVarDeclaration(varRef.getDeclaration());
-			if(varRef.getDeclaration() instanceof CtLocalVariable<?>)
-				localVars.add((CtLocalVariable<?>) varRef.getDeclaration());
+			if(varRef.getDeclaration() instanceof CtLocalVariable<?>) localVars.add((CtLocalVariable<?>) varRef.getDeclaration());
 			return localVars;
 		}).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}
@@ -268,8 +257,7 @@ public final class SpoonHelper {
 		return neg;
 	}
 
-	public CtExpression<Boolean> andBoolExpression(final @NotNull CtExpression<Boolean> exp1, final @NotNull CtExpression<Boolean> exp2,
-												   final boolean clone) {
+	public CtExpression<Boolean> andBoolExpression(final @NotNull CtExpression<Boolean> exp1, final @NotNull CtExpression<Boolean> exp2, final boolean clone) {
 		final CtBinaryOperator<Boolean> and = exp1.getFactory().Core().createBinaryOperator();
 		and.setKind(BinaryOperatorKind.AND);
 
@@ -285,7 +273,7 @@ public final class SpoonHelper {
 
 
 	public CtExpression<Boolean> createEqExpressionFromSwitchCase(final @NotNull CtSwitch<?> switchStat, final @NotNull CtCase<?> caze) {
-		if(caze.getCaseExpression()==null) {// i.e. default case
+		if(caze.getCaseExpression() == null) {// i.e. default case
 			return switchStat.getCases().stream().filter(c -> c.getCaseExpression() != null).
 				map(c -> negBoolExpression(createEqExpressionFromSwitchCase(switchStat, c))).reduce((a, b) -> andBoolExpression(a, b, false)).
 				orElseGet(() -> switchStat.getFactory().Code().createLiteral(Boolean.TRUE));
@@ -302,22 +290,22 @@ public final class SpoonHelper {
 		return exp;
 	}
 
-//	/**
-//	 * Shows the parents' class name and the position of these parents in the code of the given element.
-//	 * @param element The element to scrutinise. Can be null.
-//	 */
-//	public void showParentsClassName(final @Nullable CtElement element) {
-//		if(element==null) return;
-//		CtElement elt = element;
-//		CtElement parent;
-//
-//		while(elt.isParentInitialized() && elt.getParent()!=null) {
-//			parent = elt.getParent();
-//			System.out.print(parent.getClass().getSimpleName() + " " + formatPosition(parent.getPosition()) + " -> ");
-//			elt = parent;
-//		}
-//		System.out.println();
-//	}
+	//	/**
+	//	 * Shows the parents' class name and the position of these parents in the code of the given element.
+	//	 * @param element The element to scrutinise. Can be null.
+	//	 */
+	//	public void showParentsClassName(final @Nullable CtElement element) {
+	//		if(element==null) return;
+	//		CtElement elt = element;
+	//		CtElement parent;
+	//
+	//		while(elt.isParentInitialized() && elt.getParent()!=null) {
+	//			parent = elt.getParent();
+	//			System.out.print(parent.getClass().getSimpleName() + " " + formatPosition(parent.getPosition()) + " -> ");
+	//			elt = parent;
+	//		}
+	//		System.out.println();
+	//	}
 
 	/**
 	 * Returns the first parent statement or the element before this statement if the statement is a control flow statement.
@@ -328,7 +316,7 @@ public final class SpoonHelper {
 		CtElement res = elt;
 		boolean found = false;
 
-		while(!found && res!=null) {
+		while(!found && res != null) {
 			if(res instanceof CtStatement) {
 				found = true;
 			}else {
@@ -356,8 +344,7 @@ public final class SpoonHelper {
 
 		if(var instanceof CtLocalVariable<?>) {
 			parent = var.getParent(CtBlock.class);
-		}
-		else if(var.getVisibility()==null) {
+		}else if(var.getVisibility() == null) {
 			parent = var.getParent(CtPackage.class);
 			if(parent == null) parent = var.getParent(CtClass.class);
 		}else {
@@ -378,7 +365,7 @@ public final class SpoonHelper {
 			}
 		}
 
-		if(parent!=null) {
+		if(parent != null) {
 			return parent.getElements(new MyVariableAccessFilter(var));
 		}
 		//TODO find usages in method when the var is given as a parameter.

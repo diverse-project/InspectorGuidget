@@ -44,7 +44,7 @@ public final class WidgetHelper {
 
 	public CtTypeReference<?> getActionRef(final @NotNull Factory factory) {
 		synchronized(LOCK) {
-			if(actionRef==null) {
+			if(actionRef == null) {
 				actionRef = factory.Type().createReference(javax.swing.AbstractAction.class);
 			}
 			return actionRef;
@@ -201,13 +201,13 @@ public final class WidgetHelper {
 	 * @return The found interface or nothing. Cannot be null.
 	 */
 	public @NotNull Optional<CtType<?>> getListenerInterface(@Nullable CtExecutable<?> exec) {
-		if(exec==null) {
+		if(exec == null) {
 			return Optional.empty();
 		}
 
 		CtExecutable<?> listenerExec = listenerMethodPrototypes.get(exec.getSignature());
 
-		if(listenerExec==null) {
+		if(listenerExec == null) {
 			return Optional.empty();
 		}
 
@@ -216,15 +216,15 @@ public final class WidgetHelper {
 
 
 	public boolean isListenerClassMethod(final @NotNull CtExecutable<?> exec) {
-		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) &&
-			(exec instanceof CtLambda<?> || listenerMethodPrototypes.get(exec.getSignature())!=null);
+		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) && (exec instanceof CtLambda<?> ||
+			listenerMethodPrototypes.get(exec.getSignature()) != null);
 	}
 
 	public boolean isListenerClass(final @Nullable CtTypeInformation type, final @NotNull Factory factory) {
 		synchronized(LOCK) {
 			if(eventListenerRef == null && type != null) eventListenerRef = factory.Type().createReference(java.util.EventListener.class);
 		}
-		return type!=null && type.isSubtypeOf(eventListenerRef) && !type.isSubtypeOf(getActionRef(factory));
+		return type != null && type.isSubtypeOf(eventListenerRef) && !type.isSubtypeOf(getActionRef(factory));
 	}
 
 	public @NotNull List<CtTypeReference<?>> getWidgetTypes(final @NotNull Factory factory) {
@@ -267,7 +267,7 @@ public final class WidgetHelper {
 	}
 
 	public boolean hasRelevantCommandStatement(final @NotNull CtExecutable<?> exec, final @NotNull List<CtElement> stats) {
-		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> !(stat instanceof CtThrow) && !SpoonHelper.INSTANCE.isReturnBreakStatement(stat) &&
-			!SpoonHelper.INSTANCE.isSuperCall(exec, stat) && !SpoonHelper.INSTANCE.isLogStatement(stat));
+		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> !(stat instanceof CtThrow) &&
+			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(exec, stat) && !SpoonHelper.INSTANCE.isLogStatement(stat));
 	}
 }

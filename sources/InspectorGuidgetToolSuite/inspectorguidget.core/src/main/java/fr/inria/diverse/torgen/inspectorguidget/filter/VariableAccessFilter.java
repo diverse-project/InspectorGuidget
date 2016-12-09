@@ -6,6 +6,6 @@ import spoon.reflect.visitor.filter.AbstractFilter;
 public class VariableAccessFilter extends AbstractFilter<CtVariableAccess<?>> {
 	@Override
 	public boolean matches(final CtVariableAccess<?> element) {
-		return element!=null;
+		return element != null;
 	}
 }

@@ -6,6 +6,6 @@ import spoon.reflect.visitor.filter.AbstractFilter;
 public class StringLiteralFilter extends AbstractFilter<CtLiteral<?>> {
 	@Override
 	public boolean matches(final CtLiteral<?> element) {
-		return element!=null && element.getValue() instanceof String;
+		return element != null && element.getValue() instanceof String;
 	}
 }

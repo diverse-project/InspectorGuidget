@@ -15,6 +15,6 @@ public class ThisAccessFilter extends AbstractFilter<CtThisAccess<?>> {
 
 	@Override
 	public boolean matches(final CtThisAccess<?> element) {
-		return implicit==element.isImplicit() && super.matches(element);
+		return implicit == element.isImplicit() && super.matches(element);
 	}
 }

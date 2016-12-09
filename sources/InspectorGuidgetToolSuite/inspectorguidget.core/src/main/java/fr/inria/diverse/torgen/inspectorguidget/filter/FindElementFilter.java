@@ -16,6 +16,6 @@ public class FindElementFilter extends AbstractFilter<CtElement> {
 
 	@Override
 	public boolean matches(final CtElement element) {
-		return identify ? element==elt : element.equals(elt);
+		return identify ? element == elt : element.equals(elt);
 	}
 }

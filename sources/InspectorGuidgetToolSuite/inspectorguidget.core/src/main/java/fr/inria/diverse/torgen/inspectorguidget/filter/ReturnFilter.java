@@ -9,6 +9,6 @@ public class ReturnFilter implements Filter<CtReturn<?>> {
 
 	@Override
 	public boolean matches(CtReturn<?> ret) {
-		return ret!=null;
+		return ret != null;
 	}
 }
