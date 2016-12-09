@@ -1,6 +1,5 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -28,15 +27,15 @@ class A extends JPanel {
 		});
 		remove.addActionListener((ActionEvent e) -> removeSelected());
 
-		if(bar) {
+		if (bar) {
 			input = new JTextField(20);
 			input.addActionListener((ActionEvent e) -> addField(input.getText()));
-		}else {
+		} else {
 			sel = new JComboBox<>();
 			sel.setEditable(true);
 		}
 
-		if(foo) {
+		if (foo) {
 			up = new JButton();
 			down = new JButton();
 			up.addActionListener((ActionEvent e) -> move(-1));
@@ -54,5 +53,13 @@ class A extends JPanel {
 
 	private void move(int dy) {
 		System.out.println(dy);
+	}
+
+	@Override
+	public void setEnabled(boolean en) {
+		if ((up) != null) {
+			up.setEnabled(en);
+			down.setEnabled(en);
+		}
 	}
 }

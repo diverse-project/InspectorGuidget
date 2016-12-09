@@ -58,16 +58,17 @@ public abstract class XPLauncher {
 		finder.process();
 
 		final Set<CtType<?>> collectedTypes = new HashSet<>();
-		blobAnalyser.getBlobs().entrySet().stream().filter(e ->
-				(e.getKey().getSimpleName().equals("valueChanged") && e.getKey().getPosition().getLine()==329) ||
-					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==361) ||
-					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==321) ||
-					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==130)
-		).map(e -> e.getValue()).flatMap(s -> s.stream()).forEach(cmd -> {
+		blobAnalyser.getBlobs().entrySet().stream().
+//			filter(e ->
+//				(e.getKey().getSimpleName().equals("valueChanged") && e.getKey().getPosition().getLine()==329) ||
+//					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==361) ||
+//					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==321)
+//					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==130)
+//		).
+		map(e -> e.getValue()).flatMap(s -> s.stream()).forEach(cmd -> {
 			System.out.println("Blob found in " + cmd);
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
-
 			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), genRefacClassesOnly);
 			refactor.execute();
 			collectedTypes.addAll(refactor.getRefactoredTypes());

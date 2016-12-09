@@ -191,7 +191,7 @@ public class CommandWidgetFinder {
 		final Set<CtVariable<?>> vars = cmd.getConditions().parallelStream().
 			// Must ignore the conditions of if statements when in an else block (in this case the effective if statement is a negation of the
 			// real conditions, so they are different)
-			filter(cond -> cond.realStatmt==cond.effectiveStatmt || cond.realStatmt.isParentInitialized() && !(cond.realStatmt.getParent() instanceof CtIf)).
+			filter(cond -> cond.isSameCondition() || cond.realStatmt.isParentInitialized() && !(cond.realStatmt.getParent() instanceof CtIf)).
 			// Getting the variables used in the conditions
 			map(cond -> cond.effectiveStatmt.getElements(filter)).flatMap(s -> s.stream()).
 			// Keeping those that declaration are not null
@@ -199,7 +199,7 @@ public class CommandWidgetFinder {
 			// Collecting them
 			distinct().collect(Collectors.toCollection(HashSet::new));
 
-		return widgetUsages.parallelStream().
+		List<VarMatch> collect = widgetUsages.parallelStream().
 			map(usage -> usage.accesses.parallelStream().filter(m -> {
 				// Ignoring the statements that are parts of a listener method. The statements that must be analysed
 				// or those that configure the widgetUsages.
@@ -210,20 +210,22 @@ public class CommandWidgetFinder {
 					return true;
 				}
 			}).
-			// Getting the code statement that uses the variable
-			map(varac -> varac.getParent(CtStatement.class)).
-			filter(stat -> stat != null).
-			// Looking for the variables used in the conditions in the code statement
-			map(stat -> vars.stream().filter(varr -> !stat.getElements(new MyVariableAccessFilter(varr)).isEmpty()).
-			collect(Collectors.toList())).
-			filter(list -> !list.isEmpty()).
-			map(var -> new VarMatch(usage, var))).
+				// Getting the code statement that uses the variable
+					map(varac -> SpoonHelper.INSTANCE.getStatementParentNotCtrlFlow(varac)).
+					filter(stat -> stat.isPresent()).
+				// Looking for the variables used in the conditions in the code statement
+					map(stat -> vars.stream().filter(varr -> !stat.get().getElements(new MyVariableAccessFilter(varr)).isEmpty()).
+					collect(Collectors.toList())).
+					filter(list -> !list.isEmpty()).
+					map(var -> new VarMatch(usage, var))).
 			// Collecting all the variables used in both the command's conditions and the code statements that configure widgetUsages
-			flatMap(s -> s).collect(Collectors.toList());
+				flatMap(s -> s).collect(Collectors.toList());
 
-//		if(widget.size()>1) {
+		//		if(widget.size()>1) {
 //			System.err.println("MORE THAN ONE WIDGET FOUND USING VARIABLES: " + widgetUsages + " " + cmd);
 //		}
+
+		return collect;
 	}
 
 

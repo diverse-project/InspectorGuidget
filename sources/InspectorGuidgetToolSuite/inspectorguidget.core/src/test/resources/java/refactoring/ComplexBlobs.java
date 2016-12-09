@@ -78,4 +78,12 @@ class A extends JPanel implements ActionListener {
 	private void move(int dy) {
 		System.out.println(dy);
 	}
+
+	@Override
+	public void setEnabled(boolean en) {
+		if (up != null) {
+			up.setEnabled(en);
+			down.setEnabled(en);
+		}
+	}
 }
