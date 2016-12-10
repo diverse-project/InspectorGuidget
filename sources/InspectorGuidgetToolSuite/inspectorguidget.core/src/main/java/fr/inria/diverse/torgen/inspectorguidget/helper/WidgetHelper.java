@@ -216,15 +216,22 @@ public final class WidgetHelper {
 
 
 	public boolean isListenerClassMethod(final @NotNull CtExecutable<?> exec) {
-		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory()) && (exec instanceof CtLambda<?> ||
+		return isListenerClass(exec.getReference().getDeclaringType(), exec.getFactory(), null) && (exec instanceof CtLambda<?> ||
 			listenerMethodPrototypes.get(exec.getSignature()) != null);
 	}
 
-	public boolean isListenerClass(final @Nullable CtTypeInformation type, final @NotNull Factory factory) {
+	/**
+	 * Checks whether the given type is a listener.
+	 * @param type The type to check.
+	 * @param factory The Spoon factory to use.
+	 * @param ofType The type that 'type" must conform to. May be null.
+	 * @return True if the given type is a listener (and conforms the given 'ofType'). False otherwise.
+	 */
+	public boolean isListenerClass(final @Nullable CtTypeInformation type, final @NotNull Factory factory, final @Nullable CtType<?> ofType) {
 		synchronized(LOCK) {
 			if(eventListenerRef == null && type != null) eventListenerRef = factory.Type().createReference(java.util.EventListener.class);
 		}
-		return type != null && type.isSubtypeOf(eventListenerRef) && !type.isSubtypeOf(getActionRef(factory));
+		return type != null && type.isSubtypeOf(eventListenerRef) && !type.isSubtypeOf(getActionRef(factory)) && (ofType==null || type.equals(ofType.getReference()));
 	}
 
 	public @NotNull List<CtTypeReference<?>> getWidgetTypes(final @NotNull Factory factory) {

@@ -307,16 +307,39 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredComplexBlobs() throws IOException {
-		initTest(Arrays.asList(45, 52, 54, 56, 63,65), true, "src/test/resources/java/refactoring/ComplexBlobs.java");
+		initTest(Arrays.asList(45, 52, 54, 56, 63, 65), true, "src/test/resources/java/refactoring/ComplexBlobs.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexBlobs.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexBlobs.java"), getRefactoredCode());
 	}
 
 	@Test
-	@Ignore // Do not know why it does not work.
+	public void testRefactoredComplexBlobsDisorder2() throws IOException {
+		initTest(Arrays.asList(56, 63, 65, 45, 52, 54), true, "src/test/resources/java/refactoring/ComplexBlobs.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexBlobs.java").getRootPackage());
+		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexBlobs.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredComplexBlobsDisorder3() throws IOException {
+		initTest(Arrays.asList(65, 56, 63, 54, 45, 52), true, "src/test/resources/java/refactoring/ComplexBlobs.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexBlobs.java").getRootPackage());
+		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexBlobs.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredComplexBlobsDisorder4() throws IOException {
+		initTest(Arrays.asList(45, 65, 56, 52, 63, 54), true, "src/test/resources/java/refactoring/ComplexBlobs.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexBlobs.java").getRootPackage());
+		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexBlobs.java"), getRefactoredCode());
+	}
+
+	@Test
 	public void testRefactoredAdHocListenerReg() throws IOException {
-		initTest(Collections.singletonList(19), true, "src/test/resources/java/refactoring/AdhocListenerReg.java");
+		initTest(Collections.singletonList(21), true, "src/test/resources/java/refactoring/AdhocListenerReg.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/AdhocListenerRegRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/AdhocListenerRegRefactored.java"), getRefactoredCode());

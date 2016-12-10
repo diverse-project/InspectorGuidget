@@ -58,7 +58,7 @@ public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<
 		//				}
 
 		// Case GENERIC
-		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(type, getFactory())) {
+		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(type, getFactory(), null)) {
 			processMethods(lambda);
 		}
 	}
@@ -85,6 +85,6 @@ public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<
 
 	@Override
 	public boolean isToBeProcessed(final @NotNull CtLambda<?> candidate) {
-		return WidgetHelper.INSTANCE.isListenerClass(candidate.getType(), getFactory());
+		return WidgetHelper.INSTANCE.isListenerClass(candidate.getType(), getFactory(), null);
 	}
 }

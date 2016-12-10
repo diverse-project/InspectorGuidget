@@ -199,8 +199,7 @@ public class CommandWidgetFinder {
 			// Collecting them
 			distinct().collect(Collectors.toCollection(HashSet::new));
 
-		List<VarMatch> collect = widgetUsages.parallelStream().
-			map(usage -> usage.accesses.parallelStream().filter(m -> {
+		return widgetUsages.parallelStream().map(usage -> usage.accesses.parallelStream().filter(m -> {
 				// Ignoring the statements that are parts of a listener method. The statements that must be analysed
 				// or those that configure the widgetUsages.
 				try {
@@ -211,21 +210,15 @@ public class CommandWidgetFinder {
 				}
 			}).
 				// Getting the code statement that uses the variable
-					map(varac -> SpoonHelper.INSTANCE.getStatementParentNotCtrlFlow(varac)).
-					filter(stat -> stat.isPresent()).
+				map(varac -> SpoonHelper.INSTANCE.getStatementParentNotCtrlFlow(varac)).
+				filter(stat -> stat.isPresent()).
 				// Looking for the variables used in the conditions in the code statement
-					map(stat -> vars.stream().filter(varr -> !stat.get().getElements(new MyVariableAccessFilter(varr)).isEmpty()).
-					collect(Collectors.toList())).
-					filter(list -> !list.isEmpty()).
-					map(var -> new VarMatch(usage, var))).
-			// Collecting all the variables used in both the command's conditions and the code statements that configure widgetUsages
+				map(stat -> vars.stream().filter(varr -> !stat.get().getElements(new MyVariableAccessFilter(varr)).isEmpty()).
+				collect(Collectors.toList())).
+				filter(list -> !list.isEmpty()).
+				map(var -> new VarMatch(usage, var))).
+				// Collecting all the variables used in both the command's conditions and the code statements that configure widgetUsages
 				flatMap(s -> s).collect(Collectors.toList());
-
-		//		if(widget.size()>1) {
-//			System.err.println("MORE THAN ONE WIDGET FOUND USING VARIABLES: " + widgetUsages + " " + cmd);
-//		}
-
-		return collect;
 	}
 
 

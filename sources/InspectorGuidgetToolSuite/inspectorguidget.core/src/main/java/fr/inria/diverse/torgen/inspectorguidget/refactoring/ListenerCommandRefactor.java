@@ -93,7 +93,8 @@ public class ListenerCommandRefactor {
 					map(acc -> acc.getParent(CtStatement.class)).filter(stat -> stat != null).
 				// Gathering the method call that matches listener registration: single parameter that is a listener type.
 					map(stat -> stat.getElements((CtInvocation<?> exec) -> exec.getExecutable().getParameters().size() == 1 &&
-					WidgetHelper.INSTANCE.isListenerClass(exec.getExecutable().getParameters().get(0), exec.getFactory()))).
+					WidgetHelper.INSTANCE.isListenerClass(exec.getExecutable().getParameters().get(0),
+						exec.getFactory(), WidgetHelper.INSTANCE.getListenerInterface(cmd.getExecutable()).orElse(null)))).
 					flatMap(s -> s.stream()).collect(Collectors.toList());
 
 			if(invok.size()==1) {
@@ -322,39 +323,6 @@ public class ListenerCommandRefactor {
 	}
 
 
-	private void refactorRegistrationAsLambda(final @NotNull CtInvocation<?> invok) {
-		final Factory fac = invok.getFactory();
-		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
-		final CtLambda<?> lambda = fac.Core().createLambda();
-		final List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
-
-		removeLastBreakReturn(stats);
-		removeActionCommandStatements();
-		changeNonLocalMethodInvocations(stats, invok);
-		changeNonLocalFieldAccesses(stats, invok);
-
-		// Removing the unused local variables of the command.
-		removeUnusedLocalVariables(stats);
-
-		if(stats.size()==1 && stats.get(0) instanceof CtExpression<?>) {
-			lambda.setExpression((CtExpression)stats.get(0));
-		} else {
-			final CtBlock block = fac.Core().createBlock();
-			stats.stream().filter(stat -> stat instanceof CtStatement).forEach(stat -> block.insertEnd((CtStatement)stat));
-			lambda.setBody(block);
-		}
-
-		CtParameter<?> oldParam = cmd.getExecutable().getParameters().get(0);
-		CtParameter<?> param = fac.Executable().createParameter(lambda, oldParam.getType(), oldParam.getSimpleName());
-		lambda.setParameters(Collections.singletonList(param));
-		lambda.setType(typeRef);
-		invok.setArguments(Collections.singletonList(lambda));
-		collectRefactoredType(invok);
-
-		changeThisAccesses(stats, invok);
-	}
-
-
 	private void refactorRegistrationAsAnonClass(final @NotNull CtInvocation<?> invok) {
 		final Factory fac = invok.getFactory();
 		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
@@ -396,6 +364,39 @@ public class ListenerCommandRefactor {
 		newCl.setExecutable(ref);
 
 		invok.setArguments(Collections.singletonList(newCl));
+	}
+
+
+	private void refactorRegistrationAsLambda(final @NotNull CtInvocation<?> invok) {
+		final Factory fac = invok.getFactory();
+		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getReference();
+		final CtLambda<?> lambda = fac.Core().createLambda();
+		final List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
+
+		removeLastBreakReturn(stats);
+		removeActionCommandStatements();
+		changeNonLocalMethodInvocations(stats, invok);
+		changeNonLocalFieldAccesses(stats, invok);
+
+		// Removing the unused local variables of the command.
+		removeUnusedLocalVariables(stats);
+
+		if(stats.size()==1 && stats.get(0) instanceof CtExpression<?>) {
+			lambda.setExpression((CtExpression)stats.get(0));
+		} else {
+			final CtBlock block = fac.Core().createBlock();
+			stats.stream().filter(stat -> stat instanceof CtStatement).forEach(stat -> block.insertEnd((CtStatement)stat));
+			lambda.setBody(block);
+		}
+
+		CtParameter<?> oldParam = cmd.getExecutable().getParameters().get(0);
+		CtParameter<?> param = fac.Executable().createParameter(lambda, oldParam.getType(), oldParam.getSimpleName());
+		lambda.setParameters(Collections.singletonList(param));
+		lambda.setType(typeRef);
+		invok.setArguments(Collections.singletonList(lambda));
+		collectRefactoredType(invok);
+
+		changeThisAccesses(stats, invok);
 	}
 
 

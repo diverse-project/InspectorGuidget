@@ -1,19 +1,33 @@
 package java.refactoring;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-class A {
-	B but;
+class A implements ListSelectionListener {
+	B b;
 
 	A() {
-		but = new B();
-		but.addListener((ActionEvent e) -> System.out.println("coucou"));
+		b = new B();
+		b.addListSelectionListener(this);
+		b.addListener((ActionEvent e) -> System.out.println("coucou"));
 	}
 
-	class B extends JButton {
+	public void valueChanged(ListSelectionEvent e) {
+	}
+
+	class B extends JPanel implements ListSelectionListener {
 		public void addListener(ActionListener e) {
+
+		}
+
+		public void valueChanged(ListSelectionEvent e) {
+
+		}
+
+		public void addListSelectionListener(ListSelectionListener l) {
 
 		}
 	}
