@@ -344,4 +344,12 @@ public class TestBlobRefactoring {
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/AdhocListenerRegRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/AdhocListenerRegRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredMultipleListenerReg() throws IOException {
+		initTest(Collections.singletonList(21), true, "src/test/resources/java/refactoring/MultipleListenerReg.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MultipleListenerRegRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRegRefactored.java"), getRefactoredCode());
+	}
 }

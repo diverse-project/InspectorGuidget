@@ -92,9 +92,15 @@ public class ListenerCommandRefactor {
 				// gathering their parent statement.
 					map(acc -> acc.getParent(CtStatement.class)).filter(stat -> stat != null).
 				// Gathering the method call that matches listener registration: single parameter that is a listener type.
-					map(stat -> stat.getElements((CtInvocation<?> exec) -> exec.getExecutable().getParameters().size() == 1 &&
-					WidgetHelper.INSTANCE.isListenerClass(exec.getExecutable().getParameters().get(0),
-						exec.getFactory(), WidgetHelper.INSTANCE.getListenerInterface(cmd.getExecutable()).orElse(null)))).
+					map(stat -> stat.getElements((CtInvocation<?> exec) ->
+						// Listener registration methods usually have a single parameter
+						exec.getExecutable().getParameters().size() == 1 &&
+						// Checking that the type of the given parameter matches the type that contains the analysed executable method
+						cmd.getExecutable().getParent(CtType.class).getReference().equals(exec.getArguments().get(0).getType()) &&
+						// Checking that the type of the invocation parameter is a listener type.
+						WidgetHelper.INSTANCE.isListenerClass(exec.getExecutable().getParameters().get(0),
+							exec.getFactory(), WidgetHelper.INSTANCE.getListenerInterface(cmd.getExecutable()).orElse(null))
+				)).
 					flatMap(s -> s.stream()).collect(Collectors.toList());
 
 			if(invok.size()==1) {
