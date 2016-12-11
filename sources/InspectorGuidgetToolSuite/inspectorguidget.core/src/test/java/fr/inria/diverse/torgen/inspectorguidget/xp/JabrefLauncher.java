@@ -1,7 +1,10 @@
 package fr.inria.diverse.torgen.inspectorguidget.xp;
 
+import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 
 public class JabrefLauncher extends XPLauncher {
 
@@ -15,6 +18,18 @@ public class JabrefLauncher extends XPLauncher {
 	protected List<String> getInputResoures() {
 		return Arrays.asList("/media/data/dev/repoAnalysisBlob/jabref/src/main/java",
 			"/media/data/dev/repoAnalysisBlob/jabref/src/main/gen");
+	}
+
+
+	@Override
+	protected @NotNull List<Command> filterBlobsToRefactor() {
+		return blobAnalyser.getBlobs().entrySet().stream().
+			filter(e ->
+				(e.getKey().getSimpleName().equals("valueChanged") && e.getKey().getPosition().getLine()==329) ||
+					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==361) ||
+					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==321) ||
+					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==130)
+			).map(e -> e.getValue()).flatMap(s -> s.stream()).collect(Collectors.toList());
 	}
 
 	@Override

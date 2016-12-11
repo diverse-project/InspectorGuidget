@@ -6,13 +6,6 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
-import org.apache.log4j.Level;
-import spoon.compiler.Environment;
-import spoon.reflect.declaration.CtType;
-import spoon.reflect.factory.Factory;
-import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
-import spoon.support.JavaOutputProcessor;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -23,12 +16,19 @@ import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
+import org.apache.log4j.Level;
+import org.jetbrains.annotations.NotNull;
+import spoon.compiler.Environment;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.factory.Factory;
+import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
+import spoon.support.JavaOutputProcessor;
 
 public abstract class XPLauncher {
-	private WidgetProcessor widgetProc;
-	private CommandWidgetFinder finder;
-	private BlobListenerAnalyser blobAnalyser;
-	private final boolean genRefacClassesOnly = true;
+	protected WidgetProcessor widgetProc;
+	protected CommandWidgetFinder finder;
+	protected BlobListenerAnalyser blobAnalyser;
+	protected final boolean genRefacClassesOnly = true;
 
 	public void run() {
 		spoon.Launcher.LOGGER.setLevel(Level.OFF);
@@ -58,14 +58,7 @@ public abstract class XPLauncher {
 		finder.process();
 
 		final Set<CtType<?>> collectedTypes = new HashSet<>();
-		blobAnalyser.getBlobs().entrySet().stream().
-//			filter(e ->
-//				(e.getKey().getSimpleName().equals("valueChanged") && e.getKey().getPosition().getLine()==329) ||
-//					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==361) ||
-//					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==321)
-//					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==130)
-//		).
-		map(e -> e.getValue()).flatMap(s -> s.stream()).forEach(cmd -> {
+		filterBlobsToRefactor().forEach(cmd -> {
 			System.out.println("Blob found in " + cmd);
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
@@ -94,6 +87,10 @@ public abstract class XPLauncher {
 				processor.createJavaFile(type);
 			});
 		}
+	}
+
+	protected @NotNull List<Command> filterBlobsToRefactor() {
+		return blobAnalyser.getBlobs().entrySet().stream().map(e -> e.getValue()).flatMap(s -> s.stream()).collect(Collectors.toList());
 	}
 
 	protected abstract List<String> getInputResoures();
