@@ -667,11 +667,45 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
 	public void testComplexBlob() {
 		analyser.addInputResource("src/test/resources/java/refactoring/ComplexBlobs.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(6L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
+
+	@Test
+	public void testSwitchCaseWithLog() {
+		analyser.addInputResource("src/test/resources/java/analysers/SwitchCaseWithLog.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
+
+	@Test
+	@Ignore
+	public void testUndirectActionCmd() {
+		analyser.addInputResource("src/test/resources/java/analysers/UndirectActionCmd.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
+
+	@Test
+	@Ignore
+	public void testStrangeMouseInput() {
+		analyser.addInputResource("src/test/resources/java/analysers/StrangeMouseInput.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
+
+	@Test
+	@Ignore
+	public void testSuperActionListener2() {
+		analyser.addInputResource("src/test/resources/java/analysers/SuperActionListener2.java");
+		analyser.run();
+		assertEquals(2, analyser.getCommands().values().size());
+		assertEquals(4L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 }

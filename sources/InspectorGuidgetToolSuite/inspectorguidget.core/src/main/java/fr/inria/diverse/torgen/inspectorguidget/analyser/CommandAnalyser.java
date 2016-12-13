@@ -9,7 +9,6 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.LinePositionFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.Tuple;
-import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
 import java.util.ArrayList;
@@ -97,8 +96,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		synchronized(commands) {
 			commands.entrySet().forEach(entry -> {
-				entry.getValue().removeIf(
-					cmd -> cmd.getStatements().isEmpty() || !WidgetHelper.INSTANCE.hasRelevantCommandStatement(cmd.getExecutable(), cmd.getAllLocalStatmtsOrdered()));
+				entry.getValue().removeIf(cmd -> !cmd.hasRelevantCommandStatement());
 
 				List<Command> badcmd = entry.getValue().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
 										cmd.getMainStatmtEntry().get().getStatmts().isEmpty()).collect(Collectors.toList());

@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtLambda;
-import spoon.reflect.code.CtThrow;
-import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeInformation;
@@ -271,10 +269,5 @@ public final class WidgetHelper {
 	public boolean isTypeRefAToolkitWidget(final @NotNull CtTypeReference<?> typeref) {
 		final String qName = typeref.getQualifiedName();
 		return getWidgetPackages().stream().anyMatch(pkg -> qName.startsWith(pkg));
-	}
-
-	public boolean hasRelevantCommandStatement(final @NotNull CtExecutable<?> exec, final @NotNull List<CtElement> stats) {
-		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> !(stat instanceof CtThrow) &&
-			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(exec, stat) && !SpoonHelper.INSTANCE.isLogStatement(stat));
 	}
 }

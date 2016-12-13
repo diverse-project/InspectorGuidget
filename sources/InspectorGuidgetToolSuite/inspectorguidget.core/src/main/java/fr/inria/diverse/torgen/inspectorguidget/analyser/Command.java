@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import java.util.ArrayList;
@@ -7,14 +8,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtCodeElement;
+import spoon.reflect.code.CtThrow;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtVariable;
 
 public class Command {
 	private final @NotNull CtExecutable<?> executable;
@@ -199,5 +203,28 @@ public class Command {
 	public String toString() {
 		return (executable instanceof CtMethod<?> ? executable.getSignature() : executable.getClass().getSimpleName() ) +";"+getNbLines()+";"+
 			getOptimalCodeBlocks().stream().map(b -> b.toString()).collect(Collectors.joining(";"));
+	}
+
+
+	/**
+	 * @return True if the command has at least one relevant statement (e.g. no a log.warning, return command). False otherwise.
+	 */
+	public boolean hasRelevantCommandStatement() {
+		if(getStatements().isEmpty()) {
+			return false;
+		}
+
+		// Getting all the local statements of the command.
+		final List<CtElement> stats = getAllLocalStatmtsOrdered();
+		// Getting all the variable used in the commands.
+		// The declarations of these variables will not be considered as relevant and thus ignored.
+		final Set<CtVariable<?>> vars = stats.parallelStream().map(s -> s.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
+			map(va -> va.getVariable()).filter(v -> v!=null).map(v -> v.getDeclaration()).collect(Collectors.toSet());
+
+		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> !(stat instanceof CtThrow) &&
+			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(getExecutable(), stat) &&
+			!SpoonHelper.INSTANCE.isLogStatement(stat) &&
+			// Ignoring the statements that declares the variables used in the command's statements.
+			(!(stat instanceof CtVariable) || !vars.contains(stat)));
 	}
 }
