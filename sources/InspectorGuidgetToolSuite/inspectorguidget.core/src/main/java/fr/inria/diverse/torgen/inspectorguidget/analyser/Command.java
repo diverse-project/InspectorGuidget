@@ -29,8 +29,7 @@ public class Command {
 
 	private final @NotNull List<CommandConditionEntry> conditions;
 
-	public Command(final @NotNull CommandStatmtEntry stat, final @NotNull List<CommandConditionEntry> conds,
-				   final @NotNull CtExecutable<?> exec) {
+	public Command(final @NotNull CommandStatmtEntry stat, final @NotNull List<CommandConditionEntry> conds, final @NotNull CtExecutable<?> exec) {
 		super();
 		statements = new ArrayList<>();
 		conditions = conds;
@@ -56,12 +55,12 @@ public class Command {
 
 	public int getLineStart() {
 		return getMainStatmtEntry().orElse(EMPTY_CMD_ENTRY).
-				getStatmts().stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getLine()).min().orElse(-1);
+			getStatmts().stream().map(s -> s.getPosition()).filter(p -> p != null).mapToInt(p -> p.getLine()).min().orElse(-1);
 	}
 
 	public int getLineEnd() {
 		return getMainStatmtEntry().orElse(EMPTY_CMD_ENTRY).
-				getStatmts().stream().map(s -> s.getPosition()).filter(p -> p!=null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
+			getStatmts().stream().map(s -> s.getPosition()).filter(p -> p != null).mapToInt(p -> p.getEndLine()).max().orElse(-1);
 	}
 
 	public @NotNull List<CommandConditionEntry> getConditions() {
@@ -83,16 +82,17 @@ public class Command {
 	}
 
 	private void optimiseStatementEntries() {
-		int i=0;
-		while(i<statements.size()) {
+		int i = 0;
+		while(i < statements.size()) {
 			int j = 0;
 			CommandStatmtEntry stat1 = statements.get(i);
-			while(j<statements.size()) {
+			while(j < statements.size()) {
 				CommandStatmtEntry stat2 = statements.get(j);
-				if(stat1!=stat2 && (stat1.equals(stat2) || (stat1.containsLine(stat2) && !stat2.containsLine(stat1)) || stat1.containsElement(stat2)))
+				if(stat1 != stat2 && (stat1.equals(stat2) || (stat1.containsLine(stat2) && !stat2.containsLine(stat1)) || stat1.containsElement(stat2))) {
 					statements.remove(j);
-				else
+				}else {
 					j++;
+				}
 			}
 			i++;
 		}
@@ -105,10 +105,7 @@ public class Command {
 	 * @return True if the given element is part of the command. False otherwise.
 	 */
 	public boolean hasStatement(final @Nullable CtElement elt) {
-		if(elt==null)
-			return false;
-
-		return Stream.concat(getConditions().stream().map(cond -> cond.realStatmt), getAllStatmts().stream()).filter(stat -> stat==elt).findAny().isPresent();
+		return elt != null && Stream.concat(getConditions().stream().map(cond -> cond.realStatmt), getAllStatmts().stream()).anyMatch(stat -> stat == elt);
 	}
 
 
@@ -123,7 +120,7 @@ public class Command {
 	 * @return All the ordered and non-dispatched statements of the command (using their start line, conditions excluded).
 	 */
 	public @NotNull List<CtElement> getAllLocalStatmtsOrdered() {
-		return statements.stream().filter(s -> !s.isDispatchedCode()).sorted((s1, s2) -> s1.getLineStart()<s2.getLineStart()?-1:1).
+		return statements.stream().filter(s -> !s.isDispatchedCode()).sorted((s1, s2) -> s1.getLineStart() < s2.getLineStart() ? -1 : 1).
 			map(entry -> entry.getStatmts()).flatMap(s -> s.stream()).collect(Collectors.toList());
 	}
 
@@ -152,15 +149,14 @@ public class Command {
 				ti = triples.get(i);
 				while(j < triples.size()) {
 					tj = triples.get(j);
-					if(ti.endLine + 1 == tj.startLine || ti.endLine >=tj.startLine && ti.startLine <=tj.startLine) {
+					if(ti.endLine + 1 == tj.startLine || ti.endLine >= tj.startLine && ti.startLine <= tj.startLine) {
 						triples.remove(j);
 						triples.remove(i);
 						ti = new CodeBlockPos(ti.file, ti.startLine, tj.endLine);
 						if(triples.isEmpty()) triples.add(ti);
 						else triples.add(i, ti);
 						j = i + 1;
-					}
-					else j++;
+					}else j++;
 				}
 				i++;
 			}
@@ -201,8 +197,8 @@ public class Command {
 
 	@Override
 	public String toString() {
-		return (executable instanceof CtMethod<?> ? executable.getSignature() : executable.getClass().getSimpleName() ) +";"+getNbLines()+";"+
-			getOptimalCodeBlocks().stream().map(b -> b.toString()).collect(Collectors.joining(";"));
+		return (executable instanceof CtMethod<?> ? executable.getSignature() : executable.getClass().getSimpleName()) + ";" +
+			getNbLines() + ";" + getOptimalCodeBlocks().stream().map(b -> b.toString()).collect(Collectors.joining(";"));
 	}
 
 
