@@ -683,7 +683,6 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
 	public void testUndirectActionCmd() {
 		analyser.addInputResource("src/test/resources/java/analysers/UndirectActionCmd.java");
 		analyser.run();

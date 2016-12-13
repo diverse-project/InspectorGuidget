@@ -1,5 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.ClassMethodCallFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.ConditionalFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementFilter;
@@ -23,6 +24,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtCatch;
 import spoon.reflect.code.CtCodeElement;
@@ -34,6 +37,7 @@ import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtSwitch;
 import spoon.reflect.code.CtThrow;
+import spoon.reflect.code.CtVariableWrite;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
@@ -414,11 +418,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		final List<CtParameterReference<?>> guiParams = exec.getParameters().stream().map(param -> param.getReference()).collect(Collectors.toList());
+		final CtBlock<?> mainBlock = exec.getBody();
 
 		// Getting all the conditional statements
-		conds.addAll(exec.getBody().getElements(new ConditionalFilter()).stream().
+		conds.addAll(mainBlock.getElements(new ConditionalFilter()).stream().
 						// Keeping those making use of a GUI parameter.
-						filter(cond -> conditionalUsesGUIParam(cond, guiParams)).
+						filter(cond -> conditionalUsesGUIParam(cond, guiParams, mainBlock)).
 						// a listener may be defined into the current listener.
 						// So, removing the conditional statements that are not contained in the current executable.
 						filter(cond -> cond.getParent(CtExecutable.class)==exec).
@@ -446,20 +451,32 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private boolean conditionalUsesGUIParam(final CtStatement stat, final List<CtParameterReference<?>> guiParams) {
+	private boolean conditionalUsesGUIParam(final CtStatement stat, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock) {
 		final CtExpression<?> condition = stat instanceof CtIf ? ((CtIf) stat).getCondition() : stat instanceof CtSwitch<?> ? ((CtSwitch<?>) stat).getSelector() : null;
-		return condition != null && elementUsesGUIParam(condition, guiParams);
+		return condition != null && elementUsesGUIParam(condition, guiParams, mainBlock);
 	}
 
 
-	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams) {
+	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock) {
 		// Check whether a GUI parameter is directly used in the statement.
 		if(guiParams.stream().anyMatch(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty())) {
 			return true;
 		}
 
 		// Otherwise, looking for local variables that use a GUI parameter.
-		return elt.getElements(new LocalVariableAccessFilter()).stream().anyMatch(var -> elementUsesGUIParam(var.getDeclaration(), guiParams));
+		return elt.getElements(new LocalVariableAccessFilter()).stream().
+			anyMatch(var ->
+				// Maybe the declaration of the variable refers to a GUI parameter
+				elementUsesGUIParam(var.getDeclaration(), guiParams, mainBlock) ||
+					// or an assignment of this variable in the main block refers to a GUI parameter
+					// 1. Looking for the assignments in the block
+					mainBlock.getElements(new BasicFilter<>(CtAssignment.class)).stream().
+						// 2. Keeping only the variable write
+						anyMatch(assig -> assig.getAssigned() instanceof CtVariableWrite<?> &&
+						// 3. Checking that the assigned variable is our current variable
+						((CtVariableWrite<?>)assig.getAssigned()).getVariable().equals(var) &&
+							// 4. Checking that the assignment directly or indirectly refers to GUI parameter
+							elementUsesGUIParam(assig.getAssignment(), guiParams, mainBlock)));
 	}
 
 
