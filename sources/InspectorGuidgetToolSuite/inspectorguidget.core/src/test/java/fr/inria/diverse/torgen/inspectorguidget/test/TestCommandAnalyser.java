@@ -712,6 +712,16 @@ public class TestCommandAnalyser {
 		assertEquals(28, cmds.get(2).getMainStatmtEntry().get().getLineEnd());
 	}
 
+
+	@Test
+	@Ignore
+	public void testFollowedConditionals() {
+		analyser.addInputResource("src/test/resources/java/analysers/FollowedConditionals.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
+
 	@Test
 	@Ignore
 	public void testSuperActionListener2() {
