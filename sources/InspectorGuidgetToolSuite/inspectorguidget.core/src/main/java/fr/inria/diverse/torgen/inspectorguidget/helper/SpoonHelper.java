@@ -78,6 +78,7 @@ public final class SpoonHelper {
 	 * @return True whether the code statement is probably a log statement. False otherwise.
 	 */
 	public boolean isLogStatement(final @NotNull CtElement stat) {
+		System.out.println(stat + " " + (stat instanceof CtInvocation<?> && logNames.contains(((CtInvocation<?>) stat).getExecutable().getSimpleName())));
 		return stat instanceof CtInvocation<?> && logNames.contains(((CtInvocation<?>) stat).getExecutable().getSimpleName());
 	}
 
@@ -188,17 +189,25 @@ public final class SpoonHelper {
 		while(parent != null) {
 			if(parent instanceof CtIf) {
 				conds.add(((CtIf) parent).getCondition());
-			}else if(parent instanceof CtCase<?>) {
-				conds.add(((CtCase<?>) parent).getCaseExpression());
-				CtSwitch<?> switzh = parent.getParent(CtSwitch.class);
-				if(switzh == null) System.err.println("Cannot find the switch statement from the case statement: " + parent);
-				else conds.add(switzh.getSelector());
-			}else if(parent instanceof CtWhile) {
-				conds.add(((CtWhile) parent).getLoopingExpression());
-			}else if(parent instanceof CtDo) {
-				conds.add(((CtDo) parent).getLoopingExpression());
-			}else if(parent instanceof CtFor) {
-				conds.add(((CtFor) parent).getExpression());
+			}else {
+				if(parent instanceof CtCase<?>) {
+					conds.add(((CtCase<?>) parent).getCaseExpression());
+					CtSwitch<?> switzh = parent.getParent(CtSwitch.class);
+					if(switzh == null) System.err.println("Cannot find the switch statement from the case statement: " + parent);
+					else conds.add(switzh.getSelector());
+				}else {
+					if(parent instanceof CtWhile) {
+						conds.add(((CtWhile) parent).getLoopingExpression());
+					}else {
+						if(parent instanceof CtDo) {
+							conds.add(((CtDo) parent).getLoopingExpression());
+						}else {
+							if(parent instanceof CtFor) {
+								conds.add(((CtFor) parent).getExpression());
+							}
+						}
+					}
+				}
 			}
 
 			parent = parent.isParentInitialized() ? parent.getParent() : null;
@@ -290,22 +299,6 @@ public final class SpoonHelper {
 		return exp;
 	}
 
-	//	/**
-	//	 * Shows the parents' class name and the position of these parents in the code of the given element.
-	//	 * @param element The element to scrutinise. Can be null.
-	//	 */
-	//	public void showParentsClassName(final @Nullable CtElement element) {
-	//		if(element==null) return;
-	//		CtElement elt = element;
-	//		CtElement parent;
-	//
-	//		while(elt.isParentInitialized() && elt.getParent()!=null) {
-	//			parent = elt.getParent();
-	//			System.out.print(parent.getClass().getSimpleName() + " " + formatPosition(parent.getPosition()) + " -> ");
-	//			elt = parent;
-	//		}
-	//		System.out.println();
-	//	}
 
 	/**
 	 * Returns the first parent statement or the element before this statement if the statement is a control flow statement.
@@ -343,31 +336,32 @@ public final class SpoonHelper {
 
 		if(var instanceof CtLocalVariable<?>) {
 			parent = var.getParent(CtBlock.class);
-		}else if(var.getVisibility() == null) {
-			parent = var.getParent(CtPackage.class);
-			if(parent == null) parent = var.getParent(CtClass.class);
 		}else {
-			switch(var.getVisibility()) {
-				case PRIVATE:
-					parent = var.getParent(CtClass.class);
-					break;
-				case PROTECTED:
-					parent = var.getParent(CtPackage.class);
-					if(parent == null) parent = var.getParent(CtClass.class);
-					break;
-				case PUBLIC:
-					parent = var.getFactory().Package().getRootPackage();
-					break;
-				default:
-					parent = null;
-					break;
+			if(var.getVisibility() == null) {
+				parent = var.getParent(CtPackage.class);
+				if(parent == null) parent = var.getParent(CtClass.class);
+			}else {
+				switch(var.getVisibility()) {
+					case PRIVATE:
+						parent = var.getParent(CtClass.class);
+						break;
+					case PROTECTED:
+						parent = var.getParent(CtPackage.class);
+						if(parent == null) parent = var.getParent(CtClass.class);
+						break;
+					case PUBLIC:
+						parent = var.getFactory().Package().getRootPackage();
+						break;
+					default:
+						parent = null;
+						break;
+				}
 			}
 		}
 
 		if(parent != null) {
 			return parent.getElements(new MyVariableAccessFilter(var));
 		}
-		//TODO find usages in method when the var is given as a parameter.
 
 		return Collections.emptyList();
 	}
