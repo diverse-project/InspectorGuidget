@@ -208,8 +208,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			return;
 		}
 
-		if(condStat instanceof CtSwitch<?>) {
-			extractCommandsFromSwitch((CtSwitch<?>) condStat, cmds, listenerMethod);
+		if(condStat instanceof CtCase<?>) {
+			extractCommandsFromSwitchCase((CtCase<?>) condStat, cmds, listenerMethod);
 			return;
 		}
 
@@ -217,25 +217,17 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromSwitch(final @NotNull CtSwitch<?> switchStat, final @NotNull List<Command> cmds,
-										   final @NotNull CtExecutable<?> exec) {
-		cmds.addAll(switchStat.getCases().stream().
+	private void extractCommandsFromSwitchCase(final @NotNull CtCase<?> cas, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec) {
 		// Ignoring the case statements that are empty
-			filter(cas -> !cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 || !SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))).
-			map(cas -> {
-				// Creating the body of the command.
-				final List<CtElement> stats = new ArrayList<>(cas.getStatements());
-
-//				// Removing the last 'return' or 'break' statement from the command.
-//				if(SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
-//					stats.remove(stats.size() - 1);
-//				}
-
-				final List<CommandConditionEntry> conds = getsuperConditionalStatements(switchStat);
-				conds.add(0, new CommandConditionEntry(cas, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(switchStat, cas)));
-				//For each case, a condition is created using the case value.
-				return new Command(new CommandStatmtEntry(true, stats), conds, exec);
-			}).collect(Collectors.toList()));
+		if(!cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 ||
+			!SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))) {
+			final List<CtElement> stats = new ArrayList<>(cas.getStatements());
+			CtSwitch<?> swit = (CtSwitch<?>) cas.getParent();
+			final List<CommandConditionEntry> conds = getsuperConditionalStatements(swit);
+			conds.add(0, new CommandConditionEntry(cas, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(swit, cas)));
+			//For each case, a condition is created using the case value.
+			cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
+		}
 	}
 
 
@@ -298,11 +290,13 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				// Identifying the block of the if used and adding a condition.
 				if(ctif.getThenStatement()==currElt) {
 					conds.add(new CommandConditionEntry(condition));
-				}else if(ctif.getElseStatement()==currElt) {
-					conds.add(new CommandConditionEntry(condition, SpoonHelper.INSTANCE.negBoolExpression(condition)));
 				}else {
-					LOG.log(Level.SEVERE, "Cannot find the origin of the statement in the if statement " +
-							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
+					if(ctif.getElseStatement() == currElt) {
+						conds.add(new CommandConditionEntry(condition, SpoonHelper.INSTANCE.negBoolExpression(condition)));
+					}else {
+						LOG.log(Level.SEVERE, "Cannot find the origin of the statement in the if statement " +
+							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) + " + : " + parent);
+					}
 				}
 			}else if(parent instanceof CtSwitch<?>) {
 				final CtElement elt = currElt;
@@ -427,11 +421,17 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						// a listener may be defined into the current listener.
 						// So, removing the conditional statements that are not contained in the current executable.
 						filter(cond -> cond.getParent(CtExecutable.class)==exec).
+						// The conditionals statements that are empty are removed not to be considered furthermore.
+						filter(cond -> !(cond instanceof CtIf) || !SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)cond)).
+						map(cond -> {
+							if(cond instanceof CtIf) {
+								return Collections.singletonList(cond);
+							}
+							return ((CtSwitch<?>)cond).getCases().stream().map(ca -> (CtStatement)ca).collect(Collectors.toList());
+						}).flatMap(s -> s.stream()).
 						map(v -> new Tuple<>(v, v)).
 						collect(Collectors.toList()));
 
-		// The conditionals statements that are empty are removed not to be considered furthermore.
-		conds.removeIf(cond -> cond.a instanceof CtIf && SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)cond.a));
 		final Set<CtStatement> condsSet = conds.stream().map(c -> c.b).collect(Collectors.toSet());
 
 		conds.removeAll(conds.parallelStream().filter(cond -> {

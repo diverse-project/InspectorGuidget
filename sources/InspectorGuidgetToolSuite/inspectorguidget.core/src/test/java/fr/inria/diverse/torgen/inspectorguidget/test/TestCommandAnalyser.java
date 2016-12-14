@@ -7,6 +7,7 @@ import fr.inria.diverse.torgen.inspectorguidget.helper.CodeBlockPos;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonStructurePrinter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.After;
@@ -691,12 +692,24 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
-	public void testStrangeMouseInput() {
-		analyser.addInputResource("src/test/resources/java/analysers/StrangeMouseInput.java");
+	public void testMixedSwitchAndIfStatements() {
+		analyser.addInputResource("src/test/resources/java/analysers/MixedSwitchAndIf.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
+
+	@Test
+	public void testMixedSwitchAndIfStatementsCmdPosition() {
+		analyser.addInputResource("src/test/resources/java/analysers/MixedSwitchAndIf.java");
+		analyser.run();
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).sorted(Comparator.comparing(cmd -> cmd.getLineStart())).collect(Collectors.toList());
+		assertEquals(19, cmds.get(0).getMainStatmtEntry().get().getLineStart());
+		assertEquals(20, cmds.get(0).getMainStatmtEntry().get().getLineEnd());
+		assertEquals(23, cmds.get(1).getMainStatmtEntry().get().getLineStart());
+		assertEquals(23, cmds.get(1).getMainStatmtEntry().get().getLineEnd());
+		assertEquals(27, cmds.get(2).getMainStatmtEntry().get().getLineStart());
+		assertEquals(28, cmds.get(2).getMainStatmtEntry().get().getLineEnd());
 	}
 
 	@Test

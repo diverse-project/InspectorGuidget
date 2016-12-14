@@ -11,7 +11,7 @@ class MousenputListClass extends MouseAdapter {
 		if (!e.getComponent().isEnabled()) return;
 
 		int me = e.getButton();
-		if (e.isPopupTrigger()) me = MouseEvent.BUTTON3;
+//		if (e.isPopupTrigger()) me = MouseEvent.BUTTON3;
 		String foo = String.valueOf(e.getX()) + " " + String.valueOf(e.getY());
 
 		switch (me) {
