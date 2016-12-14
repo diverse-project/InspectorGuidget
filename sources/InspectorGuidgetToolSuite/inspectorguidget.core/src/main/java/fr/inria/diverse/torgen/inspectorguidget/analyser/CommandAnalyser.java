@@ -261,7 +261,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				stats.add(elseStat);
 			}
 
-			if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
+			if(SpoonHelper.INSTANCE.hasRelevantCommandStatements(stats, exec)) {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 				conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
 				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));

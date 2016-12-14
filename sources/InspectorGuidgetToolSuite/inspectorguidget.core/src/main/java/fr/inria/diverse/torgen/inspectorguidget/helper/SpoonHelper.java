@@ -3,6 +3,7 @@ package fr.inria.diverse.torgen.inspectorguidget.helper;
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtSuperAccess;
 import spoon.reflect.code.CtSwitch;
 import spoon.reflect.code.CtSynchronized;
+import spoon.reflect.code.CtThrow;
 import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.code.CtVariableAccess;
@@ -60,6 +62,20 @@ public final class SpoonHelper {
 	}
 
 
+	public boolean hasRelevantCommandStatements(@NotNull List<CtElement> stats, @NotNull CtExecutable<?> exec) {
+		// Getting all the variable used in the commands.
+		// The declarations of these variables will not be considered as relevant and thus ignored.
+		final Set<CtVariable<?>> vars = stats.parallelStream().map(s -> s.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
+			map(va -> va.getVariable()).filter(v -> v!=null).map(v -> v.getDeclaration()).collect(Collectors.toSet());
+
+		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> !(stat instanceof CtThrow) &&
+			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(exec, stat) &&
+			!SpoonHelper.INSTANCE.isLogStatement(stat) &&
+			// Ignoring the statements that declares the variables used in the command's statements.
+			(!(stat instanceof CtVariable) || !vars.contains(stat)));
+	}
+
+
 	/**
 	 * Checkes whether the given code statement contains a super call to the upper executable of exec.
 	 * @param exec The overridden executable.
@@ -78,7 +94,6 @@ public final class SpoonHelper {
 	 * @return True whether the code statement is probably a log statement. False otherwise.
 	 */
 	public boolean isLogStatement(final @NotNull CtElement stat) {
-		System.out.println(stat + " " + (stat instanceof CtInvocation<?> && logNames.contains(((CtInvocation<?>) stat).getExecutable().getSimpleName())));
 		return stat instanceof CtInvocation<?> && logNames.contains(((CtInvocation<?>) stat).getExecutable().getSimpleName());
 	}
 

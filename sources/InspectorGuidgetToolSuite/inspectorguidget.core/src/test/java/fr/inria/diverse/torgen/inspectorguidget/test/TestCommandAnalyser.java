@@ -723,11 +723,10 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
-	public void testSuperActionListener2() {
-		analyser.addInputResource("src/test/resources/java/analysers/SuperActionListener2.java");
+	public void testLogger() {
+		analyser.addInputResource("src/test/resources/java/analysers/Logger.java");
 		analyser.run();
-		assertEquals(2, analyser.getCommands().values().size());
-		assertEquals(4L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
 }
