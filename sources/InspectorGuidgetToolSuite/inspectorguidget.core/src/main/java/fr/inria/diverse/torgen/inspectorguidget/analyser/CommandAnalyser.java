@@ -218,16 +218,17 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 
 	private void extractCommandsFromSwitchCase(final @NotNull CtCase<?> cas, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec) {
-		// Ignoring the case statements that are empty
-		if(!cas.getStatements().isEmpty() && (cas.getStatements().size() > 1 ||
-			!SpoonHelper.INSTANCE.isReturnBreakStatement(cas.getStatements().get(cas.getStatements().size() - 1)))) {
-			final List<CtElement> stats = new ArrayList<>(cas.getStatements());
-			CtSwitch<?> swit = (CtSwitch<?>) cas.getParent();
-			final List<CommandConditionEntry> conds = getsuperConditionalStatements(swit);
-			conds.add(0, new CommandConditionEntry(cas, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(swit, cas)));
-			//For each case, a condition is created using the case value.
-			cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
-		}
+		// Ignoring the case statements that are empty or that contains irrelevant statements.
+		SpoonHelper.INSTANCE.getNonEmptySwitchCase(cas).
+			filter(theCase -> SpoonHelper.INSTANCE.hasRelevantCommandStatements(cas.getStatements(), exec)).
+			ifPresent(theCase -> {
+				final List<CtElement> stats = new ArrayList<>(theCase.getStatements());
+				CtSwitch<?> swit = (CtSwitch<?>) theCase.getParent();
+				final List<CommandConditionEntry> conds = getsuperConditionalStatements(swit);
+				conds.add(0, new CommandConditionEntry(cas, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(swit, cas)));
+				//For each case, a condition is created using the case value.
+				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
+		});
 	}
 
 

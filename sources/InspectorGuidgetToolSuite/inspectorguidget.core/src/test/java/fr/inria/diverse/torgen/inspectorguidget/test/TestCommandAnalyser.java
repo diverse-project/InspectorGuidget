@@ -729,4 +729,12 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
+
+	@Test
+	public void testSwitchCasesSameLine() {
+		analyser.addInputResource("src/test/resources/java/analysers/SwitchCasesSameLine.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(6L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+	}
 }

@@ -62,7 +62,38 @@ public final class SpoonHelper {
 	}
 
 
-	public boolean hasRelevantCommandStatements(@NotNull List<CtElement> stats, @NotNull CtExecutable<?> exec) {
+	public Optional<CtCase<?>> getNonEmptySwitchCase(final @Nullable CtCase<?> ctcase) {
+		if(ctcase==null) {
+			return Optional.empty();
+		}
+
+		if(ctcase.getStatements().isEmpty()) {
+			return getNonEmptySwitchCase(getNextSwitchCase(ctcase).orElse(null));
+		}
+
+		return Optional.of(ctcase);
+	}
+
+
+	public <T> Optional<CtCase<? super T>> getNextSwitchCase(final @NotNull CtCase<? super  T> ctcase) {
+		final CtSwitch<T> swit = ctcase.isParentInitialized() ? (CtSwitch<T>) ctcase.getParent() : null;
+
+		if(swit == null) {
+			return Optional.empty();
+		}
+
+		List<CtCase<? super T>> cases = swit.getCases();
+		final int index = cases.indexOf(ctcase);
+
+		if(index == -1 || index + 1 >= cases.size()) {
+			return Optional.empty();
+		}
+
+		return Optional.of(cases.get(index + 1));
+	}
+
+
+	public <T extends CtElement> boolean hasRelevantCommandStatements(@NotNull List<T> stats, @NotNull CtExecutable<?> exec) {
 		// Getting all the variable used in the commands.
 		// The declarations of these variables will not be considered as relevant and thus ignored.
 		final Set<CtVariable<?>> vars = stats.parallelStream().map(s -> s.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
