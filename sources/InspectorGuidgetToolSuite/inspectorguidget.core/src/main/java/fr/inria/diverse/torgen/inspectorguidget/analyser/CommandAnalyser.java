@@ -31,6 +31,7 @@ import spoon.reflect.code.CtCatch;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
@@ -387,8 +388,24 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						// For the other case (some of the commands have a return but some others not), we cannot manage that.
 					}
 				}
+
+				// Looking for a super call in the given listener
+				identifyingSuperListenerCall(uiListener);
 			}
 		}
+	}
+
+
+	/**
+	 * Looking for a super call in the given listener. In such a case the super listener is associated to the given listener as its
+	 * super listener.
+	 * @param uiListener The UI listener to analyse.
+	 */
+	private void identifyingSuperListenerCall(final @NotNull UIListener uiListener) {
+		uiListener.getExecutable().getElements(new BasicFilter<>(CtInvocation.class)).stream().
+			filter(invok -> SpoonHelper.INSTANCE.isSuperCall(uiListener.getExecutable(), invok)).
+			map(invok -> commands.computeIfAbsent(invok.getExecutable().getDeclaration(), v -> new UIListener(invok.getExecutable().getDeclaration()))).
+			forEach(superList -> uiListener.setSuperListener(superList));
 	}
 
 
@@ -403,7 +420,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		if(listenerClass.isPresent()) { // Searching for dispatched methods is not performed on lambdas.
 			conds.addAll(
-				// Getting all the methods called in the current method that use a parameter of this last.
+				// Getting all the local and inherited methods called in the statements that use a UI parameter.
 				// The goal is to identify the dispatched methods, recursively.
 			exec.getElements(new ClassMethodCallFilter(exec.getParameters(), listenerClass.get(), true)).stream().
 				filter(dispatchM -> !execAnalysed.contains(dispatchM.getExecutable().getDeclaration())).
