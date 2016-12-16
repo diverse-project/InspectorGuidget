@@ -39,7 +39,7 @@ public class Command {
 	 */
 	private void inferConditionsDependencies() {
 		addAllStatements(
-			conditions.stream().map(cond -> SpoonHelper.INSTANCE.getAllLocalVarDeclaration(cond.realStatmt).stream().
+			conditions.stream().map(cond -> cond.getAllLocalVariables().stream().
 				map(localVar -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) localVar)))).
 				flatMap(s -> s).collect(Collectors.toList())
 		);

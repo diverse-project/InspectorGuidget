@@ -1,9 +1,12 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
+import java.util.Set;
 import org.jetbrains.annotations.NotNull;
+import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtLocalVariable;
 
 /**
  * An entry class used in the Command class to represent a conditional statement that conditions the command.
@@ -31,6 +34,20 @@ public class CommandConditionEntry {
 
 	public boolean isSameCondition() {
 		return realStatmt==effectiveStatmt;
+	}
+
+	/**
+	 * @return All the local variables used in the real conditional statement. If the statement is a switch case, the selector of the
+	 * switch is also analysed. Cannot be null.
+	 */
+	public @NotNull Set<CtLocalVariable<?>> getAllLocalVariables() {
+		final Set<CtLocalVariable<?>> all = SpoonHelper.INSTANCE.getAllLocalVarDeclaration(realStatmt);
+
+		if(realStatmt instanceof CtCase<?>) {
+			all.addAll(SpoonHelper.INSTANCE.getAllLocalVarDeclaration(realStatmt.getParent()));
+		}
+
+		return all;
 	}
 
 	@Override

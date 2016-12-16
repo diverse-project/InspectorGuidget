@@ -1,7 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
-import fr.inria.diverse.torgen.inspectorguidget.filter.LocalVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ParentNotInitializedException;
+import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 
 public final class SpoonHelper {
@@ -286,10 +286,17 @@ public final class SpoonHelper {
 	}
 
 
-	public @NotNull Set<CtLocalVariable<?>> getAllLocalVarDeclaration(final @NotNull CtElement elt) {
-		return elt.getElements(new LocalVariableAccessFilter()).stream().map(varRef -> {
-			Set<CtLocalVariable<?>> localVars = getAllLocalVarDeclaration(varRef.getDeclaration());
-			if(varRef.getDeclaration() instanceof CtLocalVariable<?>) localVars.add((CtLocalVariable<?>) varRef.getDeclaration());
+	public @NotNull Set<CtLocalVariable<?>> getAllLocalVarDeclaration(final @Nullable CtElement elt) {
+		if(elt == null) {
+			return new HashSet<>();
+		}
+
+		return elt.getElements(new BasicFilter<>(CtLocalVariableReference.class)).stream().map(varRef -> {
+			final CtLocalVariable<?> varDecl = varRef.getDeclaration();
+			Set<CtLocalVariable<?>> localVars = getAllLocalVarDeclaration(varDecl);
+			if(varDecl != null) {
+				localVars.add(varDecl);
+			}
 			return localVars;
 		}).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}

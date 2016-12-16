@@ -1,7 +1,6 @@
 package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.Launcher;
-import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.log4j.Level;
@@ -61,9 +59,10 @@ public class TestBlobRefactoring {
 		finder.process();
 
 		startLine.forEach(line -> {
-			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==line).findAny().get();
-			refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false);
-			refactor.execute();
+			finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==line).forEach(entry -> {
+				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false);
+				refactor.execute();
+			});
 		});
 	}
 
@@ -351,5 +350,13 @@ public class TestBlobRefactoring {
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MultipleListenerRegRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRegRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredSwitchCasesSameLine() throws IOException {
+		initTest(Arrays.asList(51, 54, 57), true, "src/test/resources/java/analysers/SwitchCasesSameLine.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SwitchCasesSameLineRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/SwitchCasesSameLineRefactored.java"), getRefactoredCode());
 	}
 }

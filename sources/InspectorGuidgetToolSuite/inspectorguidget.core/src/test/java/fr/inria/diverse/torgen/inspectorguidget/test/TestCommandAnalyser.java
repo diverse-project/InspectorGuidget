@@ -737,4 +737,24 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(6L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
 	}
+
+
+	@Test
+	public void testSwitchCasesStartLine() {
+		analyser.addInputResource("src/test/resources/java/analysers/SwitchCasesSameLine.java");
+		analyser.run();
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.stream()).sorted(Comparator.comparing(cmd -> cmd.getLineStart())).collect(Collectors.toList());
+		assertEquals(47, cmds.get(0).getAllLocalStatmtsOrdered().get(0).getPosition().getLine());
+		assertEquals(47, cmds.get(1).getAllLocalStatmtsOrdered().get(0).getPosition().getLine());
+		assertEquals(47, cmds.get(2).getAllLocalStatmtsOrdered().get(0).getPosition().getLine());
+		assertEquals(47, cmds.get(3).getAllLocalStatmtsOrdered().get(0).getPosition().getLine());
+	}
+
+//	@Test
+//	public void testComplexSwitch() {
+//		analyser.addInputResource("src/test/resources/java/analysers/ComplexSwitch.java");
+//		analyser.run();
+//		assertEquals(2, analyser.getCommands().values().size());
+//		assertEquals(6L, analyser.getCommands().values().stream().mapToLong(c -> c.size()).sum());
+//	}
 }
