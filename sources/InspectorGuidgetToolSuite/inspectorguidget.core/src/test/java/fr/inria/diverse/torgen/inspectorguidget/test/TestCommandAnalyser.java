@@ -591,11 +591,11 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	public void testSuperListener() {
+	public void testSuperListenerLocalCmds() {
 		analyser.addInputResource("src/test/resources/java/analysers/SuperActionListener.java");
 		analyser.run();
 		assertEquals(2, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbLocalCmds()).sum());
 	}
 
 	@Test
@@ -754,8 +754,7 @@ public class TestCommandAnalyser {
 	}
 
 	@Test
-	@Ignore
-	public void testSharedInheritedCommands() {
+	public void testSharedInheritedCommandsEachListener() {
 		analyser.addInputResource("src/test/resources/java/analysers/SharedInheritedCommands.java");
 		analyser.run();
 		assertEquals(3, analyser.getCommands().values().size());
@@ -764,5 +763,12 @@ public class TestCommandAnalyser {
 		assertEquals(1, listeners.get(0).getValue().getNbTotalCmds());
 		assertEquals(2, listeners.get(1).getValue().getNbTotalCmds());
 		assertEquals(3, listeners.get(2).getValue().getNbTotalCmds());
+	}
+
+	@Test
+	public void testSharedInheritedCommandsTotalListeners() {
+		analyser.addInputResource("src/test/resources/java/analysers/SharedInheritedCommands.java");
+		analyser.run();
+		assertEquals(4L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbLocalCmds()).sum());
 	}
 }
