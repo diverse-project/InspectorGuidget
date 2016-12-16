@@ -30,7 +30,7 @@ public class TestBlobAnalyser {
 		analyser.run();
 
 		assertEquals(1, analyser.getBlobs().entrySet().size());
-		assertEquals(3, analyser.getBlobs().entrySet().stream().collect(Collectors.toList()).get(0).getValue().size());
+		assertEquals(3, analyser.getBlobs().entrySet().stream().collect(Collectors.toList()).get(0).getValue().getNbTotalCmds());
 	}
 
 	@Test
@@ -48,7 +48,7 @@ public class TestBlobAnalyser {
 		analyser.run();
 
 		assertEquals(1, analyser.getBlobs().entrySet().size());
-		assertEquals(2, analyser.getBlobs().entrySet().stream().collect(Collectors.toList()).get(0).getValue().size());
+		assertEquals(2, analyser.getBlobs().entrySet().stream().collect(Collectors.toList()).get(0).getValue().getNbTotalCmds());
 	}
 
 	@Test
@@ -67,6 +67,6 @@ public class TestBlobAnalyser {
 		analyser.run();
 
 		assertEquals(1, analyser.getBlobs().entrySet().size());
-		assertEquals(3, analyser.getBlobs().entrySet().stream().collect(Collectors.toList()).get(0).getValue().size());
+		assertEquals(3, analyser.getBlobs().entrySet().stream().collect(Collectors.toList()).get(0).getValue().getNbTotalCmds());
 	}
 }

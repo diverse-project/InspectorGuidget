@@ -53,7 +53,7 @@ public abstract class XPLauncher {
 		launcher.process();
 
 		finder = new CommandWidgetFinder(
-			blobAnalyser.getCmdAnalyser().getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()),
+			blobAnalyser.getCmdAnalyser().getCommands().values().parallelStream().flatMap(s -> s.getCommands().stream()).collect(Collectors.toList()),
 			widgetProc.getWidgetUsages());
 		finder.process();
 
@@ -90,7 +90,7 @@ public abstract class XPLauncher {
 	}
 
 	protected @NotNull List<Command> filterBlobsToRefactor() {
-		return blobAnalyser.getBlobs().entrySet().stream().map(e -> e.getValue()).flatMap(s -> s.stream()).collect(Collectors.toList());
+		return blobAnalyser.getBlobs().entrySet().stream().map(e -> e.getValue()).flatMap(s -> s.getCommands().stream()).collect(Collectors.toList());
 	}
 
 	protected abstract List<String> getInputResoures();

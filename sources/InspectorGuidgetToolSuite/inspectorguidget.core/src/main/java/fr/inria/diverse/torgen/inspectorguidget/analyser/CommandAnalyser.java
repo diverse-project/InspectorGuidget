@@ -48,7 +48,7 @@ import spoon.reflect.visitor.filter.DirectReferenceFilter;
 public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private final @NotNull ClassListenerProcessor classProc;
 	private final @NotNull LambdaListenerProcessor lambdaProc;
-	private final @NotNull Map<CtExecutable<?>, List<Command>> commands;
+	private final @NotNull Map<CtExecutable<?>, UIListener> commands;
 
 	public CommandAnalyser() {
 		super(Collections.emptyList());
@@ -61,7 +61,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		addProcessor(lambdaProc);
 	}
 
-	public @NotNull Map<CtExecutable<?>, List<Command>> getCommands() {
+	public @NotNull Map<CtExecutable<?>, UIListener> getCommands() {
 		synchronized(commands) { return Collections.unmodifiableMap(commands); }
 	}
 
@@ -81,7 +81,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		// Post-process to add statements (e.g. var def) used in commands but not present in the current command (because defined before or after)
 		synchronized(commands) {
-			commands.entrySet().parallelStream().forEach(entry -> entry.getValue().forEach(cmd -> {
+			commands.entrySet().parallelStream().forEach(entry -> entry.getValue().getCommands().forEach(cmd -> {
 				if(!cmd.getConditions().isEmpty()) {
 					// For each command, adding the required local variable definitions.
 					cmd.addAllStatements(0,
@@ -93,19 +93,21 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 							// For each var def, creating a command statement entry that will be added to the list of entries of the command.
 								map(elt -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) elt))).collect(Collectors.toList()));
 
-					inferLocalVarUsages(cmd, entry.getValue(), entry.getKey());
+					inferLocalVarUsages(cmd, entry.getValue());
 				}
 			}));
 		}
 
 		synchronized(commands) {
 			commands.entrySet().forEach(entry -> {
-				entry.getValue().removeIf(cmd -> !cmd.hasRelevantCommandStatement());
+				entry.getValue().removeCommandsIf(cmd -> !cmd.hasRelevantCommandStatement());
 
-				List<Command> badcmd = entry.getValue().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
+				List<Command> badcmd = entry.getValue().getCommands().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
 										cmd.getMainStatmtEntry().get().getStatmts().isEmpty()).collect(Collectors.toList());
 				badcmd.forEach(cmd -> LOG.log(Level.SEVERE, "Invalid command extracted: " + cmd));
-				if(!badcmd.isEmpty()) entry.getValue().removeAll(badcmd);
+				if(!badcmd.isEmpty()) {
+					entry.getValue().removeAllCommands(badcmd);
+				}
 			});
 		}
 	}
@@ -115,16 +117,15 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	 * Local variables used in a command must be considered when extracting a command: a backward static slicing is done here to
 	 * identify all the statements that use these local variables before each use of the variables in the command.
 	 * @param cmd The command to analyse.
-	 * @param cmds The set of commands of the listener where cmd comes from.
-	 * @param listener The listener method that contains the commands.
+	 * @param uiList The UI listener that contains the analysed UI commands.
 	 */
-	private void inferLocalVarUsages(final @NotNull Command cmd, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> listener) {
+	private void inferLocalVarUsages(final @NotNull Command cmd, final @NotNull UIListener uiList) {
 		// Adding all the required elements.
 		cmd.addAllStatements(
 			inferLocalVarUsagesRecursive(
 				cmd.getStatements().stream().map(stat -> stat.getStatmts().stream()).flatMap(s -> s).collect(Collectors.toSet()),
-				new HashSet<>(), listener
-			).parallelStream().filter(exp -> !cmd.hasStatement(exp) && !isPartOfMainCommandBlockOrCondition(exp, cmds)).
+				new HashSet<>(), uiList.getExecutable()
+			).parallelStream().filter(exp -> !cmd.hasStatement(exp) && !isPartOfMainCommandBlockOrCondition(exp, uiList.getCommands())).
 			map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp instanceof CtStatement ? exp : exp.getParent(CtStatement.class)))).
 			collect(Collectors.toList())
 		);
@@ -198,18 +199,18 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod,
 														  final @NotNull List<CtStatement> conds) {
-		List<Command> cmds;
+		UIListener uiListener;
 		synchronized(commands) {
-			cmds = commands.computeIfAbsent(listenerMethod, k -> new ArrayList<>());
+			uiListener = commands.computeIfAbsent(listenerMethod, k -> new UIListener(listenerMethod));
 		}
 
 		if(condStat instanceof CtIf) {
-			extractCommandsFromIf((CtIf) condStat, cmds, listenerMethod, conds);
+			extractCommandsFromIf((CtIf) condStat, uiListener, conds);
 			return;
 		}
 
 		if(condStat instanceof CtCase<?>) {
-			extractCommandsFromSwitchCase((CtCase<?>) condStat, cmds, listenerMethod);
+			extractCommandsFromSwitchCase((CtCase<?>) condStat, uiListener);
 			return;
 		}
 
@@ -217,7 +218,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromSwitchCase(final @NotNull CtCase<?> cas, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec) {
+	private void extractCommandsFromSwitchCase(final @NotNull CtCase<?> cas, final @NotNull UIListener uiListener) {
+		final CtExecutable<?> exec = uiListener.getExecutable();
 		// Ignoring the case statements that are empty or that contains irrelevant statements.
 		SpoonHelper.INSTANCE.getNonEmptySwitchCase(cas).
 			filter(theCase -> SpoonHelper.INSTANCE.hasRelevantCommandStatements(cas.getStatements(), exec)).
@@ -227,13 +229,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(swit);
 				conds.add(0, new CommandConditionEntry(cas, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(swit, cas)));
 				//For each case, a condition is created using the case value.
-				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
+				uiListener.addCommand(new Command(new CommandStatmtEntry(true, stats), conds, exec));
 		});
 	}
 
 
-	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull List<Command> cmds, final @NotNull CtExecutable<?> exec,
-									   final @NotNull List<CtStatement> otherConds) {
+	private void extractCommandsFromIf(final @NotNull CtIf ifStat, final @NotNull UIListener uiListener, final @NotNull List<CtStatement> otherConds) {
 		final CtStatement elseStat =  ifStat.getElseStatement();
 		final CtStatement thenStat = ifStat.getThenStatement();
 		List<CtElement> stats = new ArrayList<>();
@@ -249,7 +250,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
 			final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 			conds.add(0, new CommandConditionEntry(ifStat.getCondition()));
-			cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
+			uiListener.addCommand(new Command(new CommandStatmtEntry(true, stats), conds, uiListener.getExecutable()));
 		}
 
 		if(elseStat!=null && otherConds.stream().allMatch(c -> elseStat.getElements(new FindElementFilter(c, true)).isEmpty())) {
@@ -262,10 +263,10 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				stats.add(elseStat);
 			}
 
-			if(SpoonHelper.INSTANCE.hasRelevantCommandStatements(stats, exec)) {
+			if(SpoonHelper.INSTANCE.hasRelevantCommandStatements(stats, uiListener.getExecutable())) {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 				conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
-				cmds.add(new Command(new CommandStatmtEntry(true, stats), conds, exec));
+				uiListener.addCommand(new Command(new CommandStatmtEntry(true, stats), conds, uiListener.getExecutable()));
 			}
 		}
 	}
@@ -328,21 +329,22 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		if((listenerMethod.getBody() == null || listenerMethod.getBody().getStatements().isEmpty()) &&
 			(!(listenerMethod instanceof CtLambda) || ((CtLambda<?>)listenerMethod).getExpression() == null)) {// A lambda may not have a body but an expression
 			// Empty so no command
-			synchronized(commands) { commands.put(listenerMethod, Collections.emptyList()); }
+			synchronized(commands) { commands.put(listenerMethod, new UIListener(listenerMethod)); }
 		}else {
 			final List<CtStatement> conds = getConditionalStatements(listenerMethod, listenerClass, new HashSet<>());
 
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
-				List<Command> list = new ArrayList<>();
+				UIListener list = new UIListener(listenerMethod);
+
 				if(listenerMethod.getBody()==null && listenerMethod instanceof CtLambda<?>) {
 					// It means it is a lambda
-					list.add(new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
+					list.addCommand(new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
 						Collections.emptyList(), listenerMethod));
 					synchronized(commands) { commands.put(listenerMethod, list); }
 				} else {
 					// It means it is a method
-					list.add(new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod));
+					list.addCommand(new Command(new CommandStatmtEntry(true, listenerMethod.getBody().getStatements()), Collections.emptyList(), listenerMethod));
 					synchronized(commands) { commands.put(listenerMethod, list); }
 				}
 			}else {
@@ -351,12 +353,13 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				conds.forEach(cond -> extractCommandsFromConditionalStatements(cond, listenerMethod, conds));
 
 				// Treating the potential code block located after the last conditional statement
-				List<Command> cmds;
+				UIListener uiListener;
 
 				synchronized(commands) {
-					cmds = commands.get(listenerMethod);
+					uiListener = commands.get(listenerMethod);
 				}
 
+				final List<Command> cmds = uiListener.getCommands();
 				// Getting the line number of the last statement used in a command or in a conditional block.
 				final int start = cmds.parallelStream().mapToInt(c -> c.getLineEnd()).max().orElseGet(() ->
 							conds.parallelStream().mapToInt(c -> c.getPosition().getEndLine()).max().orElse(Integer.MAX_VALUE));
@@ -373,7 +376,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 					// If all the commands have a return statement at their end, it means that this block will form another command.
 					if(cmds.parallelStream().filter(c -> c.getMainStatmtEntry().isPresent()).map(c -> c.getMainStatmtEntry().get()).
 						allMatch(c -> !c.statmts.isEmpty() && c.statmts.get(c.statmts.size() - 1) instanceof CtReturn)) {
-						cmds.add(new Command(new CommandStatmtEntry(true, finalBlock), Collections.emptyList(), listenerMethod));
+						uiListener.addCommand(new Command(new CommandStatmtEntry(true, finalBlock), Collections.emptyList(), listenerMethod));
 					}else {
 						// If no command has a return statement at their end, it means that this block will be part of each of these
 						// commands.
@@ -487,7 +490,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 		switch(nonEmptyM.size()) {
 			case 0:
-				synchronized(commands) { listenerMethods.forEach(l -> commands.put(l, Collections.emptyList())); }
+				synchronized(commands) { listenerMethods.forEach(l -> commands.put(l, new UIListener(l))); }
 				break;
 			case 1:
 				analyseSingleListenerMethod(Optional.of(listenerClass), nonEmptyM.get(0));

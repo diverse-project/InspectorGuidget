@@ -29,7 +29,7 @@ public class JabrefLauncher extends XPLauncher {
 					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==361) ||
 					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==321) ||
 					(e.getKey().getSimpleName().equals("actionPerformed") && e.getKey().getPosition().getLine()==130)
-			).map(e -> e.getValue()).flatMap(s -> s.stream()).collect(Collectors.toList());
+			).map(e -> e.getValue()).flatMap(s -> s.getCommands().stream()).collect(Collectors.toList());
 	}
 
 	@Override

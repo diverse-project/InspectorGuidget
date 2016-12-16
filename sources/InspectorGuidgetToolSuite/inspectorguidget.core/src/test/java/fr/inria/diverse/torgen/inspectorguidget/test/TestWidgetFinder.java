@@ -56,7 +56,7 @@ public class TestWidgetFinder {
 		launcher.process();
 
 		finder = new CommandWidgetFinder(
-			cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()),
+			cmdAnalyser.getCommands().values().parallelStream().flatMap(s -> s.getCommands().stream()).collect(Collectors.toList()),
 			widgetProc.getWidgetUsages());
 		finder.process();
 		results = finder.getResults();

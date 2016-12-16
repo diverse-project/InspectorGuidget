@@ -1,5 +1,8 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
+import java.io.File;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import spoon.SpoonAPI;
 import spoon.compiler.Environment;
@@ -12,16 +15,11 @@ import spoon.reflect.declaration.CtType;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.Filter;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 public class BlobListenerAnalyser implements SpoonAPI {
 	private static int NB_CMDS = 3;
 
 	private final @NotNull CommandAnalyser cmdAnalyser;
-	private Map<CtExecutable<?>, List<Command>> blobs;
+	private Map<CtExecutable<?>, UIListener> blobs;
 
 	public BlobListenerAnalyser() {
 		super();
@@ -89,8 +87,8 @@ public class BlobListenerAnalyser implements SpoonAPI {
 	public void process() {
 		cmdAnalyser.process();
 		blobs = cmdAnalyser.getCommands().entrySet().parallelStream().
-				filter(entry -> entry.getValue().size()>= NB_CMDS).
-				collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+			filter(entry -> entry.getValue().getNbTotalCmds() >= NB_CMDS).
+			collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 	}
 
 	@Override
@@ -137,12 +135,13 @@ public class BlobListenerAnalyser implements SpoonAPI {
 		return cmdAnalyser;
 	}
 
-	public Map<CtExecutable<?>, List<Command>> getBlobs() {
+	public Map<CtExecutable<?>, UIListener> getBlobs() {
 		return blobs;
 	}
 
 	public static void setNbCmdBlobs(final int nbCmds) {
-		if(nbCmds>0)
+		if(nbCmds > 0) {
 			NB_CMDS = nbCmds;
+		}
 	}
 }
