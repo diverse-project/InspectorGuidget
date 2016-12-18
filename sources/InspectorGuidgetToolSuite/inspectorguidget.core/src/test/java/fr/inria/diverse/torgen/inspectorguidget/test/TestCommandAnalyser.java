@@ -771,4 +771,13 @@ public class TestCommandAnalyser {
 		analyser.run();
 		assertEquals(4L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbLocalCmds()).sum());
 	}
+
+	@Test
+	public void testSuperSwitchActionListenerGoodStatements() {
+		analyser.addInputResource("src/test/resources/java/refactoring/SuperSwitchActionListener.java");
+		analyser.run();
+		List<Command> cmds = analyser.getCommands().values().stream().flatMap(c -> c.getCommands().stream()).collect(Collectors.toList());
+		assertEquals(2, cmds.get(0).getAllLocalStatmtsOrdered().size());
+		assertEquals(2, cmds.get(1).getAllLocalStatmtsOrdered().size());
+	}
 }

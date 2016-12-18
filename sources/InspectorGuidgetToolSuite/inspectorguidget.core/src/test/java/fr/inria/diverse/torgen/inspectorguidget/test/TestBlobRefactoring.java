@@ -359,4 +359,12 @@ public class TestBlobRefactoring {
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SwitchCasesSameLineRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/SwitchCasesSameLineRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoredSuperSwitchActionListener() throws IOException {
+		initTest(Arrays.asList(29, 32), true, "src/test/resources/java/refactoring/SuperSwitchActionListener.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SuperSwitchActionListenerRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/SuperSwitchActionListenerRefactored.java"), getRefactoredCode());
+	}
 }

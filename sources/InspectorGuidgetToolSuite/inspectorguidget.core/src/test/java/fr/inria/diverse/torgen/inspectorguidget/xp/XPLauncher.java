@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import spoon.compiler.Environment;
+import spoon.reflect.cu.SourcePosition;
+import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -102,4 +104,19 @@ public abstract class XPLauncher {
 	protected abstract boolean usingLambda();
 
 	protected abstract String getOutputFolder();
+
+	static class ListenerID {
+		final String fileName;
+		final int linePos;
+
+		ListenerID(final String fileName, final int linePos) {
+			this.fileName = fileName;
+			this.linePos = linePos;
+		}
+
+		boolean match(final CtExecutable<?> exec) {
+			final SourcePosition pos = exec.getPosition();
+			return pos.getLine()==linePos && pos.getCompilationUnit().getFile().toString().endsWith(fileName);
+		}
+	}
 }

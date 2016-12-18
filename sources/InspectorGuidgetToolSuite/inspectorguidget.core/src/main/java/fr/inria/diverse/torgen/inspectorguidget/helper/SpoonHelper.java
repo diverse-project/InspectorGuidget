@@ -93,15 +93,20 @@ public final class SpoonHelper {
 	}
 
 
+	public <T extends CtElement> boolean isRelevantCommandStatement(@NotNull T stat, @NotNull CtExecutable<?> exec) {
+		return !(stat instanceof CtThrow) &&
+			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(exec, stat) &&
+			!SpoonHelper.INSTANCE.isLogStatement(stat);
+	}
+
+
 	public <T extends CtElement> boolean hasRelevantCommandStatements(@NotNull List<T> stats, @NotNull CtExecutable<?> exec) {
 		// Getting all the variable used in the commands.
 		// The declarations of these variables will not be considered as relevant and thus ignored.
 		final Set<CtVariable<?>> vars = stats.parallelStream().map(s -> s.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
 			map(va -> va.getVariable()).filter(v -> v!=null).map(v -> v.getDeclaration()).collect(Collectors.toSet());
 
-		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> !(stat instanceof CtThrow) &&
-			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(exec, stat) &&
-			!SpoonHelper.INSTANCE.isLogStatement(stat) &&
+		return stats.isEmpty() || stats.parallelStream().anyMatch(stat -> isRelevantCommandStatement(stat, exec) &&
 			// Ignoring the statements that declares the variables used in the command's statements.
 			(!(stat instanceof CtVariable) || !vars.contains(stat)));
 	}

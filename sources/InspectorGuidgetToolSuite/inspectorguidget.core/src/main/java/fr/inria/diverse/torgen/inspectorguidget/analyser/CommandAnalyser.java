@@ -37,7 +37,6 @@ import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtStatementList;
 import spoon.reflect.code.CtSwitch;
-import spoon.reflect.code.CtThrow;
 import spoon.reflect.code.CtVariableWrite;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
@@ -369,7 +368,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				// Getting all the statements located in between the start and end code lines.
 				// returns, throws and catch blocks are ignored.
 				final List<CtStatement> finalBlock = listenerMethod.getBody().getElements(new LinePositionFilter(start, end)).
-					parallelStream().filter(s -> !(s instanceof CtReturn) && !(s instanceof CtThrow) && s.getParent(CtCatch.class)==null).
+					parallelStream().filter(s -> SpoonHelper.INSTANCE.isRelevantCommandStatement(s, listenerMethod) && s.getParent(CtCatch.class)==null).
 					collect(Collectors.toList());
 
 				// If there is such statements.
