@@ -60,15 +60,15 @@ public class DetectGUICommandAction extends AbstractAction<CommandAnalyser> {
 			e1.printStackTrace();
 		}
 
-		analyser.getCommands().values().stream().flatMap(s -> s.stream()).forEach(cmd -> markCtElement(cmd, project));
+		analyser.getCommands().values().stream().flatMap(s -> s.getCommands().stream()).forEach(cmd -> markCtElement(cmd, project));
 		
 		final String projectName = project.getName();
 		final String projectPath = project.getLocation().toFile().getAbsolutePath() + "/";
 		
-		analyser.getCommands().entrySet().stream().filter(entry -> !entry.getValue().isEmpty()).forEach(entry -> {
+		analyser.getCommands().entrySet().stream().filter(entry -> entry.getValue().getNbTotalCmds()>0).forEach(entry -> {
 			SourcePosition pos = entry.getKey().getPosition();
 			outputXP.append(projectName).append(';').append(pos.getFile().getPath().replace(projectPath, "")).append(';').
-				append(pos.getLine()).append(';').append(pos.getEndLine()).append(';').append(entry.getValue().size()).append('\n');
+				append(pos.getLine()).append(';').append(pos.getEndLine()).append(';').append(entry.getValue().getNbTotalCmds()).append('\n');
 		});
 		String file = Activator.getDefault().getPreferenceStore().getString(PreferencePage.PATH_STORE);
 		if(!file.endsWith("/")) file +="/";

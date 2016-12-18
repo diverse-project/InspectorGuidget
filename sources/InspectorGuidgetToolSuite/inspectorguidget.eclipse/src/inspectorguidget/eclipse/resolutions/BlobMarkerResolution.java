@@ -15,6 +15,7 @@ import org.eclipse.ui.IMarkerResolution;
 import fr.inria.diverse.torgen.inspectorguidget.Launcher;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.UIListener;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import inspectorguidget.eclipse.actions.AbstractAction;
@@ -34,7 +35,7 @@ public class BlobMarkerResolution implements IMarkerResolution {
 
 	@Override
 	public void run(final IMarker marker) {
-		final Entry<CtExecutable<?>, List<Command>> entry = DetectBlobListenerAction.getBlobCommands(marker);
+		final Entry<CtExecutable<?>, UIListener> entry = DetectBlobListenerAction.getBlobCommands(marker);
 		final WidgetProcessor widgetProc = new WidgetProcessor(true);
 		
 		System.out.println("Refactoring blob listener: " + entry);
@@ -44,12 +45,12 @@ public class BlobMarkerResolution implements IMarkerResolution {
 		
 		System.out.println("Widgets processor ended");
 		
-		final CommandWidgetFinder finder = new CommandWidgetFinder(entry.getValue(), widgetProc.getWidgetUsages());
+		final CommandWidgetFinder finder = new CommandWidgetFinder(entry.getValue().getCommands(), widgetProc.getWidgetUsages());
 		finder.process();
 		
 		System.out.println("Widgets finder ended");
 		
-		entry.getValue().forEach(cmd -> {
+		entry.getValue().getCommands().forEach(cmd -> {
 			final ListenerCommandRefactor ref = new ListenerCommandRefactor(cmd, null, false, false);
 			ref.execute();
 			

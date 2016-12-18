@@ -49,7 +49,7 @@ public class DetectGUIBugsAction extends AbstractAction<CommandAnalyser> {
 		widgetProc = new WidgetProcessor(true);
 		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), analyser.getModelBuilder());
 		launcher.process();
-		finder = new CommandWidgetFinder(analyser.getCommands().values().parallelStream().flatMap(s -> s.stream()).collect(Collectors.toList()), widgetProc.getWidgetUsages());
+		finder = new CommandWidgetFinder(analyser.getCommands().values().parallelStream().flatMap(s -> s.getCommands().stream()).collect(Collectors.toList()), widgetProc.getWidgetUsages());
 		finder.process();
 		bugsanalyser = new CommandWidgetBugsDetector(finder.getResults());
 		bugsanalyser.process();
