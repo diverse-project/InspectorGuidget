@@ -62,7 +62,7 @@ public final class SpoonHelper {
 	}
 
 
-	public Optional<CtCase<?>> getNonEmptySwitchCase(final @Nullable CtCase<?> ctcase) {
+	public <T> Optional<CtCase<? super  T>> getNonEmptySwitchCase(final @Nullable CtCase<? super  T> ctcase) {
 		if(ctcase==null) {
 			return Optional.empty();
 		}
