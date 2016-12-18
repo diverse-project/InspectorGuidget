@@ -222,7 +222,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		final CtExecutable<?> exec = uiListener.getExecutable();
 		// Ignoring the case statements that are empty or that contains irrelevant statements.
 		SpoonHelper.INSTANCE.getNonEmptySwitchCase(cas).
-			filter(theCase -> SpoonHelper.INSTANCE.hasRelevantCommandStatements(cas.getStatements(), exec)).
+			filter(theCase -> SpoonHelper.INSTANCE.hasRelevantCommandStatements(theCase.getStatements(), exec) &&
+				!SpoonHelper.INSTANCE.containsWriteLocalVarsOnly(theCase.getStatements())).
 			ifPresent(theCase -> {
 				final List<CtElement> stats = new ArrayList<>(theCase.getStatements());
 				CtSwitch<?> swit = (CtSwitch<?>) theCase.getParent();
@@ -247,7 +248,9 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 			}
 		}
 
-		if(stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) {
+		if((stats.size()>1 || !stats.isEmpty() && !SpoonHelper.INSTANCE.isReturnBreakStatement(stats.get(stats.size() - 1))) &&
+			SpoonHelper.INSTANCE.hasRelevantCommandStatements(stats, uiListener.getExecutable()) &&
+			!SpoonHelper.INSTANCE.containsWriteLocalVarsOnly(stats)) {
 			final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 			conds.add(0, new CommandConditionEntry(ifStat.getCondition()));
 			uiListener.addCommand(new Command(new CommandStatmtEntry(true, stats), conds, uiListener.getExecutable()));
@@ -263,7 +266,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				stats.add(elseStat);
 			}
 
-			if(SpoonHelper.INSTANCE.hasRelevantCommandStatements(stats, uiListener.getExecutable())) {
+			if(SpoonHelper.INSTANCE.hasRelevantCommandStatements(stats, uiListener.getExecutable()) && !SpoonHelper.INSTANCE.containsWriteLocalVarsOnly(stats)) {
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(ifStat);
 				conds.add(0, new CommandConditionEntry(elseStat, SpoonHelper.INSTANCE.negBoolExpression(ifStat.getCondition())));
 				uiListener.addCommand(new Command(new CommandStatmtEntry(true, stats), conds, uiListener.getExecutable()));

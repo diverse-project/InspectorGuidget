@@ -717,12 +717,11 @@ public class TestCommandAnalyser {
 
 
 	@Test
-	@Ignore
-	public void testFollowedConditionals() {
+	public void testCommandComposedOfLocalVarAssignmentOnly() {
 		analyser.addInputResource("src/test/resources/java/analysers/FollowedConditionals.java");
 		analyser.run();
 		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum());
+		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum());
 	}
 
 	@Test

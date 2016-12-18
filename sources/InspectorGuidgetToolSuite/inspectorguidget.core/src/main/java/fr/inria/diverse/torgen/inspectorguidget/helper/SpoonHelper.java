@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.BinaryOperatorKind;
 import spoon.reflect.code.CtAssert;
+import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtBreak;
@@ -37,6 +38,7 @@ import spoon.reflect.code.CtThrow;
 import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.code.CtVariableWrite;
 import spoon.reflect.code.CtWhile;
 import spoon.reflect.code.UnaryOperatorKind;
 import spoon.reflect.cu.SourcePosition;
@@ -90,6 +92,14 @@ public final class SpoonHelper {
 		}
 
 		return Optional.of(cases.get(index + 1));
+	}
+
+
+	public <T extends CtElement> boolean containsWriteLocalVarsOnly(@Nullable List<T> stats) {
+		return stats != null && stats.parallelStream().allMatch(s ->
+			SpoonHelper.INSTANCE.isReturnBreakStatement(s) ||
+			s instanceof CtAssignment && ((CtAssignment<?, ?>) s).getAssigned() instanceof CtVariableWrite ||
+			s instanceof CtUnaryOperator && ((CtUnaryOperator<?>) s).getOperand() instanceof CtVariableWrite);
 	}
 
 
