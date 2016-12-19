@@ -274,9 +274,9 @@ public class TestBlobRefactoring {
 	@Test
 	public void testRefactoredThisInLocalListener() throws IOException {
 		initTest(24, true, "src/test/resources/java/refactoring/T.java");
-		assertThat(cmdAnalyser.getModel().getRootPackage()).
-			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/TRefactored.java").getRootPackage());
-//		assertEquals(getFileCode("src/test/resources/java/refactoring/TRefactored.java"), getRefactoredCode());
+//		assertThat(cmdAnalyser.getModel().getRootPackage()).
+//			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/TRefactored.java").getRootPackage());
+		assertEquals(getFileCode("src/test/resources/java/refactoring/TRefactored.java"), getRefactoredCode());
 	}
 
 	@Test
@@ -366,5 +366,13 @@ public class TestBlobRefactoring {
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SuperSwitchActionListenerRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/SuperSwitchActionListenerRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredPartialListenerRefactoring() throws IOException {
+		initTest(Arrays.asList(41, 44), true, "src/test/resources/java/refactoring/PartialListenerRefactoring.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java"), getRefactoredCode());
 	}
 }

@@ -21,6 +21,8 @@ import java.util.stream.IntStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtCase;
+import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtIf;
@@ -133,16 +135,29 @@ public class ListenerCommandRefactor {
 		final List<CommandConditionEntry> conds = cmd.getConditions();
 
 		if(!conds.isEmpty()) {
-			conds.get(0).realStatmt.getParent(CtStatement.class).delete();
+			// Removing the main conditional statement.
+			final CtCodeElement mainCond = conds.get(0).realStatmt;
 
-			IntStream.range(1, conds.size()).forEach(i -> {
-				CtStatement parent = conds.get(i).realStatmt.getParent(CtStatement.class);
+			if(mainCond instanceof CtCase<?>) {
+				mainCond.delete();
 
-				if(parent instanceof CtIf && SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)parent) ||
-					parent instanceof CtSwitch<?> && SpoonHelper.INSTANCE.isEmptySwitch((CtSwitch<?>)parent)) {
-					LOG.log(Level.INFO, () -> cmd + ": removing the empty old cmd conditional: " + parent);
-					parent.delete();
+				// On switch case, have to check whether the switch parent is empty.
+				if(mainCond.isParentInitialized() && mainCond.getParent() instanceof CtSwitch &&
+					SpoonHelper.INSTANCE.isEmptySwitch((CtSwitch<?>)mainCond.getParent(), cmd.getExecutable())) {
+					mainCond.getParent().delete();
 				}
+			}else {
+				mainCond.getParent(CtStatement.class).delete();
+			}
+
+			// Removing the super conditional statement only if they are empty.
+			IntStream.range(1, conds.size()).mapToObj(i -> SpoonHelper.INSTANCE.getStatement(conds.get(i).realStatmt)).
+				filter(stat -> stat.isPresent()).map(stat -> stat.get()).
+				filter(stat -> stat instanceof CtIf && SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)stat) ||
+					stat instanceof CtSwitch<?> && SpoonHelper.INSTANCE.isEmptySwitch((CtSwitch<?>)stat, cmd.getExecutable())).
+				forEach(stat -> {
+					LOG.log(Level.INFO, () -> cmd + ": removing the empty old cmd conditional: " + stat);
+					stat.delete();
 			});
 		}
 

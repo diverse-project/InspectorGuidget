@@ -174,9 +174,8 @@ public final class SpoonHelper {
 	}
 
 
-	public boolean isEmptySwitch(final @Nullable CtSwitch<?> sw) {
-		return sw != null && sw.getCases().stream().allMatch(caz -> caz.getStatements().isEmpty());
-
+	public boolean isEmptySwitch(final @Nullable CtSwitch<?> sw, final @NotNull CtExecutable<?> exec) {
+		return sw != null && sw.getCases().stream().noneMatch(caz -> hasRelevantCommandStatements(caz.getStatements(), exec));
 	}
 
 
@@ -365,6 +364,29 @@ public final class SpoonHelper {
 		exp.setRightHandOperand(caze.getCaseExpression().clone());
 
 		return exp;
+	}
+
+
+	/**
+	 * Searches for the parent or current statement. If elt is a statement, elt is returned.
+	 * Otherwise, a statement is searched in the parent hierarchy.
+	 * @param elt The element to analyse.
+	 * @return The parent statement or elt or nothing.
+	 */
+	public Optional<CtStatement> getStatement(final @Nullable CtElement elt) {
+		if(elt==null) {
+			return Optional.empty();
+		}
+
+		if(elt instanceof CtStatement) {
+			return Optional.of((CtStatement)elt);
+		}
+
+		if(elt.isParentInitialized()) {
+			return getStatement(elt.getParent());
+		}
+
+		return Optional.empty();
 	}
 
 
