@@ -158,8 +158,8 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		LOG.log(Level.INFO, () -> "PROCESSING " + element + " " + parent.getClass());
 
-		if(parent instanceof CtField<?>) {
-			onWidgetVar((CtField<?>) parent);
+		if(parent instanceof CtField<?> || parent instanceof CtLocalVariable<?>) {
+			onWidgetVar((CtVariable<?>) parent);
 			return;
 		}
 		if(parent instanceof CtExecutableReference<?> && parent.getParent() instanceof CtConstructorCall<?>) {
@@ -195,7 +195,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			return;
 		}
 
-		if(parent instanceof CtLocalVariable<?> || parent instanceof CtLocalVariableReference<?> || parent instanceof CtVariableRead<?>) {
+		if(parent instanceof CtLocalVariableReference<?> || parent instanceof CtVariableRead<?>) {
 			// A widget var assigned to a local var; or simply used.
 			return;
 		}

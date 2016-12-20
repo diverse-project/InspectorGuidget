@@ -88,7 +88,7 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Test
 	public void testWidgetAsClass() {
 		run("src/test/resources/java/widgets/WidgetAsClass.java");
-		assertEquals(1, wproc.getWidgetUsages().size());
+		assertEquals(2, wproc.getWidgetUsages().size());
 	}
 
 
@@ -117,9 +117,9 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Test
 	public void testWidgetAsLocalVarAddedToContainer() {
 		run("src/test/resources/java/widgetsIdentification/ClassListenerExternal2.java");
-		assertEquals(4, wproc.getWidgetUsages().size());
+		assertEquals(5, wproc.getWidgetUsages().size());
 		assertEquals(0, wproc.getRefWidgets().size());
-		List<WidgetProcessor.WidgetUsage> usages = wproc.getWidgetUsages().stream().
+		List<WidgetProcessor.WidgetUsage> usages = wproc.getWidgetUsages().stream().filter(u -> u.creation.isPresent()).
 			sorted((a, b) -> a.creation.get().getPosition().getLine() < b.creation.get().getPosition().getLine() ? -1 : 1).
 			collect(Collectors.toList());
 		assertEquals(27, usages.get(0).creation.get().getPosition().getLine());
@@ -131,7 +131,7 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Test
 	public void testWidgetAsLocalVarAddedToContainerAccesses() {
 		run("src/test/resources/java/widgetsIdentification/ClassListenerExternal2.java");
-		List<WidgetProcessor.WidgetUsage> usages = wproc.getWidgetUsages().stream().
+		List<WidgetProcessor.WidgetUsage> usages = wproc.getWidgetUsages().stream().filter(u -> u.creation.isPresent()).
 			sorted((a, b) -> a.creation.get().getPosition().getLine() < b.creation.get().getPosition().getLine() ? -1 : 1).
 			collect(Collectors.toList());
 		assertEquals(4, usages.get(0).accesses.size());
@@ -143,10 +143,10 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Test
 	public void testAnotherExample3CorrectStatementsIndentification() {
 		run("src/test/resources/java/widgetsIdentification/AnotherExample3.java");
-		List<WidgetProcessor.WidgetUsage> usages = wproc.getWidgetUsages().stream().
+		List<WidgetProcessor.WidgetUsage> usages = wproc.getWidgetUsages().stream().filter(u -> u.creation.isPresent()).
 			sorted((a, b) -> a.creation.get().getPosition().getLine() < b.creation.get().getPosition().getLine() ? -1 : 1).
 			collect(Collectors.toList());
-		assertEquals(3, wproc.getWidgetUsages().size());
+		assertEquals(4, wproc.getWidgetUsages().size());
 		assertEquals(0, wproc.getRefWidgets().size());
 		assertEquals(2, usages.get(0).accesses.size());
 		assertEquals(2, usages.get(1).accesses.size());
@@ -169,6 +169,12 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Test
 	public void testGoodNumberOfUsages() {
 		run("src/test/resources/java/refactoring/SuperSwitchActionListener.java");
+		assertEquals(2, wproc.getWidgetUsages().size());
+	}
+
+	@Test
+	public void testWidgetCreatedInFunction() {
+		run("src/test/resources/java/widgetsIdentification/WidgetCreatedInFunction.java");
 		assertEquals(2, wproc.getWidgetUsages().size());
 	}
 }

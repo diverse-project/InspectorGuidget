@@ -416,4 +416,12 @@ public class TestBlobRefactoring {
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java").getRootPackage());
 		//		assertEquals(getFileCode("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testRefactoringOnWidgetCreatedByFunction() throws IOException {
+		initTest(Collections.singletonList(24), true, "src/test/resources/java/refactoring/Fooo.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/FoooRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/FoooRefactored.java"), getRefactoredCode());
+	}
 }
