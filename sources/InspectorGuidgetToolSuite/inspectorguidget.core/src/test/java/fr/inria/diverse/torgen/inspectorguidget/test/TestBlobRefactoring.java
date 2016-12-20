@@ -38,6 +38,10 @@ public class TestBlobRefactoring {
 		widgetProc = new WidgetProcessor(true);
 	}
 
+	private void initTest(final boolean asLambda, final String... paths) {
+		initTest(null, asLambda, paths);
+	}
+
 	private void initTest(final int startLine, final boolean asLambda, final String... paths) {
 		initTest(Collections.singletonList(startLine), asLambda, paths);
 	}
@@ -61,10 +65,17 @@ public class TestBlobRefactoring {
 
 		final Collection<CommandWidgetFinder.WidgetFinderEntry> allEntries = finder.getResults().values();
 
-		startLine.forEach(line -> finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==line).forEach(entry -> {
-			refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false, allEntries);
-			refactor.execute();
-		}));
+		if(startLine==null) {
+			finder.getResults().entrySet().forEach(entry -> {
+				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false, allEntries);
+				refactor.execute();
+			});
+		}else {
+			startLine.forEach(line -> finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart() == line).forEach(entry -> {
+				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false, allEntries);
+				refactor.execute();
+			}));
+		}
 	}
 
 	private String getFileCode(final String path) throws IOException {
@@ -114,7 +125,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testBRefactoredLambdaTwoCmds() throws IOException {
-		initTest(Arrays.asList(24, 28), true, "src/test/resources/java/refactoring/B.java");
+		initTest(true, "src/test/resources/java/refactoring/B.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/BRefactoredLambdaTwoCmds.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/BRefactoredLambdaTwoCmds.java"), getRefactoredCode());
@@ -122,7 +133,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testARefactoredLambda() throws IOException {
-		initTest(18, true, "src/test/resources/java/refactoring/A.java");
+		initTest(true, "src/test/resources/java/refactoring/A.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/ARefactoredLambda.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/ARefactoredLambda.java"), getRefactoredCode());
@@ -138,7 +149,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredExternalListenerClassTwoCmds() throws IOException {
-		initTest(Arrays.asList(11, 15), true, "src/test/resources/java/refactoring/C.java");
+		initTest(true, "src/test/resources/java/refactoring/C.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/CRefactoredLambdaTwoCmds.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/CRefactoredLambdaTwoCmds.java"), getRefactoredCode());
@@ -146,7 +157,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredCmdsThatUseLocalVar() throws IOException {
-		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/D.java");
+		initTest(true, "src/test/resources/java/refactoring/D.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/DRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/DRefactored.java"), getRefactoredCode());
@@ -154,7 +165,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredSwitch() throws IOException {
-		initTest(Arrays.asList(28, 31), true, "src/test/resources/java/refactoring/E.java");
+		initTest(true, "src/test/resources/java/refactoring/E.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/ERefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/ERefactored.java"), getRefactoredCode());
@@ -162,7 +173,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredDispatch() throws IOException {
-		initTest(Arrays.asList(21, 25), true, "src/test/resources/java/refactoring/F.java");
+		initTest(true, "src/test/resources/java/refactoring/F.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/FRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/FRefactored.java"), getRefactoredCode());
@@ -170,7 +181,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredElse() throws IOException {
-		initTest(Arrays.asList(21, 23), true, "src/test/resources/java/refactoring/G.java");
+		initTest(true, "src/test/resources/java/refactoring/G.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/GRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/GRefactored.java"), getRefactoredCode());
@@ -178,7 +189,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredSharedVar() throws IOException {
-		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/H.java");
+		initTest(true, "src/test/resources/java/refactoring/H.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/HRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/HRefactored.java"), getRefactoredCode());
@@ -186,7 +197,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredMultipleConditions() throws IOException {
-		initTest(Arrays.asList(29, 33), true, "src/test/resources/java/refactoring/I.java");
+		initTest(true, "src/test/resources/java/refactoring/I.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/IRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/IRefactored.java"), getRefactoredCode());
@@ -194,7 +205,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredSameCommandForTwoWidgets() throws IOException {
-		initTest(Arrays.asList(38, 42), true, "src/test/resources/java/refactoring/K.java");
+		initTest(true, "src/test/resources/java/refactoring/K.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/KRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/KRefactored.java"), getRefactoredCode());
@@ -202,7 +213,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredRemovePrivateActionCmdNames() throws IOException {
-		initTest(Arrays.asList(27, 31), true, "src/test/resources/java/refactoring/J.java");
+		initTest(true, "src/test/resources/java/refactoring/J.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/JRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/JRefactored.java"), getRefactoredCode());
@@ -210,7 +221,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredReturnsReturns() throws IOException {
-		initTest(Arrays.asList(30, 34), true, "src/test/resources/java/refactoring/L.java");
+		initTest(true, "src/test/resources/java/refactoring/L.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/LRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/LRefactored.java"), getRefactoredCode());
@@ -218,7 +229,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredExternalListenerWithInvocations() throws IOException {
-		initTest(Arrays.asList(19, 23), true, "src/test/resources/java/refactoring/M.java");
+		initTest(true, "src/test/resources/java/refactoring/M.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/MRefactored.java"), getRefactoredCode());
@@ -226,7 +237,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredExternalListenerWithAttributes() throws IOException {
-		initTest(Arrays.asList(22, 30), true, "src/test/resources/java/refactoring/N.java");
+		initTest(true, "src/test/resources/java/refactoring/N.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/NRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/NRefactored.java"), getRefactoredCode());
@@ -234,7 +245,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredExternalListenerWithAttrReads() throws IOException {
-		initTest(Arrays.asList(19, 23), true, "src/test/resources/java/refactoring/O.java");
+		initTest(true, "src/test/resources/java/refactoring/O.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/ORefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/ORefactored.java"), getRefactoredCode());
@@ -242,7 +253,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredLocalWidgetRemoveActionNames() throws IOException {
-		initTest(17, true, "src/test/resources/java/refactoring/Q.java");
+		initTest(true, "src/test/resources/java/refactoring/Q.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/QRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/QRefactored.java"), getRefactoredCode());
@@ -250,7 +261,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredUseAttributeFromAnotherListener() throws IOException {
-		initTest(51, true, "src/test/resources/java/refactoring/P.java");
+		initTest(true, "src/test/resources/java/refactoring/P.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/PRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/PRefactored.java"), getRefactoredCode());
@@ -258,7 +269,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredCopyExternalFields() throws IOException {
-		initTest(Arrays.asList(22, 30), true, "src/test/resources/java/refactoring/R.java");
+		initTest(true, "src/test/resources/java/refactoring/R.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/RRefactored.java"), getRefactoredCode());
@@ -266,7 +277,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredThisInExternalListener() throws IOException {
-		initTest(20, true, "src/test/resources/java/refactoring/S.java");
+		initTest(true, "src/test/resources/java/refactoring/S.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/SRefactored.java"), getRefactoredCode());
@@ -274,7 +285,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredThisInLocalListener() throws IOException {
-		initTest(24, true, "src/test/resources/java/refactoring/T.java");
+		initTest(true, "src/test/resources/java/refactoring/T.java");
 //		assertThat(cmdAnalyser.getModel().getRootPackage()).
 //			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/TRefactored.java").getRootPackage());
 		assertEquals(getFileCode("src/test/resources/java/refactoring/TRefactored.java"), getRefactoredCode());
@@ -282,7 +293,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredIfElseMultipleWidgets() throws IOException {
-		initTest(Arrays.asList(28, 37, 39), true, "src/test/resources/java/listeners/MultipleListener.java");
+		initTest(true, "src/test/resources/java/listeners/MultipleListener.java");
 //		assertThat(cmdAnalyser.getModel().getRootPackage()).
 //			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MultipleListenerRefactored.java").getRootPackage());
 		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRefactored.java"), getRefactoredCode());
@@ -291,7 +302,7 @@ public class TestBlobRefactoring {
 	@Test
 	@Ignore
 	public void testTryCatchListener() throws IOException {
-		initTest(24, true, "src/test/resources/java/refactoring/U.java");
+		initTest(true, "src/test/resources/java/refactoring/U.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MultipleListenerRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRefactored.java"), getRefactoredCode());
@@ -299,7 +310,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredComplexConditionalStatements() throws IOException {
-		initTest(Arrays.asList(24, 27), true, "src/test/resources/java/analysers/ComplexConditionalStatements.java");
+		initTest(true, "src/test/resources/java/analysers/ComplexConditionalStatements.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexConditionalStatements.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexConditionalStatements.java"), getRefactoredCode());
@@ -339,7 +350,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredAdHocListenerReg() throws IOException {
-		initTest(Collections.singletonList(21), true, "src/test/resources/java/refactoring/AdhocListenerReg.java");
+		initTest(true, "src/test/resources/java/refactoring/AdhocListenerReg.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/AdhocListenerRegRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/AdhocListenerRegRefactored.java"), getRefactoredCode());
@@ -347,7 +358,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredMultipleListenerReg() throws IOException {
-		initTest(Collections.singletonList(21), true, "src/test/resources/java/refactoring/MultipleListenerReg.java");
+		initTest(true, "src/test/resources/java/refactoring/MultipleListenerReg.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/MultipleListenerRegRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/MultipleListenerRegRefactored.java"), getRefactoredCode());
@@ -355,7 +366,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredSwitchCasesSameLine() throws IOException {
-		initTest(Arrays.asList(51, 54, 57), true, "src/test/resources/java/analysers/SwitchCasesSameLine.java");
+		initTest(true, "src/test/resources/java/analysers/SwitchCasesSameLine.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SwitchCasesSameLineRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/SwitchCasesSameLineRefactored.java"), getRefactoredCode());
@@ -363,7 +374,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoredSuperSwitchActionListener() throws IOException {
-		initTest(Arrays.asList(29, 32), true, "src/test/resources/java/refactoring/SuperSwitchActionListener.java");
+		initTest(true, "src/test/resources/java/refactoring/SuperSwitchActionListener.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SuperSwitchActionListenerRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/SuperSwitchActionListenerRefactored.java"), getRefactoredCode());
@@ -419,7 +430,7 @@ public class TestBlobRefactoring {
 
 	@Test
 	public void testRefactoringOnWidgetCreatedByFunction() throws IOException {
-		initTest(Collections.singletonList(24), true, "src/test/resources/java/refactoring/Fooo.java");
+		initTest(true, "src/test/resources/java/refactoring/Fooo.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/FoooRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/FoooRefactored.java"), getRefactoredCode());
