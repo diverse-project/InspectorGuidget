@@ -9,8 +9,8 @@ class Bar implements ActionListener{
 
 
 class Foo extends Bar {
-	JButton foob = new JButton();
-	JButton foob2 = new JButton();
+	JButton foob;
+	JButton foob2;
 
 	public Foo() {
 		super();

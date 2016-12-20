@@ -8,6 +8,7 @@ import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -60,11 +61,13 @@ public abstract class XPLauncher {
 		finder.process();
 
 		final Set<CtType<?>> collectedTypes = new HashSet<>();
+		final Collection<CommandWidgetFinder.WidgetFinderEntry> allEntries = finder.getResults().values();
+
 		filterBlobsToRefactor().forEach(cmd -> {
 			System.out.println("Blob found in " + cmd);
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
-			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), genRefacClassesOnly);
+			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), genRefacClassesOnly, allEntries);
 			refactor.execute();
 			collectedTypes.addAll(refactor.getRefactoredTypes());
 		});

@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class TestGUIBugsDetector {
 	private CommandAnalyser cmdAnalyser;
 	private WidgetProcessor widgetProc;

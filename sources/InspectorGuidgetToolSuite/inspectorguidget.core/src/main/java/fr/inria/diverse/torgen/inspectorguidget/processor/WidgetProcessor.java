@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?>> {
 	/** The widgets instiantiation and their usages. */
-	private final @NotNull List<WidgetUsage> widgetUsages;
+	private final @NotNull Set<WidgetUsage> widgetUsages;
 	/** The widgets created and directly added in a container. */
 	private final @NotNull Set<CtInvocation<?>> refWidgets;
 
@@ -38,7 +38,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 	public WidgetProcessor(final boolean withConfigurationStatmts) {
 		super();
-		widgetUsages = new ArrayList<>();
+		widgetUsages = new HashSet<>();
 		refWidgets = new HashSet<>();
 		withConfigStat = withConfigurationStatmts;
 		cacheTypeChecked = new HashMap<>();
@@ -62,11 +62,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 //		final Map<CtVariable<?>, List<WidgetUsage>> usages = widgetUsages.parallelStream().collect(Collectors.groupingBy(u -> u.widgetVar));
 		final Map<CtVariable<?>, List<WidgetUsage>> usages = new IdentityHashMap<>();
 		widgetUsages.forEach(u -> {
-			List<WidgetUsage> usage = usages.get(u.widgetVar);
-			if(usage == null) {
-				usage = new ArrayList<>();
-				usages.put(u.widgetVar, usage);
-			}
+			List<WidgetUsage> usage = usages.computeIfAbsent(u.widgetVar, k -> new ArrayList<>());
 			usage.add(u);
 		});
 
@@ -84,7 +80,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 				// Getting the usages of this widget.
 				return Collections.singletonList(new WidgetUsage(u1.widgetVar, u1.creation.orElse(null), extractUsagesOfWidgetVar(u1.widgetVar)));
 			}else {
-				if(entry.getValue().stream().filter(u -> !u.creation.isPresent()).findFirst().isPresent()){
+				if(entry.getValue().stream().anyMatch(u -> !u.creation.isPresent())){
 					LOG.log(Level.SEVERE, () -> "A constructor is not defined while several usages are present: " + entry.getValue());
 					return Collections.<WidgetUsage>emptyList();
 				}
@@ -135,7 +131,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		cacheTypeChecked.clear();
 	}
 
-	public @NotNull List<WidgetUsage> getWidgetUsages() {
+	public @NotNull Set<WidgetUsage> getWidgetUsages() {
 		return widgetUsages;
 	}
 
@@ -231,7 +227,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			final List<WidgetUsage> widgets = widgetUsages.parallelStream().filter(u -> u.widgetVar == var).collect(Collectors.toList());
 
 			// The constructor must not be already present in the widget usages.
-			if(!widgets.stream().filter(u -> u.creation.isPresent() && u.creation.get()==call).findFirst().isPresent()) {
+			if(widgets.stream().noneMatch(u -> u.creation.isPresent() && u.creation.get()==call)) {
 				if(widgets.size() == 1 && !widgets.get(0).creation.isPresent()) {
 					WidgetUsage widgetUsage = widgets.get(0);
 					widgetUsages.remove(widgetUsage);
@@ -346,7 +342,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 	public boolean isWidgetVarUsed(final @Nullable CtVariable<?> var) {
 		if(var==null) return false;
 		synchronized(widgetUsages) {
-			return widgetUsages.parallelStream().filter(u -> u.widgetVar == var).findFirst().isPresent();
+			return widgetUsages.parallelStream().anyMatch(u -> u.widgetVar == var);
 		}
 	}
 
@@ -376,9 +372,9 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 
 	public static class WidgetUsage {
-		public final CtVariable<?> widgetVar;
-		public final Optional<CtConstructorCall<?>> creation;
-		public final List<CtVariableAccess<?>> accesses;
+		public final @NotNull CtVariable<?> widgetVar;
+		public final @NotNull Optional<CtConstructorCall<?>> creation;
+		public final @NotNull List<CtVariableAccess<?>> accesses;
 
 		public WidgetUsage(final @NotNull CtVariable<?> widgetVar, final @Nullable CtConstructorCall<?> creation,
 						   final @NotNull List<CtVariableAccess<?>> accesses) {
@@ -397,8 +393,11 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 			if(!widgetVar.equals(that.widgetVar)) return false;
 			if(!widgetVar.getPosition().equals(that.widgetVar.getPosition())) return false;
-			if(!creation.isPresent() != that.creation.isPresent()) return false;
-			return !creation.isPresent() || creation.get().equals(that.creation.get()) && accesses.equals(that.accesses);
+			if(creation.isPresent() != that.creation.isPresent()) return false;
+			return !creation.isPresent() ||
+				creation.get().equals(that.creation.get()) &&
+				creation.get().getPosition().equals(that.creation.get().getPosition()) &&
+				accesses.equals(that.accesses);
 
 		}
 
@@ -406,7 +405,11 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		public int hashCode() {
 			int result = widgetVar.hashCode();
 			result = 31 * result + widgetVar.getPosition().hashCode();
-			result = 31 * result + (creation.isPresent() ? creation.get().hashCode() : 0);
+			if(creation.isPresent()) {
+				result = 31 * result + creation.get().hashCode();
+				result = 31 * result + creation.get().getPosition().hashCode();
+			}
+
 			result = 31 * result + accesses.hashCode();
 			return result;
 		}

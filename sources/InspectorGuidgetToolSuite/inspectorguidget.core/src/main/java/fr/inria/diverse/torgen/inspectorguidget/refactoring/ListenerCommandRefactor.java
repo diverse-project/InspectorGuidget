@@ -9,6 +9,8 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.ThisAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
+import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -61,15 +63,19 @@ public class ListenerCommandRefactor {
 	private final boolean asLambda;
 	private final Command cmd;
 	private @NotNull CommandWidgetFinder.WidgetFinderEntry widgets;
-	private final Set<CtType<?>> refactoredTypes;
+	private final @NotNull Set<CtType<?>> refactoredTypes;
 	private final boolean collectTypes;
+	private final @NotNull Collection<CommandWidgetFinder.WidgetFinderEntry> allEntries;
+	private Set<WidgetProcessor.WidgetUsage> usages;
 
 	public ListenerCommandRefactor(final @NotNull Command command, final @NotNull CommandWidgetFinder.WidgetFinderEntry entry,
-								   final boolean refactAsLambda, final boolean collectRefactoredTypes) {
+								   final boolean refactAsLambda, final boolean collectRefactoredTypes,
+								   final @NotNull Collection<CommandWidgetFinder.WidgetFinderEntry> entries) {
 		asLambda = refactAsLambda;
 		widgets = entry;
 		cmd = command;
 		collectTypes = collectRefactoredTypes;
+		allEntries = entries;
 
 		if(collectRefactoredTypes) {
 			refactoredTypes = new HashSet<>();
@@ -88,7 +94,8 @@ public class ListenerCommandRefactor {
 			cmd.getExecutable().getBody().getLastStatement().delete();
 		}
 
-		widgets.getWidgetUsages().forEach(usage -> {
+		usages = widgets.getWidgetUsages(allEntries);
+		usages.forEach(usage -> {
 			// Getting the accesses of the widgets
 			List<CtInvocation<?>> invok = usage.accesses.stream().
 				// gathering their parent statement.
@@ -204,7 +211,7 @@ public class ListenerCommandRefactor {
 	}
 
 	private void removeActionCommandStatements() {
-		widgets.getWidgetUsages().forEach(usage -> {
+		usages.forEach(usage -> {
 			Filter<CtInvocation<?>> filter = new BasicFilter<CtInvocation<?>>(CtInvocation.class) {
 				@Override
 				public boolean matches(final CtInvocation<?> element) {

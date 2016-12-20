@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,12 +59,12 @@ public class TestBlobRefactoring {
 			widgetProc.getWidgetUsages());
 		finder.process();
 
-		startLine.forEach(line -> {
-			finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==line).forEach(entry -> {
-				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false);
-				refactor.execute();
-			});
-		});
+		final Collection<CommandWidgetFinder.WidgetFinderEntry> allEntries = finder.getResults().values();
+
+		startLine.forEach(line -> finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart()==line).forEach(entry -> {
+			refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false, allEntries);
+			refactor.execute();
+		}));
 	}
 
 	private String getFileCode(final String path) throws IOException {
@@ -369,10 +370,50 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	public void testRefactoredPartialListenerRefactoring() throws IOException {
+	public void testRefactoredPartialListenerRefactoring1() throws IOException {
 		initTest(Arrays.asList(41, 44), true, "src/test/resources/java/refactoring/PartialListenerRefactoring.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoringCommandNotPossible1() throws IOException {
+		initTest(Collections.singletonList(37), true, "src/test/resources/java/refactoring/RefactoringCommandNotPossible.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoringCommandNotPossible.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoringCommandNotPossible.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoringCommandNotPossible2() throws IOException {
+		initTest(Collections.singletonList(14), true, "src/test/resources/java/refactoring/RefactoringCommandNotPossible.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoringCommandNotPossible.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoringCommandNotPossible.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoringCommandNotPossible3() throws IOException {
+		initTest(Arrays.asList(14, 37), true, "src/test/resources/java/refactoring/RefactoringCommandNotPossible.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoringCommandNotPossible.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoringCommandNotPossible.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredPartialListenerRefactoring2() throws IOException {
+		initTest(Arrays.asList(14, 37, 41, 44), true, "src/test/resources/java/refactoring/PartialListenerRefactoring.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java").getRootPackage());
+		//		assertEquals(getFileCode("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredPartialListenerRefactoring3() throws IOException {
+		initTest(Arrays.asList(41, 14, 44, 37), true, "src/test/resources/java/refactoring/PartialListenerRefactoring.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java").getRootPackage());
+		//		assertEquals(getFileCode("src/test/resources/java/refactoring/PartialListenerRefactoringRefactored.java"), getRefactoredCode());
 	}
 }

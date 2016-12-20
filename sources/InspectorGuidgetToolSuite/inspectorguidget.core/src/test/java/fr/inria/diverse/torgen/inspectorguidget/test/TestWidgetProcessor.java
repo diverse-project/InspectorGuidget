@@ -2,6 +2,7 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 
 import fr.inria.diverse.torgen.inspectorguidget.processor.InspectorGuidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
+import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -68,14 +69,14 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	public void testWidgetsConstructorContainer() {
 		run("src/test/resources/java/widgets/WidgetConstructorContainer.java");
 		assertEquals(1, wproc.getWidgetUsages().size());
-		assertTrue(wproc.getWidgetUsages().get(0).creation.isPresent());
+		assertTrue(new ArrayList<>(wproc.getWidgetUsages()).get(0).creation.isPresent());
 		assertEquals(1, wproc.getRefWidgets().size());
 	}
 
 	@Test
 	public void testWidgetsConstructorContainerUsage() {
 		run("src/test/resources/java/widgets/WidgetConstructorContainer.java");
-		assertEquals(1, wproc.getWidgetUsages().get(0).accesses.size());// The panel is used to add the window
+		assertEquals(1, new ArrayList<>(wproc.getWidgetUsages()).get(0).accesses.size());// The panel is used to add the window
 	}
 
 	@Test
@@ -109,8 +110,8 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	public void testWidgetUsages() {
 		run("src/test/resources/java/widgetsIdentification/ClassListenerExternal.java");
 		assertEquals(2, wproc.getWidgetUsages().size());
-		assertEquals(2, wproc.getWidgetUsages().get(0).accesses.size());
-		assertEquals(2, wproc.getWidgetUsages().get(1).accesses.size());
+		assertEquals(2, new ArrayList<>(wproc.getWidgetUsages()).get(0).accesses.size());
+		assertEquals(2, new ArrayList<>(wproc.getWidgetUsages()).get(1).accesses.size());
 	}
 
 	@Test
@@ -162,6 +163,12 @@ public class TestWidgetProcessor extends TestInspectorGuidget<WidgetProcessor> {
 	@Test
 	public void testWidgetsWithSameName() {
 		run("src/test/resources/java/widgetsIdentification/WidgetsWithSameName.java");
+		assertEquals(2, wproc.getWidgetUsages().size());
+	}
+
+	@Test
+	public void testGoodNumberOfUsages() {
+		run("src/test/resources/java/refactoring/SuperSwitchActionListener.java");
 		assertEquals(2, wproc.getWidgetUsages().size());
 	}
 }
