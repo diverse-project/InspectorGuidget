@@ -779,4 +779,12 @@ public class TestCommandAnalyser {
 		assertEquals(2, cmds.get(0).getAllLocalStatmtsOrdered().size());
 		assertEquals(2, cmds.get(1).getAllLocalStatmtsOrdered().size());
 	}
+
+	@Test
+	public void testBreakAtEnd() {
+		analyser.addInputResource("src/test/resources/java/refactoring/BreakAtEnd.java");
+		analyser.run();
+		Command cmd = analyser.getCommands().values().stream().flatMap(c -> c.getCommands().stream()).collect(Collectors.toList()).get(0);
+		assertEquals(1, cmd.getStatements().size());
+	}
 }

@@ -7,6 +7,7 @@ import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtSwitch;
 
 /**
  * An entry class used in the Command class to represent a conditional statement that conditions the command.
@@ -44,7 +45,7 @@ public class CommandConditionEntry {
 		final Set<CtLocalVariable<?>> all = SpoonHelper.INSTANCE.getAllLocalVarDeclaration(realStatmt);
 
 		if(realStatmt instanceof CtCase<?>) {
-			all.addAll(SpoonHelper.INSTANCE.getAllLocalVarDeclaration(realStatmt.getParent()));
+			all.addAll(SpoonHelper.INSTANCE.getAllLocalVarDeclaration(realStatmt.getParent(CtSwitch.class).getSelector()));
 		}
 
 		return all;
