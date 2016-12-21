@@ -238,9 +238,9 @@ public class TestBlobRefactoring {
 	@Test
 	public void testRefactoredExternalListenerWithAttributes() throws IOException {
 		initTest(true, "src/test/resources/java/refactoring/N.java");
-		assertThat(cmdAnalyser.getModel().getRootPackage()).
-			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/NRefactored.java").getRootPackage());
-//		assertEquals(getFileCode("src/test/resources/java/refactoring/NRefactored.java"), getRefactoredCode());
+//		assertThat(cmdAnalyser.getModel().getRootPackage()).
+//			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/NRefactored.java").getRootPackage());
+		assertEquals(getFileCode("src/test/resources/java/refactoring/NRefactored.java"), getRefactoredCode());
 	}
 
 	@Test
@@ -450,5 +450,13 @@ public class TestBlobRefactoring {
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/AdhocWidgetRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/AdhocWidgetRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testAdhocWidget2() throws IOException {
+		initTest(true, "src/test/resources/java/refactoring/AdhocWidget2.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/AdhocWidget2Refactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/AdhocWidget2Refactored.java"), getRefactoredCode());
 	}
 }

@@ -383,6 +383,14 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			this.accesses = accesses;
 		}
 
+		public @NotNull List<CtCodeElement> getUsagesWithCons() {
+			if(accesses.isEmpty()) {
+				return creation.isPresent() ? Collections.singletonList(creation.get()) : Collections.emptyList();
+			}
+			final List<CtCodeElement> stats = new ArrayList<>((List<CtCodeElement>)(List<?>)accesses);
+			creation.ifPresent(cons -> stats.add(cons));
+			return stats;
+		}
 
 		@Override
 		public boolean equals(final Object o) {

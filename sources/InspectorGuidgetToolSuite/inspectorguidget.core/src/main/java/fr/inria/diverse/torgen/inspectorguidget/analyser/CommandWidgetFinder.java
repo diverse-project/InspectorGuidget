@@ -108,7 +108,9 @@ public class CommandWidgetFinder {
 		entry.setWidgetClasses(getWidgetClass(cmd));
 		//		System.out.println("ANALYSIS #3 in: " + (System.currentTimeMillis()-time));
 		//		time = System.currentTimeMillis();
-		entry.setWidgetsFromSharedVars(checkListenerMatching(listenerClass, matchWidgetsUsagesWithCmdConditions(cmd)));
+		entry.setWidgetsFromSharedVars(
+			checkListenerMatching(listenerClass,
+				matchWidgetsUsagesWithCmdConditions(cmd)));
 		//		System.out.println("ANALYSIS #4 in: " + (System.currentTimeMillis()-time));
 		//		time = System.currentTimeMillis();
 		entry.setWidgetsFromStringLiterals(checkListenerMatching(listenerClass, matchWidgetsUsagesWithStringsInCmdConditions(cmd)));
@@ -135,7 +137,7 @@ public class CommandWidgetFinder {
 
 		cmdWidgetMatches.removeIf(m ->
 			// Removing if in the statement of the access there is a reference to the current listener class.
-			m.usage.accesses.stream().noneMatch(a -> a.getParent(CtStatement.class).getElements(filt).stream().
+			m.usage.getUsagesWithCons().stream().noneMatch(a -> a.getParent(CtStatement.class).getElements(filt).stream().
 				map(var -> var.getType()).anyMatch(ty -> ty != null && ty.equals(listRef))));
 		return cmdWidgetMatches;
 	}
@@ -194,7 +196,7 @@ public class CommandWidgetFinder {
 			// Collecting them
 				distinct().collect(Collectors.toCollection(HashSet::new));
 
-		return widgetUsages.parallelStream().map(usage -> usage.accesses.parallelStream().filter(m -> {
+		return widgetUsages.parallelStream().map(usage -> usage.getUsagesWithCons().parallelStream().filter(m -> {
 			// Ignoring the statements that are parts of a listener method. The statements that must be analysed
 			// or those that configure the widgetUsages.
 			try {

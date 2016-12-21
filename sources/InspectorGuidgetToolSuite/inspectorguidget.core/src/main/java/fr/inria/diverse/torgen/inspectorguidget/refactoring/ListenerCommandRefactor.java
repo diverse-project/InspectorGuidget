@@ -143,20 +143,11 @@ public class ListenerCommandRefactor {
 			}
 		};
 
-		List<CtAbstractInvocation<?>> collect = usage.accesses.stream().
+		return usage.getUsagesWithCons().stream().
 			// gathering their parent statement.
 				map(acc -> acc.getParent(CtStatement.class)).filter(stat -> stat != null).
 			// Gathering the method call that matches listener registration: single parameter that is a listener type.
 				map(stat -> stat.getElements(filter)).flatMap(s -> s.stream()).collect(Collectors.toList());
-
-		if(collect.isEmpty() && usage.creation.isPresent()) {
-			final CtStatement stat = usage.creation.get().getParent(CtStatement.class);
-			if(stat!=null) {
-				return stat.getElements(filter);
-			}
-		}
-
-		return collect;
 	}
 
 
