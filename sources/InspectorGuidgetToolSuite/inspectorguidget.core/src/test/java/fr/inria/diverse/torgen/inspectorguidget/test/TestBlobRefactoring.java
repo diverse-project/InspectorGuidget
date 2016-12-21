@@ -443,4 +443,12 @@ public class TestBlobRefactoring {
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/BreakAtEndRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/BreakAtEndRefactored.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testAdhocWidget() throws IOException {
+		initTest(true, "src/test/resources/java/refactoring/AdhocWidget.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/AdhocWidgetRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/AdhocWidgetRefactored.java"), getRefactoredCode());
+	}
 }

@@ -15,9 +15,12 @@ import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtType;
 
 public class Command {
 	private final @NotNull CtExecutable<?> executable;
+
+	private @Nullable CtType<?> parentType;
 
 	protected static final @NotNull CommandStatmtEntry EMPTY_CMD_ENTRY = new CommandStatmtEntry(false);
 

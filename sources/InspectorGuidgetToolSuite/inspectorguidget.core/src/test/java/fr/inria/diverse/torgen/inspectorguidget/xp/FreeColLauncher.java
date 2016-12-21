@@ -24,17 +24,17 @@ public class FreeColLauncher extends XPLauncher {
 	@Override
 	protected @NotNull List<Command> filterBlobsToRefactor() {
 		List<ListenerID> ids = Arrays.asList(
-//			new ListenerID("ReportPanel.java", 140),
-			new ListenerID("TradeRoutePanel.java", 306)
-//			new ListenerID("EuropePanel.java", 840),
-//			new ListenerID("ColorCellEditor.java", 99),
-//			new ListenerID("ColonyPanel.java", 953),
-//			new ListenerID("NewPanel.java", 502),
-//			new ListenerID("StartGamePanel.java", 296),
-//			new ListenerID("UnitLabel.java", 369),
-//			new ListenerID("ReportCompactColonyPanel.java", 1116),
-//			new ListenerID("ReportLabourPanel.java", 226),
-//			new ListenerID("ServerListPanel.java", 187)
+			new ListenerID("ReportPanel.java", 140),
+			new ListenerID("TradeRoutePanel.java", 306),
+			new ListenerID("EuropePanel.java", 840),
+			new ListenerID("ColorCellEditor.java", 99),
+			new ListenerID("ColonyPanel.java", 953),
+			new ListenerID("NewPanel.java", 502),
+			new ListenerID("StartGamePanel.java", 296),
+			new ListenerID("UnitLabel.java", 369),
+			new ListenerID("ReportCompactColonyPanel.java", 1116),
+			new ListenerID("ReportLabourPanel.java", 226),
+			new ListenerID("ServerListPanel.java", 187)
 		);
 
 		return blobAnalyser.getBlobs().entrySet().stream().
