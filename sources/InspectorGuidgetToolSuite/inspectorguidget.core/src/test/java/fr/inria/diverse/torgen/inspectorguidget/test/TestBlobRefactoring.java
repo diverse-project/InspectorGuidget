@@ -31,9 +31,11 @@ public class TestBlobRefactoring {
 	private WidgetProcessor widgetProc;
 	private CommandWidgetFinder finder;
 	ListenerCommandRefactor refactor;
+	private boolean asField;
 
 	@Before
 	public void setUp() throws Exception {
+		asField = false;
 		cmdAnalyser = new CommandAnalyser();
 		widgetProc = new WidgetProcessor(true);
 	}
@@ -67,12 +69,12 @@ public class TestBlobRefactoring {
 
 		if(startLine==null) {
 			finder.getResults().entrySet().forEach(entry -> {
-				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false, allEntries);
+				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, asField, false, allEntries);
 				refactor.execute();
 			});
 		}else {
 			startLine.forEach(line -> finder.getResults().entrySet().stream().filter(e -> e.getKey().getLineStart() == line).forEach(entry -> {
-				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, false, allEntries);
+				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, asField, false, allEntries);
 				refactor.execute();
 			}));
 		}
@@ -458,5 +460,39 @@ public class TestBlobRefactoring {
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/AdhocWidget2Refactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/AdhocWidget2Refactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testAsFieldLambda() throws IOException {
+		asField = true;
+		initTest(true, "src/test/resources/java/refactoring/RegUnreg.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegUnregRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testAsFieldAnonClass() throws IOException {
+		asField = true;
+		initTest(false, "src/test/resources/java/refactoring/RegUnreg.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegUnregAnonRefactoredClass.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregAnonRefactoredClass.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testForcedAsFieldLambda() throws IOException {
+		initTest(true, "src/test/resources/java/refactoring/RegUnreg.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegUnregRefactored.java").getRootPackage());
+		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testForcedAsFieldAnonClass() throws IOException {
+		initTest(false, "src/test/resources/java/refactoring/RegUnreg.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegUnregAnonRefactoredClass.java").getRootPackage());
+		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregAnonRefactoredClass.java"), getRefactoredCode());
 	}
 }

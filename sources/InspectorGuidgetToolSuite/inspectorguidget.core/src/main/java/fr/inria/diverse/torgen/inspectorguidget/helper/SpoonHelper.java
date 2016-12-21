@@ -24,6 +24,7 @@ import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtCatch;
 import spoon.reflect.code.CtDo;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtFor;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
@@ -49,6 +50,7 @@ import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ParentNotInitializedException;
+import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 
@@ -63,6 +65,11 @@ public final class SpoonHelper {
 		logNames = new HashSet<>(Arrays.asList("log", "debug", "warning", "error", "severe", "fine", "finest", "finer", "info"));
 	}
 
+	public <T> CtFieldRead<T> createField(final @NotNull Factory fac, final @NotNull CtVariable<T> var) {
+		final CtFieldRead<T> fieldRead = fac.Core().createFieldRead();
+		fieldRead.setVariable(var.getReference());
+		return fieldRead;
+	}
 
 	public <T> Optional<CtCase<? super  T>> getNonEmptySwitchCase(final @Nullable CtCase<? super  T> ctcase) {
 		if(ctcase==null) {

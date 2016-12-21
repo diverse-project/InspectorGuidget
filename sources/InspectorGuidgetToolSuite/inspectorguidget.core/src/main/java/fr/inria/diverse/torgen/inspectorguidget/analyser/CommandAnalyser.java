@@ -218,7 +218,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private void extractCommandsFromSwitchCase(final @NotNull CtCase<?> cas, final @NotNull UIListener uiListener) {
+	private <T> void extractCommandsFromSwitchCase(final @NotNull CtCase<T> cas, final @NotNull UIListener uiListener) {
 		final CtExecutable<?> exec = uiListener.getExecutable();
 		// Ignoring the case statements that are empty or that contains irrelevant statements.
 		SpoonHelper.INSTANCE.getNonEmptySwitchCase(cas).

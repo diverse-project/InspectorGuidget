@@ -67,7 +67,7 @@ public abstract class XPLauncher {
 			System.out.println("Blob found in " + cmd);
 			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
-			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), genRefacClassesOnly, allEntries);
+			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), false, genRefacClassesOnly, allEntries);
 			refactor.execute();
 			collectedTypes.addAll(refactor.getRefactoredTypes());
 		});

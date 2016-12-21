@@ -10,6 +10,7 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtType;
@@ -63,6 +65,7 @@ public class ListenerCommandRefactor {
 	public static final Logger LOG = Logger.getLogger("ListenerCommandRefactor");
 
 	private final boolean asLambda;
+	private final boolean asField;
 	private final Command cmd;
 	private @NotNull CommandWidgetFinder.WidgetFinderEntry widgets;
 	private final @NotNull Set<CtType<?>> refactoredTypes;
@@ -71,11 +74,12 @@ public class ListenerCommandRefactor {
 	private Set<WidgetProcessor.WidgetUsage> usages;
 
 	public ListenerCommandRefactor(final @NotNull Command command, final @NotNull CommandWidgetFinder.WidgetFinderEntry entry,
-								   final boolean refactAsLambda, final boolean collectRefactoredTypes,
+								   final boolean refactAsLambda, final boolean refactAsField, final boolean collectRefactoredTypes,
 								   final @NotNull Collection<CommandWidgetFinder.WidgetFinderEntry> entries) {
 		asLambda = refactAsLambda;
 		widgets = entry;
 		cmd = command;
+		asField = refactAsField;
 		collectTypes = collectRefactoredTypes;
 		allEntries = entries;
 
@@ -100,6 +104,9 @@ public class ListenerCommandRefactor {
 		usages.forEach(usage -> {
 			// Getting the registration of the widgets
 			final List<CtAbstractInvocation<?>> invoks = findWidgetRegistrations(usage);
+			final List<CtAbstractInvocation<?>> unregInvoks = invoks.stream().filter(inv ->
+				inv.getExecutable().getSimpleName().contains("remove")).collect(Collectors.toList());
+			invoks.removeAll(unregInvoks);
 
 			if(invoks.size()==1) {
 				final CtAbstractInvocation<?> invokReg = invoks.get(0);
@@ -110,9 +117,9 @@ public class ListenerCommandRefactor {
 					final CtExpression<?> oldParam = invokReg.getArguments().get(pos);
 
 					if(asLambda) {
-						refactorRegistrationAsLambda(invokReg, pos);
+						refactorRegistrationAsLambda(invokReg, unregInvoks, pos, usage.widgetVar.getSimpleName());
 					}else {
-						refactorRegistrationAsAnonClass(invokReg, pos);
+						refactorRegistrationAsAnonClass(invokReg, unregInvoks, pos, usage.widgetVar.getSimpleName());
 					}
 					removeOldCommand(invokReg, oldParam, pos);
 				}else {
@@ -376,29 +383,31 @@ public class ListenerCommandRefactor {
 	}
 
 
-	private void refactorRegistrationAsAnonClass(final @NotNull CtAbstractInvocation<?> invok, final int regPos) {
-		final Factory fac = invok.getFactory();
-		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(regPos).getTypeDeclaration().getReference();
-		final CtClass<?> anonCl = fac.Core().createClass();
-		final CtNewClass<?> newCl = fac.Core().createNewClass();
+	private <T> void refactorRegistrationAsAnonClass(final @NotNull CtAbstractInvocation<T> regInvok,
+													 final @NotNull List<CtAbstractInvocation<?>> unregInvoks,
+													 final int regPos, final String widgetName) {
+		final Factory fac = regInvok.getFactory();
+		final CtTypeReference<T> typeRef = (CtTypeReference<T>)regInvok.getExecutable().getParameters().get(regPos).getTypeDeclaration().getReference();
+		final CtClass<T> anonCl = fac.Core().createClass();
+		final CtNewClass<T> newCl = fac.Core().createNewClass();
 		final List<CtElement> stats = cmd.getAllStatmts().stream().map(stat -> stat.clone()).collect(Collectors.toList());
 
 		removeLastBreakReturn(stats);
 		removeActionCommandStatements();
-		changeNonLocalMethodInvocations(stats, invok);
-		changeNonLocalFieldAccesses(stats, invok);
+		changeNonLocalMethodInvocations(stats, regInvok);
+		changeNonLocalFieldAccesses(stats, regInvok);
 
-		Optional<CtMethod<?>> m1 = invok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
+		Optional<CtMethod<?>> m1 = regInvok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
 			filter(meth -> meth.getBody() == null).findFirst();
 
 		if(!m1.isPresent()) {
-			LOG.log(Level.SEVERE, "Cannot find an abstract method in the listener interface: " + cmd + " " + invok.getExecutable());
+			LOG.log(Level.SEVERE, "Cannot find an abstract method in the listener interface: " + cmd + " " + regInvok.getExecutable());
 			return;
 		}
 
-		final CtMethod<?> meth = m1.get().clone();
-		final CtBlock block = fac.Core().createBlock();
-		final CtConstructor cons = fac.Core().createConstructor();
+		final CtMethod<T> meth = (CtMethod<T>)m1.get().clone();
+		final CtBlock<T> block = fac.Core().createBlock();
+		final CtConstructor<T> cons = fac.Core().createConstructor();
 		cons.setBody(fac.Core().createBlock());
 		cons.setImplicit(true);
 		meth.setBody(block);
@@ -412,32 +421,35 @@ public class ListenerCommandRefactor {
 		anonCl.setSimpleName("1");
 		newCl.setAnonymousClass(anonCl);
 
-		CtExecutableReference ref = cons.getReference();
+		CtExecutableReference<T> ref = cons.getReference();
 		ref.setType(typeRef);
 		newCl.setExecutable(ref);
 
-		invok.getArguments().get(regPos).replace(newCl);
+		replaceRegistrationParameter(newCl, regInvok, unregInvoks, regPos, widgetName);
+		changeThisAccesses(stats, regInvok);
 	}
 
 
-	private void refactorRegistrationAsLambda(final @NotNull CtAbstractInvocation<?> invok, final int regPos) {
-		final Factory fac = invok.getFactory();
-		final CtTypeReference typeRef = invok.getExecutable().getParameters().get(regPos).getTypeDeclaration().getReference();
-		final CtLambda<?> lambda = fac.Core().createLambda();
+	private <T> void refactorRegistrationAsLambda(final @NotNull CtAbstractInvocation<?> regInvok,
+												  final @NotNull List<CtAbstractInvocation<?>> unregInvoks,
+												  final int regPos, final String widgetName) {
+		final Factory fac = regInvok.getFactory();
+		final CtTypeReference<T> typeRef = (CtTypeReference<T>) regInvok.getExecutable().getParameters().get(regPos).getTypeDeclaration().getReference();
+		final CtLambda<T> lambda = fac.Core().createLambda();
 		final List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
 
 		removeLastBreakReturn(stats);
 		removeActionCommandStatements();
-		changeNonLocalMethodInvocations(stats, invok);
-		changeNonLocalFieldAccesses(stats, invok);
+		changeNonLocalMethodInvocations(stats, regInvok);
+		changeNonLocalFieldAccesses(stats, regInvok);
 
 		// Removing the unused local variables of the command.
 		removeUnusedLocalVariables(stats);
 
 		if(stats.size()==1 && stats.get(0) instanceof CtExpression<?>) {
-			lambda.setExpression((CtExpression)stats.get(0));
+			lambda.setExpression((CtExpression<T>)stats.get(0));
 		} else {
-			final CtBlock block = fac.Core().createBlock();
+			final CtBlock<T> block = fac.Core().createBlock();
 			stats.stream().filter(stat -> stat instanceof CtStatement).forEach(stat -> block.insertEnd((CtStatement)stat));
 			lambda.setBody(block);
 		}
@@ -446,10 +458,34 @@ public class ListenerCommandRefactor {
 		CtParameter<?> param = fac.Executable().createParameter(lambda, oldParam.getType(), oldParam.getSimpleName());
 		lambda.setParameters(Collections.singletonList(param));
 		lambda.setType(typeRef);
-		invok.getArguments().get(regPos).replace(lambda);
-		collectRefactoredType(invok);
 
-		changeThisAccesses(stats, invok);
+		replaceRegistrationParameter(lambda, regInvok, unregInvoks, regPos, widgetName);
+		changeThisAccesses(stats, regInvok);
+	}
+
+
+	private <T> void replaceRegistrationParameter(final @NotNull CtExpression<T> elt,
+												  final @NotNull CtAbstractInvocation<?> regInvok,
+												  final @NotNull List<CtAbstractInvocation<?>> unregInvoks,
+												  final int regPos, final String widgetName) {
+		final Factory fac = regInvok.getFactory();
+
+		if((asField && cmd.getExecutable() instanceof CtMethod<?>) || !unregInvoks.isEmpty()) {
+			final CtField<T> newField = fac.Core().createField();
+			newField.setSimpleName(widgetName + "Cmd");
+			newField.setModifiers(new HashSet<>(Arrays.asList(ModifierKind.PRIVATE, ModifierKind.FINAL)));
+			newField.setType(elt.getType().clone());
+			newField.setAssignment(elt);
+			cmd.getExecutable().getParent(CtClass.class).addFieldAtTop(newField);
+			regInvok.getArguments().get(regPos).replace(SpoonHelper.INSTANCE.createField(fac, newField));
+			unregInvoks.forEach(unreg -> getListenerRegPositionInInvok(unreg).ifPresent(pos ->
+				unreg.getArguments().get(pos).replace(SpoonHelper.INSTANCE.createField(fac, newField))));
+		}else {
+			regInvok.getArguments().get(regPos).replace(elt);
+		}
+
+		collectRefactoredType(regInvok);
+		unregInvoks.forEach(unreg -> collectRefactoredType(unreg));
 	}
 
 
