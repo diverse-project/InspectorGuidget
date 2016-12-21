@@ -485,7 +485,7 @@ public class TestBlobRefactoring {
 		initTest(true, "src/test/resources/java/refactoring/RegUnreg.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegUnregRefactored.java").getRootPackage());
-		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregRefactored.java"), getRefactoredCode());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregRefactored.java"), getRefactoredCode());
 	}
 
 	@Test
@@ -493,6 +493,14 @@ public class TestBlobRefactoring {
 		initTest(false, "src/test/resources/java/refactoring/RegUnreg.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegUnregAnonRefactoredClass.java").getRootPackage());
-		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregAnonRefactoredClass.java"), getRefactoredCode());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegUnregAnonRefactoredClass.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRegistrationIf() throws IOException {
+		initTest(true, "src/test/resources/java/refactoring/RegIf.java");
+//		assertThat(cmdAnalyser.getModel().getRootPackage()).
+//			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegIfRefactored.java").getRootPackage());
+		assertEquals(getFileCode("src/test/resources/java/refactoring/RegIfRefactored.java"), getRefactoredCode());
 	}
 }
