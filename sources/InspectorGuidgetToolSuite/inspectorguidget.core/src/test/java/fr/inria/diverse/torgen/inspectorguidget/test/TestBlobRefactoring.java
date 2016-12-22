@@ -68,6 +68,7 @@ public class TestBlobRefactoring {
 
 		if(startLine==null) {
 			finder.getResults().entrySet().forEach(entry -> {
+				System.out.println("Refactoring command line: " + entry.getKey().getLineStart());
 				refactor = new ListenerCommandRefactor(entry.getKey(), entry.getValue(), asLambda, asField, false, allEntries);
 				refactor.execute();
 			});
@@ -181,8 +182,16 @@ public class TestBlobRefactoring {
 	}
 
 	@Test
-	public void testRefactoredElse() throws IOException {
-		initTest(true, "src/test/resources/java/refactoring/G.java");
+	public void testRefactoredElse1() throws IOException {
+		initTest(Arrays.asList(21, 23), true, "src/test/resources/java/refactoring/G.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/GRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/GRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testRefactoredElse2() throws IOException {
+		initTest(Arrays.asList(23, 21), true, "src/test/resources/java/refactoring/G.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/GRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/GRefactored.java"), getRefactoredCode());

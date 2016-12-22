@@ -151,7 +151,7 @@ public class ListenerCommandRefactor {
 
 		return usage.getUsagesWithCons().stream().
 			// gathering their parent statement.
-				map(acc -> acc.getParent(CtStatement.class)).filter(stat -> stat != null).
+				map(acc -> SpoonHelper.INSTANCE.getStatement(acc)).filter(stat -> stat.isPresent()).map(stat -> stat.get()).
 			// Gathering the method call that matches listener registration: single parameter that is a listener type.
 				map(stat -> stat.getElements(filter)).flatMap(s -> s.stream()).collect(Collectors.toSet());
 	}
