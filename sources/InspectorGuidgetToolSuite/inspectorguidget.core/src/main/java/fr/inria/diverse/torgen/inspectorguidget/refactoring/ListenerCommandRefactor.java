@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.refactoring;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
@@ -52,6 +53,7 @@ import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtLocalVariableReference;
+import spoon.reflect.reference.CtParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
@@ -389,15 +391,7 @@ public class ListenerCommandRefactor {
 		final CtTypeReference<T> typeRef = (CtTypeReference<T>)regInvok.getExecutable().getParameters().get(regPos).getTypeDeclaration().getReference();
 		final CtClass<T> anonCl = fac.Core().createClass();
 		final CtNewClass<T> newCl = fac.Core().createNewClass();
-		final List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
-
-		removeLastBreakReturn(stats);
-		removeActionCommandStatements();
-		changeNonLocalMethodInvocations(stats, regInvok);
-		changeNonLocalFieldAccesses(stats, regInvok);
-
-		// Removing the unused local variables of the command.
-		removeUnusedLocalVariables(stats);
+		final List<CtElement> stats = cleanStatements(regInvok, fac);
 
 		Optional<CtMethod<?>> m1 = regInvok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
 			filter(meth -> meth.getBody() == null).findFirst();
@@ -432,21 +426,44 @@ public class ListenerCommandRefactor {
 	}
 
 
+	private List<CtElement> cleanStatements(final @NotNull CtAbstractInvocation<?> regInvok, final @NotNull Factory fac) {
+		List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
+
+		removeLastBreakReturn(stats);
+		removeActionCommandStatements();
+		changeNonLocalMethodInvocations(stats, regInvok);
+		changeNonLocalFieldAccesses(stats, regInvok);
+		// Removing the unused local variables of the command.
+		removeUnusedLocalVariables(stats);
+
+		final List<CtParameterReference<?>> guiParams = cmd.getExecutable().getParameters().stream().map(param -> param.getReference()).collect(Collectors.toList());
+		final CtBlock<?> mainBlock = cmd.getExecutable().getBody();
+
+		// Adding conditional statements that are not used to identify the widget
+		for(int i=0, size=cmd.getConditions().size(); i<size; i++) {
+			final CtExpression<Boolean> cond = cmd.getConditions().get(i).createBoolExp();
+
+			if(!CommandAnalyser.conditionalUsesGUIParam(cmd.getConditions().get(i).realStatmt.getParent(), guiParams, mainBlock)) {
+				CtIf iff = fac.Core().createIf();
+				CtBlock<?> block = fac.Core().createBlock();
+				iff.setCondition(cond.clone());
+				stats.stream().filter(stat -> stat instanceof CtStatement).forEach(stat -> block.insertEnd((CtStatement) stat));
+				iff.setThenStatement(block);
+				stats = Collections.singletonList(iff);
+			}
+		}
+
+		return stats;
+	}
+
+
 	private <T> void refactorRegistrationAsLambda(final @NotNull CtAbstractInvocation<?> regInvok,
 												  final @NotNull Set<CtAbstractInvocation<?>> unregInvoks,
 												  final int regPos, final String widgetName) {
 		final Factory fac = regInvok.getFactory();
 		final CtTypeReference<T> typeRef = (CtTypeReference<T>) regInvok.getExecutable().getParameters().get(regPos).getTypeDeclaration().getReference();
 		final CtLambda<T> lambda = fac.Core().createLambda();
-		final List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
-
-		removeLastBreakReturn(stats);
-		removeActionCommandStatements();
-		changeNonLocalMethodInvocations(stats, regInvok);
-		changeNonLocalFieldAccesses(stats, regInvok);
-
-		// Removing the unused local variables of the command.
-		removeUnusedLocalVariables(stats);
+		final List<CtElement> stats = cleanStatements(regInvok, fac);
 
 		if(stats.size()==1 && stats.get(0) instanceof CtExpression<?>) {
 			lambda.setExpression((CtExpression<T>)stats.get(0));

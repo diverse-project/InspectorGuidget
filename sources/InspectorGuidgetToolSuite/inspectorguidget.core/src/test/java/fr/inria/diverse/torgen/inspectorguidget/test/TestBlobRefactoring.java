@@ -519,4 +519,12 @@ public class TestBlobRefactoring {
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/DRefactoredAnon.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/DRefactoredAnon.java"), getRefactoredCode());
 	}
+
+	@Test
+	public void testSurroundingIf() throws IOException {
+		initTest(false, "src/test/resources/java/refactoring/Surrounded.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SurroundedRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/SurroundedRefactored.java"), getRefactoredCode());
+	}
 }

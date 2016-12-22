@@ -474,13 +474,13 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	}
 
 
-	private boolean conditionalUsesGUIParam(final CtStatement stat, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock) {
+	public static boolean conditionalUsesGUIParam(final CtElement stat, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock) {
 		final CtExpression<?> condition = stat instanceof CtIf ? ((CtIf) stat).getCondition() : stat instanceof CtSwitch<?> ? ((CtSwitch<?>) stat).getSelector() : null;
 		return condition != null && elementUsesGUIParam(condition, guiParams, mainBlock, new HashSet<>());
 	}
 
 
-	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock,
+	public static boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock,
 										final Set<CtElement> alreadyVisited) {
 		if(alreadyVisited.contains(elt)) {
 			return false;

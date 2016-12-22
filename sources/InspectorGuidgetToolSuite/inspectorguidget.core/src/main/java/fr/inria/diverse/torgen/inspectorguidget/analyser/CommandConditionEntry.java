@@ -37,6 +37,13 @@ public class CommandConditionEntry {
 		return realStatmt==effectiveStatmt;
 	}
 
+	public CtExpression<Boolean> createBoolExp() {
+		if(realStatmt instanceof CtCase) {
+			return effectiveStatmt.clone();
+		}
+		return (CtExpression<Boolean>) realStatmt.clone();
+	}
+
 	/**
 	 * @return All the local variables used in the real conditional statement. If the statement is a switch case, the selector of the
 	 * switch is also analysed. Cannot be null.
