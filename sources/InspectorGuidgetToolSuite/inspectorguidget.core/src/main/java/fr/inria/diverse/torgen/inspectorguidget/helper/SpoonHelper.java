@@ -113,7 +113,7 @@ public final class SpoonHelper {
 	public <T extends CtElement> boolean isRelevantCommandStatement(@NotNull T stat, @NotNull CtExecutable<?> exec) {
 		return !(stat instanceof CtThrow) &&
 			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(exec, stat) &&
-			!SpoonHelper.INSTANCE.isLogStatement(stat);
+			!SpoonHelper.INSTANCE.isLogStatement(stat) && !(stat instanceof CtAssert<?>);
 	}
 
 

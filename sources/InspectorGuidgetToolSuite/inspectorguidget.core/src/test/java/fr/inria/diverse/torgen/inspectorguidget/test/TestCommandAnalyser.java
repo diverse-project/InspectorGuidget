@@ -787,4 +787,12 @@ public class TestCommandAnalyser {
 		Command cmd = analyser.getCommands().values().stream().flatMap(c -> c.getCommands().stream()).collect(Collectors.toList()).get(0);
 		assertEquals(1, cmd.getStatements().size());
 	}
+
+	@Test
+	public void testAssert() {
+		analyser.addInputResource("src/test/resources/java/analysers/Assert.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum());
+	}
 }
