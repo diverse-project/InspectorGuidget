@@ -151,10 +151,10 @@ public class TestWidgetFinder {
 			.collect(Collectors.toList());
 
 		assertEquals(1, entries.get(0).getValue().getWidgetUsages(results.values()).size());
-		assertEquals("fooo", entries.get(0).getValue().getRegisteredWidgets().iterator().next().widgetVar.getSimpleName());
+		assertEquals("fooo", entries.get(0).getValue().getWidgetUsages(results.values()).iterator().next().widgetVar.getSimpleName());
 
 		assertEquals(1, entries.get(1).getValue().getWidgetUsages(results.values()).size());
-		assertEquals("bar", entries.get(1).getValue().getRegisteredWidgets().iterator().next().widgetVar.getSimpleName());
+		assertEquals("bar", entries.get(1).getValue().getWidgetUsages(results.values()).iterator().next().widgetVar.getSimpleName());
 	}
 
 

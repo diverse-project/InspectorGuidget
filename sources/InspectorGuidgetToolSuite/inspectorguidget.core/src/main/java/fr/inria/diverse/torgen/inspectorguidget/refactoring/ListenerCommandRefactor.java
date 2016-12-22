@@ -10,7 +10,6 @@ import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -473,7 +472,8 @@ public class ListenerCommandRefactor {
 		if(asField && cmd.getExecutable() instanceof CtMethod<?> || !unregInvoks.isEmpty()) {
 			final CtField<T> newField = fac.Core().createField();
 			newField.setSimpleName(widgetName + "Cmd");
-			newField.setModifiers(new HashSet<>(Arrays.asList(ModifierKind.PRIVATE, ModifierKind.FINAL)));
+			newField.addModifier(ModifierKind.FINAL);
+			newField.setVisibility(ModifierKind.PRIVATE);
 			newField.setType(elt.getType().clone());
 			newField.setAssignment(elt);
 			cmd.getExecutable().getParent(CtClass.class).addFieldAtTop(newField);

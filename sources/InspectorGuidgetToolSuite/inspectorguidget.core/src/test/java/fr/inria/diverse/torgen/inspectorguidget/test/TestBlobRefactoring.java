@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.log4j.Level;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,7 +48,7 @@ public class TestBlobRefactoring {
 	}
 
 	private void initTest(final List<Integer> startLine, final boolean asLambda, final String... paths) {
-		spoon.Launcher.LOGGER.setLevel(Level.OFF);
+//		spoon.Launcher.LOGGER.setLevel(Level.OFF);
 		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.OFF);
 		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
@@ -499,8 +498,8 @@ public class TestBlobRefactoring {
 	@Test
 	public void testRegistrationIf() throws IOException {
 		initTest(true, "src/test/resources/java/refactoring/RegIf.java");
-//		assertThat(cmdAnalyser.getModel().getRootPackage()).
-//			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegIfRefactored.java").getRootPackage());
-		assertEquals(getFileCode("src/test/resources/java/refactoring/RegIfRefactored.java"), getRefactoredCode());
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RegIfRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RegIfRefactored.java"), getRefactoredCode());
 	}
 }
