@@ -795,4 +795,12 @@ public class TestCommandAnalyser {
 		assertEquals(1, analyser.getCommands().values().size());
 		assertEquals(2L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum());
 	}
+
+	@Test
+	public void testRecursiveAnalysis() {
+		analyser.addInputResource("src/test/resources/java/analysers/RecursiveAnalysis.java");
+		analyser.run();
+		assertEquals(1, analyser.getCommands().values().size());
+		assertEquals(1L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum());
+	}
 }

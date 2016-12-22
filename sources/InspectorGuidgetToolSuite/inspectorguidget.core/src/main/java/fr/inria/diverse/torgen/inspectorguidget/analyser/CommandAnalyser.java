@@ -476,21 +476,28 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 	private boolean conditionalUsesGUIParam(final CtStatement stat, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock) {
 		final CtExpression<?> condition = stat instanceof CtIf ? ((CtIf) stat).getCondition() : stat instanceof CtSwitch<?> ? ((CtSwitch<?>) stat).getSelector() : null;
-		return condition != null && elementUsesGUIParam(condition, guiParams, mainBlock);
+		return condition != null && elementUsesGUIParam(condition, guiParams, mainBlock, new HashSet<>());
 	}
 
 
-	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock) {
+	private boolean elementUsesGUIParam(final CtElement elt, final List<CtParameterReference<?>> guiParams, final CtBlock<?> mainBlock,
+										final Set<CtElement> alreadyVisited) {
+		if(alreadyVisited.contains(elt)) {
+			return false;
+		}
+
 		// Check whether a GUI parameter is directly used in the statement.
 		if(guiParams.stream().anyMatch(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty())) {
 			return true;
 		}
 
+		alreadyVisited.add(elt);
+
 		// Otherwise, looking for local variables that use a GUI parameter.
 		return elt.getElements(new LocalVariableAccessFilter()).stream().
 			anyMatch(var ->
 				// Maybe the declaration of the variable refers to a GUI parameter
-				elementUsesGUIParam(var.getDeclaration(), guiParams, mainBlock) ||
+				elementUsesGUIParam(var.getDeclaration(), guiParams, mainBlock, alreadyVisited) ||
 					// or an assignment of this variable in the main block refers to a GUI parameter
 					// 1. Looking for the assignments in the block
 					mainBlock.getElements(new BasicFilter<>(CtAssignment.class)).stream().
@@ -499,7 +506,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 						// 3. Checking that the assigned variable is our current variable
 						((CtVariableWrite<?>)assig.getAssigned()).getVariable().equals(var) &&
 							// 4. Checking that the assignment directly or indirectly refers to GUI parameter
-							elementUsesGUIParam(assig.getAssignment(), guiParams, mainBlock)));
+							elementUsesGUIParam(assig.getAssignment(), guiParams, mainBlock, alreadyVisited)));
 	}
 
 
