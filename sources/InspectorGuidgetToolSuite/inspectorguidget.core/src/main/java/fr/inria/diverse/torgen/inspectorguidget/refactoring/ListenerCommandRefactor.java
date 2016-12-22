@@ -389,12 +389,15 @@ public class ListenerCommandRefactor {
 		final CtTypeReference<T> typeRef = (CtTypeReference<T>)regInvok.getExecutable().getParameters().get(regPos).getTypeDeclaration().getReference();
 		final CtClass<T> anonCl = fac.Core().createClass();
 		final CtNewClass<T> newCl = fac.Core().createNewClass();
-		final List<CtElement> stats = cmd.getAllStatmts().stream().map(stat -> stat.clone()).collect(Collectors.toList());
+		final List<CtElement> stats = cmd.getAllLocalStatmtsOrdered().stream().map(stat -> stat.clone()).collect(Collectors.toList());
 
 		removeLastBreakReturn(stats);
 		removeActionCommandStatements();
 		changeNonLocalMethodInvocations(stats, regInvok);
 		changeNonLocalFieldAccesses(stats, regInvok);
+
+		// Removing the unused local variables of the command.
+		removeUnusedLocalVariables(stats);
 
 		Optional<CtMethod<?>> m1 = regInvok.getExecutable().getParameters().get(0).getTypeDeclaration().getMethods().stream().
 			filter(meth -> meth.getBody() == null).findFirst();

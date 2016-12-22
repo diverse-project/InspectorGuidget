@@ -37,7 +37,7 @@ public class FreeColLauncher extends XPLauncher {
 		);
 
 		return blobAnalyser.getBlobs().entrySet().stream().
-			filter(e -> ids.stream().anyMatch(id -> id.match(e.getKey()))	).
+			filter(e -> ids.stream().anyMatch(id -> id.match(e.getKey()))).
 			map(e -> e.getValue()).flatMap(s -> s.getCommands().stream()).collect(Collectors.toList());
 	}
 
