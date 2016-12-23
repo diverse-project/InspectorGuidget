@@ -405,7 +405,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	 */
 	private void identifyingSuperListenerCall(final @NotNull UIListener uiListener) {
 		uiListener.getExecutable().getElements(new BasicFilter<>(CtInvocation.class)).stream().
-			filter(invok -> SpoonHelper.INSTANCE.isSuperCall(uiListener.getExecutable(), invok)).
+			filter(invok -> SpoonHelper.INSTANCE.isSuperCall(uiListener.getExecutable(), invok) && invok.getExecutable().getDeclaration()!=null).
 			map(invok -> commands.computeIfAbsent(invok.getExecutable().getDeclaration(), v -> new UIListener(invok.getExecutable().getDeclaration()))).
 			forEach(superList -> uiListener.setSuperListener(superList));
 	}
