@@ -42,10 +42,11 @@ public class ArgoUMLLauncher extends XPLauncher {
 			new ListenerID("StylePanelFigNodeModelElement.java", 152),
 			new ListenerID("StylePanelFigUseCase.java", 96),
 			new ListenerID("StylePanelFigInterface.java", 80),
-			new ListenerID("WizStepChoice.java", 143),
+//			new ListenerID("WizStepChoice.java", 143),
 			new ListenerID("CriticBrowserDialog.java", 480),
 //			new ListenerID("CriticBrowserDialog.java", 423),
-			new ListenerID("StylePanelFigClass.java", 111));
+			new ListenerID("StylePanelFigClass.java", 111)
+		);
 
 		return blobAnalyser.getBlobs().entrySet().stream().
 			filter(e -> ids.stream().anyMatch(id -> id.match(e.getKey()))).
