@@ -208,9 +208,9 @@ public class TestBlobRefactoring {
 	@Test
 	public void testRefactoredMultipleConditions() throws IOException {
 		initTest(true, "src/test/resources/java/refactoring/I.java");
-		assertThat(cmdAnalyser.getModel().getRootPackage()).
-			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/IRefactored.java").getRootPackage());
-//		assertEquals(getFileCode("src/test/resources/java/refactoring/IRefactored.java"), getRefactoredCode());
+//		assertThat(cmdAnalyser.getModel().getRootPackage()).
+//			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/IRefactored.java").getRootPackage());
+		assertEquals(getFileCode("src/test/resources/java/refactoring/IRefactored.java"), getRefactoredCode());
 	}
 
 	@Test
@@ -347,7 +347,7 @@ public class TestBlobRefactoring {
 		initTest(Arrays.asList(65, 56, 63, 54, 45, 52), true, "src/test/resources/java/refactoring/ComplexBlobs.java");
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/RefactoredComplexBlobs.java").getRootPackage());
-		//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexBlobs.java"), getRefactoredCode());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/RefactoredComplexBlobs.java"), getRefactoredCode());
 	}
 
 	@Test
@@ -526,5 +526,13 @@ public class TestBlobRefactoring {
 		assertThat(cmdAnalyser.getModel().getRootPackage()).
 			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/SurroundedRefactored.java").getRootPackage());
 //		assertEquals(getFileCode("src/test/resources/java/refactoring/SurroundedRefactored.java"), getRefactoredCode());
+	}
+
+	@Test
+	public void testOnCommandThatCannotBeRefactedInElse() throws IOException {
+		initTest(false, "src/test/resources/java/refactoring/CannotBeRefactedInElse.java");
+		assertThat(cmdAnalyser.getModel().getRootPackage()).
+			isEqualTo(getExpectedModel("src/test/resources/java/refactoring/CannotBeRefactedInElseRefactored.java").getRootPackage());
+//		assertEquals(getFileCode("src/test/resources/java/refactoring/CannotBeRefactedInElseRefactored.java"), getRefactoredCode());
 	}
 }

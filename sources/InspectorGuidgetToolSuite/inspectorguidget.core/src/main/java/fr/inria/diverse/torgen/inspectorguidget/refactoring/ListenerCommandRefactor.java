@@ -5,6 +5,7 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandConditionEntry;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
+import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.ThisAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.filter.VariableAccessFilter;
@@ -22,6 +23,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.reflect.code.CtAbstractInvocation;
@@ -48,6 +51,7 @@ import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.factory.Factory;
@@ -165,7 +169,7 @@ public class ListenerCommandRefactor {
 	 * @param oldParam The parameter of the invocation.
 	 */
 	private void removeOldCommand(final @NotNull CtAbstractInvocation<?> invok, final @NotNull CtExpression<?> oldParam, final int regPos) {
-		cmd.getAllLocalStatmtsOrdered().forEach(elt -> {
+		cmd.getMainStatmtEntry().get().getStatmts().forEach(elt -> {
 			LOG.log(Level.INFO, () -> cmd + ": removing the old command: " + elt);
 			elt.delete();
 		});
@@ -185,7 +189,11 @@ public class ListenerCommandRefactor {
 					mainCond.getParent().delete();
 				}
 			}else {
-				mainCond.getParent(CtStatement.class).delete();
+				CtElement parent = mainCond.getParent();
+
+				if(parent instanceof CtIf && SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)parent)) {
+					mainCond.getParent(CtStatement.class).delete();
+				}
 			}
 
 			// Removing the super conditional statement only if they are empty.
@@ -198,6 +206,8 @@ public class ListenerCommandRefactor {
 					stat.delete();
 			});
 		}
+
+		removingLocalVarsIfs();
 
 		if(cmd.getExecutable().getBody().getStatements().isEmpty()) {
 			LOG.log(Level.INFO, () -> cmd + ": removing the listener method: " + cmd.getExecutable());
@@ -224,6 +234,39 @@ public class ListenerCommandRefactor {
 			}
 		}
 	}
+
+	private void removingLocalVarsIfs() {
+		CtBlock<?> body = cmd.getExecutable().getBody();
+		List<CtIf> iffs = body.getElements(new BasicFilter<>(CtIf.class));
+		int oldsize;
+		IntegerProperty cpt = new SimpleIntegerProperty();
+		Set<CtElement> remain = cmd.getStatements().stream().filter(stat -> !stat.isMainEntry()).flatMap(s -> s.getStatmts().stream()).collect(Collectors.toSet());
+
+		do {
+			// Removing all the empty if statements.
+			cpt.set(0);
+			oldsize = iffs.size();
+			iffs.stream().filter(ctif ->
+				(ctif.getThenStatement() == null || ctif.getThenStatement() instanceof CtBlock && ((CtBlock<?>) ctif.getThenStatement()).getStatements().isEmpty()) &&
+					(ctif.getElseStatement() == null || ctif.getElseStatement() instanceof CtBlock && ((CtBlock<?>) ctif.getElseStatement()).getStatements().isEmpty())).
+				forEach(ctif -> ctif.delete());
+			iffs = body.getElements(new BasicFilter<>(CtIf.class));
+
+			// Removing all the unused local vars
+			Set<CtElement> toRemove = new HashSet<>();
+			remain.stream().filter(r -> r instanceof CtLocalVariable).forEach(var -> {
+				if(body.getElements(new MyVariableAccessFilter((CtVariable<?>) var)).stream().
+					allMatch(access -> remain.stream().allMatch(r -> r != var && r.getElements(new FindElementFilter(access, false)).isEmpty()))) {
+					var.delete();
+					cpt.set(cpt.get() + 1);
+					toRemove.add(var);
+				}
+			});
+			remain.removeAll(toRemove);
+			// Doing that until no more removal.
+		}while(cpt.get()>0 || iffs.size()!=oldsize);
+	}
+
 
 	private void collectRefactoredType(final @Nullable CtElement elt) {
 		if(collectTypes) {

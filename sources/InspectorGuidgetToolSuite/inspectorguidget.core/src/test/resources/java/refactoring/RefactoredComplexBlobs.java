@@ -1,11 +1,12 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-class A extends JPanel {
+class A extends JPanel implements ActionListener {
 	private JComboBox<String> sel;
 	private JTextField input;
 	private final JButton add;
@@ -42,7 +43,21 @@ class A extends JPanel {
 			down.addActionListener((ActionEvent e) -> move(1));
 		}
 	}
-
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object src = e.getSource();
+		if (Objects.equals(src, add)) {
+		} else if (Objects.equals(src, input)) {
+		} else if (Objects.equals(src, remove)) {
+		} else if (Objects.equals(src, sel)) {
+			if (("comboBoxChanged".equals(e.getActionCommand())) && ((e.getModifiers()) == 0)) {
+				return ;
+			}
+			String s = sel.getSelectedItem().toString();
+			addField(s);
+			sel.getEditor().selectAll();
+		}
+	}
 	protected void removeSelected() {
 		System.out.println("coucouc");
 	}
