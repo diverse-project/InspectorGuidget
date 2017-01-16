@@ -72,6 +72,11 @@
           <version>15.0</version>
           <scope>compile</scope>
       </dependency>
+      <dependency>
+          <groupId>org.eclipse.swt</groupId>
+          <artifactId>org.eclipse.swt.gtk.linux.x86</artifactId>
+          <version>4.6.1</version>
+      </dependency>
   </dependencies>
 
     <repositories>
@@ -80,6 +85,10 @@
             <name>Maven Repository for Spoon Snapshot</name>
             <url>http://spoon.gforge.inria.fr/repositories/snapshots/</url>
             <snapshots />
+        </repository>
+        <repository>
+            <id>maven-eclipse-repo</id>
+            <url>http://maven-eclipse.github.io/maven</url>
         </repository>
     </repositories>
 </project>

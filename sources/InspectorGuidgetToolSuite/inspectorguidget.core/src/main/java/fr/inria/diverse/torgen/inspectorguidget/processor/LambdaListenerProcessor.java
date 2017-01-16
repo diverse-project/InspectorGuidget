@@ -49,13 +49,11 @@ public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<
 			processMethods(lambda);
 		});
 
-		//		// Case SWT
-		//				for (CtTypeReference<?> ref : swtListenersRef) {
-		//					if (clazz.isSubtypeOf(ref)) {
-		//						isAdded = true;
-		//						processMethods(clazz, ref);
-		//					}
-		//				}
+		// Case SWT
+		WidgetHelper.INSTANCE.getSWTListenersRef(getFactory()).stream().filter(type::isSubtypeOf).forEach(ref -> {
+			isAdded.setValue(true);
+			processMethods(lambda);
+		});
 
 		// Case GENERIC
 		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(type, getFactory(), null)) {

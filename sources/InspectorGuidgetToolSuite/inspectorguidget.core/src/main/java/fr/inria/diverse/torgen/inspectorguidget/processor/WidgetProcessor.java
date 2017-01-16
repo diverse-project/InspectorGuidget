@@ -217,7 +217,11 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		}else if(visib == ModifierKind.PUBLIC) {
 			meth.getFactory().Package().getRootPackage().getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok));
 		}else if(visib == null || visib == ModifierKind.PROTECTED) {
-			meth.getParent(CtPackage.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok));
+			try {
+				meth.getParent(CtPackage.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok));
+			}catch(NullPointerException ex) {
+				LOG.log(Level.SEVERE, "NPE in analyseMethodUse");
+			}
 		}
 	}
 

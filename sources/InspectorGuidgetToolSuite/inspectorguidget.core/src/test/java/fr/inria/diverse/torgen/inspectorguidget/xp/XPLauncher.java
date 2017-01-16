@@ -50,6 +50,7 @@ public abstract class XPLauncher {
 
 		getInputResoures().forEach(p -> blobAnalyser.addInputResource(p));
 		blobAnalyser.getCmdAnalyser().setSourceClasspath(getSourceClassPath());
+//		blobAnalyser.getCmdAnalyser().getEnvironment().setNoClasspath(true);
 		blobAnalyser.run();
 
 		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), blobAnalyser.getCmdAnalyser().getModelBuilder());

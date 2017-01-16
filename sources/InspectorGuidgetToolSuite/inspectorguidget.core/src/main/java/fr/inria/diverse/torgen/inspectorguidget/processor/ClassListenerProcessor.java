@@ -55,6 +55,12 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 			addListenerMethodsFrom(ref, clazz);
 		});
 
+		// Case SWT
+		WidgetHelper.INSTANCE.getSWTListenersRef(getFactory()).stream().filter(clazz::isSubtypeOf).forEach(ref -> {
+			isAdded.setValue(true);
+			addListenerMethodsFrom(ref, clazz);
+		});
+
 		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(clazz, getFactory(), null)) {
 			LOG.log(Level.WARNING, "Listener not supported " +
 					SpoonHelper.INSTANCE.formatPosition(clazz.getPosition()) + ": " + clazz.getQualifiedName());

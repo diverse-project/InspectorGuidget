@@ -147,11 +147,24 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 		assertEquals(12, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
-
 	@Test
 	public void testClassWithMultipleListeners() {
 		run("src/test/resources/java/listeners/MultipleListener.java");
 		assertEquals(1, classProc.getAllListenerMethods().size());
 		assertEquals(2L, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
+	}
+
+	@Test
+	public void testSWTEventHandlerClass() {
+		run("src/test/resources/java/listeners/SWTEventHandlerClass.java");
+		assertEquals(1, classProc.getAllListenerMethods().size());
+		assertEquals(1L, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
+	}
+
+	@Test
+	public void testSWTEventHandlerLambda() {
+		run("src/test/resources/java/listeners/SWTEventHandlerLambda.java");
+		assertEquals(1, lambdaProc.getAllListenerLambdas().size());
+		assertEquals(0, classProc.getAllListenerMethods().size());
 	}
 }
