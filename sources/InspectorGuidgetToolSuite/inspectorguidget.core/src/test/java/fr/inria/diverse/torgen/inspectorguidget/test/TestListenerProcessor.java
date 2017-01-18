@@ -3,6 +3,7 @@ package fr.inria.diverse.torgen.inspectorguidget.test;
 import fr.inria.diverse.torgen.inspectorguidget.processor.ClassListenerProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.InspectorGuidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.processor.LambdaListenerProcessor;
+import java.util.Collections;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import spoon.reflect.declaration.CtElement;
@@ -156,16 +157,14 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 
 	@Test
 	public void testSWTEventHandlerClass() {
-		modelBuilder.setSourceClasspath(System.getProperty("user.home") + "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
-		run("src/test/resources/java/listeners/SWTEventHandlerClass.java");
+		runWithCP(Collections.singletonList(SWT_LIB), "src/test/resources/java/listeners/SWTEventHandlerClass.java");
 		assertEquals(1, classProc.getAllListenerMethods().size());
 		assertEquals(1L, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 
 	@Test
 	public void testSWTEventHandlerLambda() {
-		modelBuilder.setSourceClasspath(System.getProperty("user.home") +  "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
-		run("src/test/resources/java/listeners/SWTEventHandlerLambda.java");
+		runWithCP(Collections.singletonList(SWT_LIB), "src/test/resources/java/listeners/SWTEventHandlerLambda.java");
 		assertEquals(1, lambdaProc.getAllListenerLambdas().size());
 		assertEquals(0, classProc.getAllListenerMethods().size());
 	}
@@ -173,8 +172,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 
 	@Test
 	public void testSWTAdapterClass() {
-		modelBuilder.setSourceClasspath(System.getProperty("user.home") + "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
-		run("src/test/resources/java/listeners/SWTAdapterClass.java");
+		runWithCP(Collections.singletonList(SWT_LIB), "src/test/resources/java/listeners/SWTAdapterClass.java");
 		assertEquals(1, classProc.getAllListenerMethods().size());
 		assertEquals(1L, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}

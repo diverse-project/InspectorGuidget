@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -20,6 +21,7 @@ import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 import static org.junit.Assert.fail;
 
 public abstract class TestInspectorGuidget<T extends Processor<? extends CtElement>> {
+	protected static final String SWT_LIB = System.getProperty("user.home") +  "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar";
 	protected Collection<T> processors;
 	protected SpoonCompiler modelBuilder;
 
@@ -54,7 +56,14 @@ public abstract class TestInspectorGuidget<T extends Processor<? extends CtEleme
 	protected abstract Collection<T> createProcessor();
 
 	protected void run(final String... srcPath) {
+		runWithCP(null, srcPath);
+	}
+
+	protected void runWithCP(final List<String> cp, final String... srcPath) {
 		Arrays.stream(srcPath).forEach(src -> modelBuilder.addInputSource(new File(src)));
+		if(cp != null) {
+			modelBuilder.setSourceClasspath(cp.toArray(new String[cp.size()]));
+		}
 		modelBuilder.build();
 
 		if(SHOW_MODEL) {
