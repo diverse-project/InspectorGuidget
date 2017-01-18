@@ -156,7 +156,7 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 
 	@Test
 	public void testSWTEventHandlerClass() {
-		modelBuilder.setSourceClasspath("~/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
+		modelBuilder.setSourceClasspath(System.getProperty("user.home") + "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
 		run("src/test/resources/java/listeners/SWTEventHandlerClass.java");
 		assertEquals(1, classProc.getAllListenerMethods().size());
 		assertEquals(1L, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
@@ -164,9 +164,18 @@ public class TestListenerProcessor extends TestInspectorGuidget<InspectorGuidget
 
 	@Test
 	public void testSWTEventHandlerLambda() {
-		modelBuilder.setSourceClasspath("~/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
+		modelBuilder.setSourceClasspath(System.getProperty("user.home") +  "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
 		run("src/test/resources/java/listeners/SWTEventHandlerLambda.java");
 		assertEquals(1, lambdaProc.getAllListenerLambdas().size());
 		assertEquals(0, classProc.getAllListenerMethods().size());
+	}
+
+
+	@Test
+	public void testSWTAdapterClass() {
+		modelBuilder.setSourceClasspath(System.getProperty("user.home") + "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar");
+		run("src/test/resources/java/listeners/SWTAdapterClass.java");
+		assertEquals(1, classProc.getAllListenerMethods().size());
+		assertEquals(1L, classProc.getAllListenerMethods().values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()).size());
 	}
 }

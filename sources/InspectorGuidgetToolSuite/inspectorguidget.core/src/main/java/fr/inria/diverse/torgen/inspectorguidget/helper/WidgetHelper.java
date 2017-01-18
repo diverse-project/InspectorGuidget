@@ -84,7 +84,9 @@ public final class WidgetHelper {
 
 	private void registerListenerMethodsSignatures(final @NotNull List<CtTypeReference<?>> types) {
 		synchronized(LOCK) {
-			if(listenerMethodPrototypes == null) listenerMethodPrototypes = new HashMap<>();
+			if(listenerMethodPrototypes == null) {
+				listenerMethodPrototypes = new HashMap<>();
+			}
 
 			listenerMethodPrototypes.putAll(types.stream().map(typ -> typ.getDeclaredExecutables()).flatMap(s -> s.stream()).collect(Collectors.
 				toMap(exec -> exec.getExecutableDeclaration().getSignature(), exec -> exec.getExecutableDeclaration())));
@@ -138,6 +140,29 @@ public final class WidgetHelper {
 				swtListenersRef = new ArrayList<>();
 				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.widgets.Listener.class));
 				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.internal.SWTEventListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ArmListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ControlListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.DisposeListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.DragDetectListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ExpandListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.FocusListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.GestureListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.HelpListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.KeyListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MenuDetectListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.ModifyListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseMoveListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseTrackAdapter.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MenuListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.MouseWheelListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.PaintListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.SegmentListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.SelectionListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.TouchListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.TraverseListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.TreeListener.class));
+				swtListenersRef.add(factory.Type().createReference(org.eclipse.swt.events.VerifyListener.class));
 				registerListenerMethodsSignatures(swtListenersRef);
 			}
 		}

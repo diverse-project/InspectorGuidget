@@ -2,6 +2,13 @@ package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import org.jetbrains.annotations.NotNull;
@@ -9,10 +16,6 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.ClassFactory;
 import spoon.reflect.reference.CtTypeReference;
-
-import java.util.*;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  * This processor find listener methods in the source code
@@ -72,8 +75,9 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 		final Set<CtMethod<?>> methods = getImplementedListenerMethods(clazz, ref);
 		final Set<CtMethod<?>> savedMethods = listenerMethods.get(clazz);
 
-		if(savedMethods!=null)
+		if(savedMethods != null) {
 			methods.addAll(savedMethods);
+		}
 
 		listenerMethods.put(clazz, methods);
 	}
