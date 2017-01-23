@@ -62,7 +62,7 @@ public final class SpoonHelper {
 
 	private SpoonHelper() {
 		super();
-		logNames = new HashSet<>(Arrays.asList("log", "debug", "warning", "error", "severe", "fine", "finest", "finer", "info"));
+		logNames = new HashSet<>(Arrays.asList("log", "debug", "warning", "error", "severe", "fine", "finest", "finer", "info", "message"));
 	}
 
 	public <T> CtFieldRead<T> createField(final @NotNull Factory fac, final @NotNull CtVariable<T> var) {
