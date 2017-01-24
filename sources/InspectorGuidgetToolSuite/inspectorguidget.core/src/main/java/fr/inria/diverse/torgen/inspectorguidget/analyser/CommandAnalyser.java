@@ -223,7 +223,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		// Ignoring the case statements that are empty or that contains irrelevant statements.
 		SpoonHelper.INSTANCE.getNonEmptySwitchCase(cas).
 			filter(theCase -> SpoonHelper.INSTANCE.hasRelevantCommandStatements(theCase.getStatements(), exec) &&
-				!SpoonHelper.INSTANCE.containsWriteLocalVarsOnly(theCase.getStatements())).
+				!SpoonHelper.INSTANCE.containsWriteLocalVarsOnly(theCase.getStatements())).//FIXME 5.5
 			ifPresent(theCase -> {
 				final List<CtElement> stats = new ArrayList<>(theCase.getStatements());
 				CtSwitch<?> swit = (CtSwitch<?>) theCase.getParent();
@@ -487,6 +487,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		// Check whether a GUI parameter is directly used in the statement.
+		//FIXME 5.5
+//		if(guiParams.stream().anyMatch(param -> elt.getElements(new BasicFilter<>(CtParameterReference.class)).stream().noneMatch(ref -> ref.equals(param)))){
 		if(guiParams.stream().anyMatch(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty())) {
 			return true;
 		}

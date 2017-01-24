@@ -253,9 +253,11 @@ public class CommandWidgetFinder {
 	private @NotNull Set<WidgetProcessor.WidgetUsage> getVarWidgetUsedInCmdConditions(final @NotNull Command cmd) {
 		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
 		// Getting the widget types used in the conditions.
-		final List<CtTypeReference<?>> types = cmd.getConditions().stream()
+		final List<CtTypeReference<?>> types = cmd.getConditions().stream().
 			// We do not keep the conditional statements that come from of if else if else.
-			.filter(cond -> cond.isSameCondition()).map(cond -> cond.realStatmt.getElements(filter)).flatMap(s -> s.stream()).distinct().collect(Collectors.toList());
+			filter(cond -> cond.isSameCondition()).
+			map(cond -> cond.realStatmt.getElements(filter)).
+			flatMap(s -> s.stream()).distinct().collect(Collectors.toList());
 
 		// Getting the widget usages which variable is used in the conditions.
 		return widgetUsages.parallelStream().filter(u -> types.stream().anyMatch(w -> {

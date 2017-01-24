@@ -1,15 +1,14 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
+import java.util.Collection;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.reference.SpoonClassNotFoundException;
-
-import java.util.Collection;
-import java.util.logging.Logger;
 
 public abstract class InspectorGuidgetProcessor <T extends CtElement> extends AbstractProcessor<T> {
 	public static final @NotNull Logger LOG = Logger.getLogger("InspectorGuidget Processor");
@@ -24,16 +23,13 @@ public abstract class InspectorGuidgetProcessor <T extends CtElement> extends Ab
 	}
 
 	public static boolean isASubTypeOf(final @Nullable CtTypeReference<?> candidate, final @NotNull Collection<CtTypeReference<?>> types) {
-		if(candidate==null)
-			return false;
-
-		return types.stream().filter(type -> {
+		return candidate!=null && types.stream().anyMatch(type -> {
 			try {
 				return candidate.isSubtypeOf(type);
 			}catch(SpoonClassNotFoundException ex) {
 //				ex.printStackTrace();
 				return false;
 			}
-		}).findFirst().isPresent();
+		});
 	}
 }

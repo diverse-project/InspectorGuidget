@@ -186,7 +186,7 @@ public final class WidgetHelper {
 			return Optional.empty();
 		}
 
-		return Optional.of(listenerExec.getReference().getDeclaringType().getDeclaration());
+		return Optional.of(listenerExec.getParent(CtType.class));
 	}
 
 
