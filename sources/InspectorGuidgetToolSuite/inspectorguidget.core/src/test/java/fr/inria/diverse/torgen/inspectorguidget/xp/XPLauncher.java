@@ -53,6 +53,8 @@ public abstract class XPLauncher {
 //		blobAnalyser.getCmdAnalyser().getEnvironment().setNoClasspath(true);
 		blobAnalyser.run();
 
+		final long time = System.currentTimeMillis();
+
 		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), blobAnalyser.getCmdAnalyser().getModelBuilder());
 		launcher.process();
 
@@ -72,6 +74,8 @@ public abstract class XPLauncher {
 			refactor.execute();
 			collectedTypes.addAll(refactor.getRefactoredTypes());
 		});
+
+		System.out.println("Refactoring time: " + (System.currentTimeMillis() - time));
 
 		Factory factory = blobAnalyser.getCmdAnalyser().getFactory();
 		Environment env = factory.getEnvironment();

@@ -41,11 +41,12 @@ public class Command {
 	 * Analyses the conditions to identify the code statements that the conditions depend on (e.g. local var def).
 	 */
 	private void inferConditionsDependencies() {
-		addAllStatements(
-			conditions.stream().map(cond -> cond.getAllLocalVariables().stream().
-				map(localVar -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) localVar)))).
-				flatMap(s -> s).collect(Collectors.toList())
-		);
+		// Workaround since the Eclipse compiler of intellij cannot compile if a unique statement is written.
+		Stream<Stream<CommandStatmtEntry>> streamStream = conditions.stream().map(cond -> cond.getAllLocalVariables().stream().
+			map(localVar -> new CommandStatmtEntry(false, Collections.singletonList((CtCodeElement) localVar))));
+		List<CommandStatmtEntry> collect = streamStream.flatMap(s -> s).collect(Collectors.toList());
+
+		addAllStatements(collect);
 	}
 
 	public @NotNull Optional<CommandStatmtEntry> getMainStatmtEntry() {

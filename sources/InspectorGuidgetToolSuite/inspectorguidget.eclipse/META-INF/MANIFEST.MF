@@ -15,4 +15,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-Vendor: fr.inria.rennes.diverse.torgen
 Bundle-ClassPath: lib/core-1.0-SNAPSHOT-jar-with-dependencies.jar,
  .,
- icons/
+ lib/jfxrt.jar

@@ -257,7 +257,10 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 				CtAssignment<?, ?> assig = (CtAssignment<?, ?>) parent;
 
 				if(assig.getAssigned() instanceof CtVariableAccess<?>) {
-					processConstructorCallInVar(((CtVariableAccess<?>)assig.getAssigned()).getVariable().getDeclaration(), call);
+					CtVariable<?> declaration = ((CtVariableAccess<?>) assig.getAssigned()).getVariable().getDeclaration();
+					if(declaration != null) {
+						processConstructorCallInVar(declaration, call);
+					}
 				}
 			}
 			else if(parent instanceof CtInvocation<?>) {

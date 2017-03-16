@@ -32,10 +32,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 
-import fr.inria.diverse.torgen.inspectorguidget.analyser.BlobListenerAnalyser;
-import fr.inria.diverse.torgen.inspectorguidget.analyser.InspectorGuidetAnalyser;
 import spoon.SpoonAPI;
-import spoon.compiler.SpoonCompiler;
 import spoon.reflect.factory.Factory;
 
 public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActionDelegate {
@@ -181,6 +178,7 @@ public abstract class AbstractAction<T extends SpoonAPI> implements IObjectActio
 		classpath.forEach(file -> analyser.addInputResource(file));
 
 		try {
+			analyser.getEnvironment().setNoClasspath(true);
 			analyser.buildModel();
 		}catch(Exception e) {
 			e.printStackTrace();
