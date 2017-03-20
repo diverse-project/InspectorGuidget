@@ -53,6 +53,14 @@ public abstract class XPLauncher {
 //		blobAnalyser.getCmdAnalyser().getEnvironment().setNoClasspath(true);
 		blobAnalyser.run();
 
+		System.out.println("Number of listener methods having at least one command: " + blobAnalyser.getCmdAnalyser().getCommands().keySet().size());
+		System.out.println("Total number of local commands: " +
+			blobAnalyser.getCmdAnalyser().getCommands().values().parallelStream().mapToInt(lis -> lis.getNbLocalCmds()).sum());
+		System.out.println("Total number of LoCs of the listener methods having at least one command: " +
+			blobAnalyser.getCmdAnalyser().getCommands().keySet().parallelStream().mapToInt(exec ->
+				exec.getPosition().getEndLine() - exec.getPosition().getLine()).sum());
+
+
 		final long time = System.currentTimeMillis();
 
 		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), blobAnalyser.getCmdAnalyser().getModelBuilder());
