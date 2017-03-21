@@ -23,6 +23,11 @@ public class LaTeXDrawLauncher extends XPLauncher {
 	}
 
 	@Override
+	protected String getProjectName() {
+		return "LaTeXDraw2.0.8";
+	}
+
+	@Override
 	protected int getCompilianceLevel() {
 		return 8;
 	}

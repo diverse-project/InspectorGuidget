@@ -22,6 +22,11 @@ public class FreeColLauncher extends XPLauncher {
 	}
 
 	@Override
+	protected String getProjectName() {
+		return "freecol";
+	}
+
+	@Override
 	protected @NotNull List<Command> filterBlobsToRefactor() {
 		List<ListenerID> ids = Arrays.asList(
 //			new ListenerID("ReportPanel.java", 140),

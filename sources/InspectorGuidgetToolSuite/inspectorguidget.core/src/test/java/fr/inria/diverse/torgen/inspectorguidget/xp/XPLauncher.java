@@ -4,10 +4,13 @@ import fr.inria.diverse.torgen.inspectorguidget.Launcher;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.BlobListenerAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
+import fr.inria.diverse.torgen.inspectorguidget.analyser.UIListener;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,13 +56,26 @@ public abstract class XPLauncher {
 //		blobAnalyser.getCmdAnalyser().getEnvironment().setNoClasspath(true);
 		blobAnalyser.run();
 
-		System.out.println("Number of listener methods having at least one command: " + blobAnalyser.getCmdAnalyser().getCommands().keySet().size());
-		System.out.println("Total number of local commands: " +
-			blobAnalyser.getCmdAnalyser().getCommands().values().parallelStream().mapToInt(lis -> lis.getNbLocalCmds()).sum());
-		System.out.println("Total number of LoCs of the listener methods having at least one command: " +
-			blobAnalyser.getCmdAnalyser().getCommands().keySet().parallelStream().mapToInt(exec ->
-				exec.getPosition().getEndLine() - exec.getPosition().getLine()).sum());
+		List<Map.Entry<CtExecutable<?>, UIListener>> nonEmptyListeners = blobAnalyser.getCmdAnalyser().getCommands().entrySet().parallelStream().
+			filter(entry -> entry.getValue().getNbTotalCmds() > 0).collect(Collectors.toList());
 
+		System.out.println("Number of listener methods having at least one command: " + nonEmptyListeners.size());
+		System.out.println("Total number of local commands: " +
+			nonEmptyListeners.parallelStream().mapToInt(lis -> lis.getValue().getNbLocalCmds()).sum());
+		System.out.println("Total number of LoCs of the listener methods having at least one command: " +
+			nonEmptyListeners.parallelStream().mapToInt(exec ->
+				exec.getKey().getPosition().getEndLine() - exec.getKey().getPosition().getLine()).sum());
+
+		final String listenerInfos = nonEmptyListeners.parallelStream().map(entry -> getProjectName() + ";" +
+			entry.getKey().getPosition().getFile().toString().replace(getInputResoures().get(0), "") + ";" +
+			entry.getKey().getPosition().getLine() + ";" + entry.getKey().getPosition().getEndLine() + ";" + entry.getValue().getNbTotalCmds()).
+			collect(Collectors.joining("\n"));
+
+		try(final PrintWriter out = new PrintWriter("listeners-" + getProjectName() + ".csv")) {
+			out.println(listenerInfos);
+		}catch(FileNotFoundException e) {
+			e.printStackTrace();
+		}
 
 		final long time = System.currentTimeMillis();
 
@@ -106,6 +122,9 @@ public abstract class XPLauncher {
 			});
 		}
 	}
+
+
+	protected abstract String getProjectName();
 
 	protected @NotNull List<Command> filterBlobsToRefactor() {
 		return blobAnalyser.getBlobs().entrySet().stream().map(e -> e.getValue()).flatMap(s -> s.getCommands().stream()).collect(Collectors.toList());

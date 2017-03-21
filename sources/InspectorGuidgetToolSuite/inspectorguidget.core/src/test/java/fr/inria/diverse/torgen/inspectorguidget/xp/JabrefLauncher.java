@@ -20,6 +20,10 @@ public class JabrefLauncher extends XPLauncher {
 			"/media/data/dev/repoAnalysisBlob/jabref/src/main/gen");
 	}
 
+	@Override
+	protected String getProjectName() {
+		return "jabref";
+	}
 
 	@Override
 	protected @NotNull List<Command> filterBlobsToRefactor() {

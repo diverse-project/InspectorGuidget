@@ -31,6 +31,11 @@ public class ArgoUMLLauncher extends XPLauncher {
 	}
 
 	@Override
+	protected String getProjectName() {
+		return "argouml";
+	}
+
+	@Override
 	protected @NotNull List<Command> filterBlobsToRefactor() {
 		List<ListenerID> ids = Arrays.asList(
 			new ListenerID("StylePanelFigMessage.java", 98),

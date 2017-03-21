@@ -5,13 +5,22 @@ import java.util.List;
 
 public class EclipseWorkbenchLauncher extends XPLauncher {
 
+	/*
+	git checkout f1ad167b9b70942f14378e8ed97f5b3cc9821f47
+	 */
+
 	public static void main(String args[]) {
 		new EclipseWorkbenchLauncher().run();
 	}
 
 	@Override
 	protected List<String> getInputResoures() {
-		return Collections.singletonList("/home/foo/dev/repoAnalysisBlob/eclipse/git/eclipse.platform.ui/bundles/org.eclipse.ui.workbench/");
+		return Collections.singletonList("/media/data/dev/repoAnalysisBlob/eclipse/git/eclipse.platform.ui/bundles/org.eclipse.ui.workbench/");
+	}
+
+	@Override
+	protected String getProjectName() {
+		return "org.eclipse.ui.workbench";
 	}
 
 	@Override
