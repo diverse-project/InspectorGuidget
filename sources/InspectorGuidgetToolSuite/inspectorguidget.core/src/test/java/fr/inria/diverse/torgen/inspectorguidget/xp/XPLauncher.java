@@ -5,6 +5,7 @@ import fr.inria.diverse.torgen.inspectorguidget.analyser.BlobListenerAnalyser;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.Command;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.CommandWidgetFinder;
 import fr.inria.diverse.torgen.inspectorguidget.analyser.UIListener;
+import fr.inria.diverse.torgen.inspectorguidget.filter.BasicFilter;
 import fr.inria.diverse.torgen.inspectorguidget.processor.WidgetProcessor;
 import fr.inria.diverse.torgen.inspectorguidget.refactoring.ListenerCommandRefactor;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import spoon.compiler.Environment;
+import spoon.reflect.code.CtStatement;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtType;
@@ -68,7 +70,9 @@ public abstract class XPLauncher {
 
 		final String listenerInfos = nonEmptyListeners.parallelStream().map(entry -> getProjectName() + ";" +
 			entry.getKey().getPosition().getFile().toString().replace(getInputResoures().get(0), "") + ";" +
-			entry.getKey().getPosition().getLine() + ";" + entry.getKey().getPosition().getEndLine() + ";" + entry.getValue().getNbTotalCmds()).
+			entry.getKey().getPosition().getLine() + ";" + entry.getKey().getPosition().getEndLine() + ";" +
+			(entry.getKey().getBody()==null ? "1" : entry.getKey().getBody().getElements(new BasicFilter<>(CtStatement.class)).size()) + ";" +
+			entry.getValue().getNbTotalCmds()).
 			collect(Collectors.joining("\n"));
 
 		try(final PrintWriter out = new PrintWriter("listeners-" + getProjectName() + ".csv")) {
