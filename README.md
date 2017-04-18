@@ -1,41 +1,25 @@
 # InspectorGuidget
-A tool to detect GUI design smells such as blob listeners in java SWING/AWT GUI listeners by raising warnings in the Eclipse Java editor.
+A tool to detect GUI design smells such as blob listeners in java SWING/AWT/JavaFX GUI listeners by raising warnings in the Eclipse Java editor.
+
+The latest version of the paper on Blob Listener is here:
+https://hal.archives-ouvertes.fr/hal-01499106
 
 
-To build the installer of InspectorGuidget:
+ 
+How to run InspectorGuidget:
+  1. Put the eclipse jar plugin located in https://github.com/diverse-project/InspectorGuidget/blob/master/IST/ and put it in the plugin folder of your Eclipe.
+  2. Restart your Eclipse.
+  3. Right click on a Java project, a menu InspectorGuidget should appear.
+  4. Launch the analysis you want. The results of an analysis should pop up in a dedicated panel. The Eclipse plugin cannot refactor Blob Listener instances. To do so, use the Java project.
 
-  1. Import this project in Eclipse (Eclipse Modeling Framework is recommended).
-  2. Generate the InspectorGuidgetXXX.jar as an eclispe plugin.
-  3. Add the generated .jar in the folder "dropin" in our eclipse folder.
-  
-To run InspectorGuidget:
-  1. Configure a project that will be analysed as an Eclipse project.
-  2. Right click on the project in the navigator view.
-  3. (Optional) Update the path in Eclipse>Preferences>InspectorGuidget to store the results. 
-  4. Select InspectorGuidget and the target detection.
-  5. The corresponding results for each detection will show up at the bottom view of eclipse.
-  6. Left click on each result will open the corresponding piece of code.
-  7. (Optional) To store the results (e.g., detected GUI listeners, blob listeners) check each one in that view, this will create a txt file in that path.
 
-## An Empirical Study on GUI Listeners: Data
 
-The sources 13 open-source Java projects:<br/>
-argoUML, git clone https://github.com/cflewis/argouml, git checkout 0b6aeccaa2fd2e3e184f16bb1266edddd765be4d<br/>
-cids-navigator, git clone https://github.com/cismet/cids-navigator, git checkout 3e856fa32c62c940151f812b975ae91de557d401<br/>
-cids-server, git clone https://github.com/cismet/cids-server, git checkout 4cf8a4dcd05020af7282a5002b34cc1e81fe299e<br/>
-cismet-gui-commons, git clone https://github.com/cismet/cismet-gui-commons/, git checkout 648b7d48bd6e5af417b90701bbb8b5791f58379c<br/>
-DJ-Native-Swing, git clone https://github.com/Chrriis/DJ-Native-Swing, git checkout 3cffc438289472aaac5b79756c96e288f3ab477b<br/>
-flyingsaucer, git clone https://github.com/flyingsaucerproject/flyingsaucer.git, git checkout d10728c2d5864c2a6d41ceb9f588a1ddbeacb7f2<br />
-FreeCol, git clone https://github.com/Thue/FreeCol.git, git checkout 4454e5e6960487242cb2e5a8236eb6de9ab06c30<br/>
-freeplane, git clone https://github.com/freeplane/freeplane.git, git checkout 1.4.x<br/>
-ganttproject, git clone https://github.com/bardsoftware/ganttproject, git checkout c4b2e4a6cc3cd96ce720b013050b919157d9b7d8<br/>
-pentaho-reporting, git clone https://github.com/pentaho/pentaho-reporting.git, git checkout cff612a0b6df36dc14af66afc35cfc429209d7be<br/>
-RSyntaxTextArea, git clone https://github.com/bobbylight/RSyntaxTextArea.git, git checkout d84a498dd8c2e042ced9ccde4c96ea1d54770f68<br/>
-sikuli, git clone https://github.com/sikuli/sikuli.git, git checkout 80c2f3fa03d95d657e7707ce2d1f576b3512a8b2<br/>
-jabref, git clone https://github.com/JabRef/jabref.git, git checkout d9ba745225f56faf878b6538bda25969a996c968<br/>
 
-The [logs](https://github.com/diverse-project/InspectorGuidget/blob/master/ICST16/results.tar.xz) resulting from our tool.<br/>
-The [R script](https://github.com/diverse-project/InspectorGuidget/blob/master/ICST16/script.R) used to analyse the results.
+How to build InspectorGuidget:
+
+  1. Build the project inspectorguidget.core using maven (mvn package). This project can be used to directly analyse GUI code as illustrated in inspectorguidget.core/src/test/java/fr/inria/diverse/torgen/inspectorguidget/xp/.
+  2. Copy the core-1.0-SNAPSHOT-jar-with-dependencies.jar file prouced in the target folder of inspectorguidget.core and paste it into the folder lib of the project inspectorguidget.eclipse.
+  3. In Eclipse, import the project inspectorguidget.eclipse to build a Eclipse plugin.
 
 
 ## Examples of Blob Listeners GUI toolkits
