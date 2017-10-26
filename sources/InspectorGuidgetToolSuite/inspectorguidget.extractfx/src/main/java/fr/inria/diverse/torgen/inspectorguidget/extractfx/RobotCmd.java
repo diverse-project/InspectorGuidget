@@ -20,7 +20,7 @@ public class RobotCmd extends Cmd<CtStatement> {
 			txt = exp.toString();
 		}
 
-		return txt.replaceAll("[^A-Za-z0-9]", "");
+		return txt.replaceAll("[^A-Za-z0-9]", "") + getIDCmd();
 	}
 
 	public static @NotNull String getCallArgumentStringInvocation(final @NotNull CtInvocation<?> invok) {

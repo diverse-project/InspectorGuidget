@@ -27,5 +27,10 @@ public abstract class Cmd<T extends CtElement> {
 		return exp != null ? exp.hashCode() : 0;
 	}
 
+	protected String getIDCmd() {
+		final int hash = hashCode();
+		return hash == 1 ? "" : "_" + String.valueOf(hash);
+	}
+
 	public abstract @NotNull String getText();
 }

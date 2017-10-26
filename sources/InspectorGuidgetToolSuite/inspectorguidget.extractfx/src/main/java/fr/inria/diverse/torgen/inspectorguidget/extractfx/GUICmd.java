@@ -31,6 +31,6 @@ public class GUICmd extends Cmd<CtExpression<?>> {
 			}
 		}
 
-		return txt.replaceAll("[^A-Za-z0-9]", "");
+		return txt.replaceAll("[^A-Za-z0-9]", "") + getIDCmd();
 	}
 }
