@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import javafx.scene.Node;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.testfx.api.FxRobotInterface;
+import org.testfx.api.FxRobot;
 import org.testfx.framework.junit.ApplicationTest;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.CtBlock;
@@ -22,6 +22,8 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.support.SpoonClassNotFoundException;
 
 public class TestFXProcessor extends AbstractProcessor<CtMethod<?>> {
+	public static final String NAME_ROBOT = FxRobot.class.getSimpleName();
+
 	private final @NotNull List<List<Cmd<?>>> exps = new ArrayList<>();
 
 	@Override
@@ -69,9 +71,8 @@ public class TestFXProcessor extends AbstractProcessor<CtMethod<?>> {
 
 		final CtInvocation<?> invok = (CtInvocation<?>) stat;
 		final CtTypeReference<Node> refNode = stat.getFactory().Type().createReference(Node.class);
-		final CtTypeReference<FxRobotInterface> refRobot = stat.getFactory().Type().createReference(FxRobotInterface.class);
 
-		return invok.getExecutable().getDeclaringType().isSubtypeOf(refRobot) || invok.getExecutable().getParameters().stream().anyMatch(arg -> {
+		return invok.getExecutable().getDeclaringType().getSimpleName().contains(NAME_ROBOT) || invok.getExecutable().getParameters().stream().anyMatch(arg -> {
 			try {
 				return arg.getTypeDeclaration().isSubtypeOf(refNode);
 			}catch(final SpoonClassNotFoundException ex) {
@@ -84,7 +85,6 @@ public class TestFXProcessor extends AbstractProcessor<CtMethod<?>> {
 		//TODO analyse setUp
 		if(stat instanceof CtConstructorCall<?> && ((CtConstructorCall<?>) stat).getExecutable().getType().getSimpleName().equals("CompositeGUIVoidCommand")) {
 			return ((CtConstructorCall<?>) stat).getArguments().stream().map(arg -> new GUICmd(arg)).collect(Collectors.toList());
-//			return new ArrayList<>(((CtConstructorCall<?>) stat).getArguments());
 		}
 
 		if(stat instanceof CtInvocation<?> && isCmd(((CtInvocation<?>) stat).getExecutable().getDeclaringType())) {

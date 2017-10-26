@@ -6,12 +6,12 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtStatement;
 
 public class RobotCmd extends Cmd<CtStatement> {
-	public RobotCmd(final CtStatement stat) {
+	public RobotCmd(final @NotNull CtStatement stat) {
 		super(stat);
 	}
 
 	@Override
-	public String getText() {
+	public @NotNull String getText() {
 		final String txt;
 
 		if(exp instanceof CtInvocation<?>) {
@@ -23,7 +23,7 @@ public class RobotCmd extends Cmd<CtStatement> {
 		return txt.replaceAll("[^A-Za-z0-9]", "");
 	}
 
-	public static String getCallArgumentStringInvocation(final @NotNull CtInvocation<?> invok) {
+	public static @NotNull String getCallArgumentStringInvocation(final @NotNull CtInvocation<?> invok) {
 		return invok.getExecutable().getSimpleName() + invok.getArguments().stream().map(arg -> arg.toString()).collect(Collectors.joining());
 	}
 }

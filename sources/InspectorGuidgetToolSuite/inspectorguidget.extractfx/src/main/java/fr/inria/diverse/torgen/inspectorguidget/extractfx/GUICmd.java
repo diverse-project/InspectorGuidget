@@ -13,7 +13,7 @@ public class GUICmd extends Cmd<CtExpression<?>> {
 	}
 
 	@Override
-	public String getText() {
+	public @NotNull String getText() {
 		final String txt;
 		if(exp instanceof CtInvocation<?> && ((CtInvocation<?>) exp).getTarget() instanceof CtVariableAccess<?>) {
 			txt = ((CtVariableAccess<?>)((CtInvocation<?>) exp).getTarget()).getVariable().getSimpleName();
