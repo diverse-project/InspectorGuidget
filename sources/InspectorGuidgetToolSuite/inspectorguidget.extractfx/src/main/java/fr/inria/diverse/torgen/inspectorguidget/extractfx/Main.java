@@ -30,7 +30,7 @@ public class Main {
 		final @NotNull List<List<Cmd<?>>> exps = proc.getExps();
 		final Node root = new Node(null);
 		root.accept(new VisitorCFG(exps, root));
-		final VisitorDot visitorDot = new VisitorDot();
-		visitorDot.execute(root);
+		final DotProducer visitorDot = new DotProducer(root);
+		visitorDot.run();
 	}
 }

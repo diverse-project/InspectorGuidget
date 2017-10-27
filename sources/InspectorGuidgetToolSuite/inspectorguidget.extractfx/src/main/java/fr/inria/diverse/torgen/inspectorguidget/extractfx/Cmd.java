@@ -2,6 +2,8 @@ package fr.inria.diverse.torgen.inspectorguidget.extractfx;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtElement;
 
 public abstract class Cmd<T extends CtElement> {
@@ -19,7 +21,19 @@ public abstract class Cmd<T extends CtElement> {
 
 		Cmd<?> cmd = (Cmd<?>) o;
 
-		return exp == cmd.exp;
+		if(exp instanceof CtVariableAccess<?> && cmd.exp instanceof CtVariableAccess<?>) {
+			return ((CtVariableAccess<?>) exp).getVariable().getDeclaration() == ((CtVariableAccess<?>) cmd.exp).getVariable().getDeclaration();
+		}
+
+		if(exp instanceof CtInvocation<?> && cmd.exp instanceof CtInvocation<?>) {
+			final CtInvocation<?> invok1 = (CtInvocation<?>) exp;
+			final CtInvocation<?> invok2 = (CtInvocation<?>) cmd.exp;
+			if(invok1.getTarget() instanceof CtVariableAccess<?> && invok2.getTarget() instanceof CtVariableAccess<?>) {
+				return ((CtVariableAccess<?>) invok1.getTarget()).getVariable().getDeclaration() == ((CtVariableAccess<?>) invok1.getTarget()).getVariable().getDeclaration();
+			}
+		}
+
+		return exp.equals(cmd.exp);
 	}
 
 	@Override

@@ -8,12 +8,12 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class VisitorDot implements VisitorNode {
+class VisitorDotGen implements VisitorNode {
 	static final String ARROW = " -- ";
 
-	final StringBuilder builder;
+	public final StringBuilder builder;
 
-	public VisitorDot() {
+	public VisitorDotGen() {
 		super();
 		builder = new StringBuilder();
 	}
@@ -24,7 +24,7 @@ public class VisitorDot implements VisitorNode {
 		builder.append("}\n");
 
 		try {
-			try(final FileWriter fw = new FileWriter(new File("cfg.dot"));
+			try(final FileWriter fw = new FileWriter(new File("examples/cfg.dot"));
 				final BufferedWriter bw = new BufferedWriter(fw);
 				final PrintWriter out = new PrintWriter(bw)) {
 				out.println(Arrays.stream(builder.toString().split("\n")).distinct().collect(Collectors.joining("\n")));
@@ -36,15 +36,11 @@ public class VisitorDot implements VisitorNode {
 
 	@Override
 	public void visitNode(final Node node) {
-		final String txt = node.exp == null ? "root" : node.exp.getText();
-		final String code = node.children.stream().map(child -> txt + ARROW + child.exp.getText()).collect(Collectors.joining(";\n"));
+		final String txt = node.exp == null ? "root" : node.getText();
+		final String code = node.children.stream().map(child -> txt + ARROW + child.getText()).collect(Collectors.joining(";\n"));
 		if(!code.isEmpty()) {
 			builder.append(code).append(";\n");
 		}
 		node.children.forEach(child -> child.accept(this));
 	}
-
-//	private String cleanName(final Cmd<?> cmd) {
-//		return txt.replaceAll("[^A-Za-z0-9]", "");
-//	}
 }
