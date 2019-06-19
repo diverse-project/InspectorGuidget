@@ -5,6 +5,7 @@ public class Tuple<A, B> {
 	public final B b;
 
 	public Tuple(final A a, final B b) {
+		super();
 		this.a = a;
 		this.b = b;
 	}

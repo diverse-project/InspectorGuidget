@@ -65,8 +65,7 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 		});
 
 		if(!isAdded.getValue() && WidgetHelper.INSTANCE.isListenerClass(clazz, getFactory(), null)) {
-			LOG.log(Level.WARNING, "Listener not supported " +
-					SpoonHelper.INSTANCE.formatPosition(clazz.getPosition()) + ": " + clazz.getQualifiedName());
+			LOG.log(Level.WARNING, "Listener not supported " + SpoonHelper.INSTANCE.formatPosition(clazz.getPosition()) + ": " + clazz.getQualifiedName());
 		}
 	}
 
@@ -99,18 +98,19 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 	 * Store each method from cl that implements interf
 	 */
 	private Set<CtMethod<?>> getImplementedListenerMethods(final @NotNull CtClass<?> cl, final @NotNull CtTypeReference<?> interf) {
-		return Arrays.stream(interf.getActualClass().getMethods()).parallel().map(interfM -> {
-			CtMethod<?> m = cl.getMethod(interfM.getName(), getTypeRefFromClasses(interfM.getParameterTypes()));
+		return Arrays.stream(interf.getActualClass().getMethods())
+			.parallel()
+			.map(interfM -> {
+				CtMethod<?> m = cl.getMethod(interfM.getName(), getTypeRefFromClasses(interfM.getParameterTypes()));
 
-			//FIXME generics in methods are not correctly managed by Spoon or Java (getClass from Class
-			// does not provide any generics). So...
-			if(m==null && cl.isSubtypeOf(WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).get(0))) {
-				m = cl.getMethodsByName(interfM.getName()).get(0);
-			}
-//			if(m==null && !cl.hasModifier(ModifierKind.ABSTRACT))
-//				LOG.log(Level.SEVERE, "Cannot find the implemented method " + interfM + " from the interface: " + interf + " "  +
-//						SpoonHelper.INSTANCE.formatPosition(cl.getPosition()));
-			return m;
-		}).filter(m -> m!=null).collect(Collectors.toSet());
+				//FIXME generics in methods are not correctly managed by Spoon or Java (getClass from Class
+				// does not provide any generics). So...
+				if(m == null && cl.isSubtypeOf(WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).get(0))) {
+					m = cl.getMethodsByName(interfM.getName()).get(0);
+				}
+				return m;
+			})
+			.filter(m -> m != null)
+			.collect(Collectors.toSet());
 	}
 }

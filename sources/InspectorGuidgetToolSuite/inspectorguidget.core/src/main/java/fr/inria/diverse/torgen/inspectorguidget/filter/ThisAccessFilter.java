@@ -10,6 +10,7 @@ public class ThisAccessFilter extends AbstractFilter<CtThisAccess<?>> {
 	private final boolean implicit;
 
 	public ThisAccessFilter(final boolean isImplicit) {
+		super();
 		implicit = isImplicit;
 	}
 

@@ -10,7 +10,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.junit.Before;
-import spoon.compiler.SpoonCompiler;
 import spoon.processing.Processor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.factory.FactoryImpl;
@@ -23,7 +22,7 @@ import static org.junit.Assert.fail;
 public abstract class TestInspectorGuidget<T extends Processor<? extends CtElement>> {
 	protected static final String SWT_LIB = System.getProperty("user.home") +  "/.m2/repository/org/eclipse/swt/org.eclipse.swt.gtk.linux.x86/4.6.1/org.eclipse.swt.gtk.linux.x86-4.6.1.jar";
 	protected Collection<T> processors;
-	protected SpoonCompiler modelBuilder;
+	protected JDTBasedSpoonCompiler modelBuilder;
 
 	public static final boolean SHOW_MODEL = false;
 

@@ -16,7 +16,7 @@ public final class LoggingHelper {
 	}
 
 	public void logException(final @NotNull Exception ex, final @NotNull Logger logger) {
-		StringWriter sw = new StringWriter();
+		final StringWriter sw = new StringWriter();
 		ex.printStackTrace(new PrintWriter(sw));
 		logger.log(Level.SEVERE, sw.toString());
 		sw.flush();

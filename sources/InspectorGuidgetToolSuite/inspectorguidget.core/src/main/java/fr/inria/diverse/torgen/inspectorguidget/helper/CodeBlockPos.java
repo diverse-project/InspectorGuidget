@@ -5,7 +5,8 @@ public class CodeBlockPos {
 	public final int startLine;
 	public final int endLine;
 
-	public CodeBlockPos(String file, int startLine, int endLine) {
+	public CodeBlockPos(final String file, final int startLine, final int endLine) {
+		super();
 		this.file = file;
 		this.startLine = startLine;
 		this.endLine = endLine;

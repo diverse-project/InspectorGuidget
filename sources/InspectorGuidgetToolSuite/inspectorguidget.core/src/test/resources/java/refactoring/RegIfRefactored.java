@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 class A {
-	private final ActionListener butCmd = (ActionEvent e) -> System.out.println("coucou");
 	JButton but;
 	A() {
 		if ((but) != null) {
@@ -16,5 +15,6 @@ class A {
 			but.removeActionListener(butCmd);
 		}
 	}
+	private final ActionListener butCmd = (ActionEvent e) -> System.out.println("coucou");
 }
 

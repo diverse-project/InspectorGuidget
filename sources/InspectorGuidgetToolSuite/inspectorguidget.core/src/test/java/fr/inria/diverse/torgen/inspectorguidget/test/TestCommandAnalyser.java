@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -20,10 +21,10 @@ import org.junit.Test;
 import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtLiteral;
 import spoon.reflect.declaration.CtExecutable;
+import spoon.testing.Assert;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static spoon.testing.Assert.assertThat;
 
 public class TestCommandAnalyser {
 	CommandAnalyser analyser;
@@ -181,9 +182,9 @@ public class TestCommandAnalyser {
 		assertEquals(26, cmd.getLineEnd());
 		assertEquals(3, cmd.getConditions().size());
 
-		assertThat(cmd.getConditions().get(0).effectiveStatmt).isEqualTo("(e.getSource()) instanceof javax.swing.JButton");
-		assertThat(cmd.getConditions().get(1).effectiveStatmt).isEqualTo("\"test\".equals(foo)");
-		assertThat(cmd.getConditions().get(2).effectiveStatmt).isEqualTo("isItOkForYou()");
+		Assert.assertThat(cmd.getConditions().get(0).effectiveStatmt).isEqualTo("(e.getSource()) instanceof javax.swing.JButton");
+		Assert.assertThat(cmd.getConditions().get(1).effectiveStatmt).isEqualTo("\"test\".equals(foo)");
+		Assert.assertThat(cmd.getConditions().get(2).effectiveStatmt).isEqualTo("isItOkForYou()");
 
 		cmd = new ArrayList<>(analyser.getCommands().values()).get(0).getCommand(1);
 
@@ -191,9 +192,9 @@ public class TestCommandAnalyser {
 		assertEquals(30, cmd.getLineEnd());
 		assertEquals(3, cmd.getConditions().size());
 
-		assertThat(cmd.getConditions().get(0).effectiveStatmt).isEqualTo("(e.getSource()) instanceof javax.swing.JMenuBar");
-		assertThat(cmd.getConditions().get(1).effectiveStatmt).isEqualTo("\"test\".equals(foo)");
-		assertThat(cmd.getConditions().get(2).effectiveStatmt).isEqualTo("isItOkForYou()");
+		Assert.assertThat(cmd.getConditions().get(0).effectiveStatmt).isEqualTo("(e.getSource()) instanceof javax.swing.JMenuBar");
+		Assert.assertThat(cmd.getConditions().get(1).effectiveStatmt).isEqualTo("\"test\".equals(foo)");
+		Assert.assertThat(cmd.getConditions().get(2).effectiveStatmt).isEqualTo("isItOkForYou()");
 	}
 
 	@Test
@@ -720,8 +721,8 @@ public class TestCommandAnalyser {
 	public void testCommandComposedOfLocalVarAssignmentOnly() {
 		analyser.addInputResource("src/test/resources/java/analysers/FollowedConditionals.java");
 		analyser.run();
-		assertEquals(1, analyser.getCommands().values().size());
-		assertEquals(3L, analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum());
+		Assertions.assertThat(analyser.getCommands().values()).hasSize(1);
+		Assertions.assertThat(analyser.getCommands().values().stream().mapToLong(c -> c.getNbTotalCmds()).sum()).isEqualTo(3L);
 	}
 
 	@Test

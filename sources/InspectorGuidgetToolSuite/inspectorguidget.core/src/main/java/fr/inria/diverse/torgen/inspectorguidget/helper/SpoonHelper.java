@@ -25,6 +25,7 @@ import spoon.reflect.code.CtCatch;
 import spoon.reflect.code.CtDo;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtFieldRead;
+import spoon.reflect.code.CtFieldWrite;
 import spoon.reflect.code.CtFor;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
@@ -39,7 +40,6 @@ import spoon.reflect.code.CtThrow;
 import spoon.reflect.code.CtTry;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.code.CtVariableAccess;
-import spoon.reflect.code.CtVariableWrite;
 import spoon.reflect.code.CtWhile;
 import spoon.reflect.code.UnaryOperatorKind;
 import spoon.reflect.cu.SourcePosition;
@@ -91,7 +91,7 @@ public final class SpoonHelper {
 			return Optional.empty();
 		}
 
-		List<CtCase<? super T>> cases = swit.getCases();
+		final List<CtCase<? super T>> cases = swit.getCases();
 		final int index = cases.indexOf(ctcase);
 
 		if(index == -1 || index + 1 >= cases.size()) {
@@ -102,22 +102,22 @@ public final class SpoonHelper {
 	}
 
 
-	public <T extends CtElement> boolean containsWriteLocalVarsOnly(@Nullable List<T> stats) {
+	public <T extends CtElement> boolean containsWriteLocalVarsOnly(final @Nullable List<T> stats) {
 		return stats != null && stats.parallelStream().allMatch(s ->
 			SpoonHelper.INSTANCE.isReturnBreakStatement(s) ||
-			s instanceof CtAssignment && ((CtAssignment<?, ?>) s).getAssigned() instanceof CtVariableWrite ||
-			s instanceof CtUnaryOperator && ((CtUnaryOperator<?>) s).getOperand() instanceof CtVariableWrite);
+				(s instanceof CtAssignment && !(((CtAssignment<?, ?>) s).getAssigned() instanceof CtFieldWrite)) ||
+				(s instanceof CtUnaryOperator && !(((CtUnaryOperator<?>) s).getOperand() instanceof CtFieldWrite)));
 	}
 
 
-	public <T extends CtElement> boolean isRelevantCommandStatement(@NotNull T stat, @NotNull CtExecutable<?> exec) {
+	public <T extends CtElement> boolean isRelevantCommandStatement(final @NotNull T stat, final @NotNull CtExecutable<?> exec) {
 		return !(stat instanceof CtThrow) &&
 			!SpoonHelper.INSTANCE.isReturnBreakStatement(stat) && !SpoonHelper.INSTANCE.isSuperCall(exec, stat) &&
 			!SpoonHelper.INSTANCE.isLogStatement(stat) && !(stat instanceof CtAssert<?>);
 	}
 
 
-	public <T extends CtElement> boolean hasRelevantCommandStatements(@NotNull List<T> stats, @NotNull CtExecutable<?> exec) {
+	public <T extends CtElement> boolean hasRelevantCommandStatements(final @NotNull List<T> stats, final @NotNull CtExecutable<?> exec) {
 		// Getting all the variable used in the commands.
 		// The declarations of these variables will not be considered as relevant and thus ignored.
 		final Set<CtVariable<?>> vars = stats.parallelStream().map(s -> s.getElements(new VariableAccessFilter())).flatMap(s -> s.stream()).
@@ -159,7 +159,7 @@ public final class SpoonHelper {
 
 	public @Nullable CtType<?> getMainType(final @Nullable CtType<?> type) {
 		if(type == null) return null;
-		CtType<?> ty = getMainType(type.getParent(CtType.class));
+		final CtType<?> ty = getMainType(type.getParent(CtType.class));
 		if(ty == null) {
 			return type;
 		}
@@ -227,7 +227,7 @@ public final class SpoonHelper {
 		// Checking whether the parent is the given type ty.
 		try {
 			if(exec.getParent() == ty) return true;
-		}catch(ParentNotInitializedException ex) {
+		}catch(final ParentNotInitializedException ex) {
 			return false;
 		}
 
@@ -250,7 +250,7 @@ public final class SpoonHelper {
 	 */
 	public @NotNull List<CtElement> getSuperConditionalExpressions(final @NotNull CtElement elt) {
 		CtElement parent = elt.isParentInitialized() ? elt.getParent() : null;
-		List<CtElement> conds = new ArrayList<>();
+		final List<CtElement> conds = new ArrayList<>();
 
 		// Exploring the parents to identify the conditional statements
 		while(parent != null) {
@@ -259,9 +259,12 @@ public final class SpoonHelper {
 			}else {
 				if(parent instanceof CtCase<?>) {
 					conds.add(((CtCase<?>) parent).getCaseExpression());
-					CtSwitch<?> switzh = parent.getParent(CtSwitch.class);
-					if(switzh == null) System.err.println("Cannot find the switch statement from the case statement: " + parent);
-					else conds.add(switzh.getSelector());
+					final CtSwitch<?> switzh = parent.getParent(CtSwitch.class);
+					if(switzh == null) {
+						System.err.println("Cannot find the switch statement from the case statement: " + parent);
+					}else {
+						conds.add(switzh.getSelector());
+					}
 				}else {
 					if(parent instanceof CtWhile) {
 						conds.add(((CtWhile) parent).getLoopingExpression());
@@ -362,7 +365,7 @@ public final class SpoonHelper {
 				orElseGet(() -> switchStat.getFactory().Code().createLiteral(Boolean.TRUE));
 		}
 
-		CtBinaryOperator<Boolean> exp = switchStat.getFactory().Core().createBinaryOperator();
+		final CtBinaryOperator<Boolean> exp = switchStat.getFactory().Core().createBinaryOperator();
 		// A switch is an equality test against values
 		exp.setKind(BinaryOperatorKind.EQ);
 		// The tested object
@@ -402,7 +405,7 @@ public final class SpoonHelper {
 	 * @param elt The element to analyse.
 	 * @return The found element.
 	 */
-	public Optional<CtElement> getStatementParentNotCtrlFlow(@Nullable CtElement elt) {
+	public Optional<CtElement> getStatementParentNotCtrlFlow(final @Nullable CtElement elt) {
 		CtElement res = elt;
 		boolean found = false;
 
@@ -411,7 +414,7 @@ public final class SpoonHelper {
 				found = true;
 			}else {
 				if(res.isParentInitialized()) {
-					CtElement parent = res.getParent();
+					final CtElement parent = res.getParent();
 					// FIXME use CtBodyHolder Spoon 5.5
 					if(parent instanceof CtIf || parent instanceof CtSwitch || parent instanceof CtLoop || parent instanceof CtTry ||
 						parent instanceof CtCatch || parent instanceof CtCase) {

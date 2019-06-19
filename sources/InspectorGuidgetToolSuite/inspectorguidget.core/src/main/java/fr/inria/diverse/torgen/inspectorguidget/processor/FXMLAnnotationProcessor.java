@@ -24,7 +24,7 @@ public class FXMLAnnotationProcessor extends InspectorGuidgetProcessor<CtAnnotat
 
 	@Override
 	public void process(final @NotNull CtAnnotation<?> element) {
-		CtElement elt = element.getAnnotatedElement();
+		final CtElement elt = element.getAnnotatedElement();
 
 		if(elt instanceof CtField<?>) {
 			fieldAnnotations.add((CtField<?>) elt);

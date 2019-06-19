@@ -2,11 +2,15 @@ package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.ExecArg;
 import fr.inria.diverse.torgen.inspectorguidget.helper.LoggingHelper;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import spoon.SpoonAPI;
 import spoon.compiler.Environment;
-import spoon.compiler.SpoonCompiler;
 import spoon.processing.Processor;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtElement;
@@ -18,12 +22,6 @@ import spoon.support.DefaultCoreFactory;
 import spoon.support.StandardEnvironment;
 import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Logger;
-
 public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	public static final @NotNull Logger LOG = Logger.getLogger("InspectorGuidget analysers");
 
@@ -31,7 +29,7 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 		LOG.setLevel(LoggingHelper.INSTANCE.loggingLevel);
 	}
 
-	protected final @NotNull SpoonCompiler modelBuilder;
+	protected final @NotNull JDTBasedSpoonCompiler modelBuilder;
 	protected final @NotNull List<Processor<?>> processors;
 	protected StandardEnvironment env;
 	protected  Factory factory;
@@ -43,7 +41,7 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 		modelBuilder = createCompiler();
 	}
 
-	public InspectorGuidetAnalyser(final @NotNull Collection<Processor<?>> procs, final @NotNull SpoonCompiler builder) {
+	public InspectorGuidetAnalyser(final @NotNull Collection<Processor<?>> procs, final @NotNull JDTBasedSpoonCompiler builder) {
 		super();
 		processors = new ArrayList<>();
 		procs.forEach(pr -> addProcessor(pr));
@@ -56,9 +54,10 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	}
 
 	@Override
-	public void run(@Nullable String[] args) {
-		if(args!=null)
+	public void run(final @Nullable String[] args) {
+		if(args!=null) {
 			new ExecArg().parse(args, this);
+		}
 		buildModel();
 		process();
 	}
@@ -69,61 +68,62 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 	}
 
 
-	public @NotNull SpoonCompiler getModelBuilder() {
+	public @NotNull JDTBasedSpoonCompiler getModelBuilder() {
 		return modelBuilder;
 	}
 
-	public void setSourceClasspath(String ... args) {
+	public void setSourceClasspath(final String ... args) {
 		modelBuilder.setSourceClasspath(args);
 	}
 
 	@Override
-	public void addInputResource(@NotNull String file) {
+	public void addInputResource(final @NotNull String file) {
 		modelBuilder.addInputSource(new File(file));
 	}
 
 	@Override
-	public void setSourceOutputDirectory(String path) {
+	public void setSourceOutputDirectory(final String path) {
 
 	}
 
 	@Override
-	public void setSourceOutputDirectory(File outputDirectory) {
+	public void setSourceOutputDirectory(final File outputDirectory) {
 
 	}
 
 	@Override
-	public void setOutputFilter(Filter<CtType<?>> typeFilter) {
+	public void setOutputFilter(final Filter<CtType<?>> typeFilter) {
 
 	}
 
 	@Override
-	public void setOutputFilter(String... qualifedNames) {
+	public void setOutputFilter(final String... qualifedNames) {
 
 	}
 
 	@Override
-	public void setBinaryOutputDirectory(String path) {
+	public void setBinaryOutputDirectory(final String path) {
 
 	}
 
 	@Override
-	public void setBinaryOutputDirectory(File outputDirectory) {
+	public void setBinaryOutputDirectory(final File outputDirectory) {
 
 	}
 
 	@Override
-	public void addProcessor(String name) {
+	public void addProcessor(final String name) {
 	}
 
 	@Override
-	public <T extends CtElement> void addProcessor(Processor<T> processor) {
+	public <T extends CtElement> void addProcessor(final Processor<T> processor) {
 		processors.add(processor);
 	}
 
 	@Override
-	public void buildModel() {
+	public CtModel buildModel() {
 		modelBuilder.build();
+		return modelBuilder.getFactory().getModel();
 	}
 
 	@Override
@@ -157,13 +157,12 @@ public abstract class InspectorGuidetAnalyser implements SpoonAPI {
 		env = new StandardEnvironment();
 		env.setCommentEnabled(false);
 		env.setComplianceLevel(8);
-		env.setSelfChecks(false);
 		env.setShouldCompile(false);
 		return env;
 	}
 
 	@Override
-	public @NotNull SpoonCompiler createCompiler() {
+	public @NotNull JDTBasedSpoonCompiler createCompiler() {
 		return new JDTBasedSpoonCompiler(createFactory());
 	}
 }

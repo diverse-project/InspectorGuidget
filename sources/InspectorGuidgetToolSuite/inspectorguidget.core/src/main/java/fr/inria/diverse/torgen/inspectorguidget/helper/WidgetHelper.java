@@ -19,7 +19,7 @@ import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.reference.SpoonClassNotFoundException;
+import spoon.support.SpoonClassNotFoundException;
 
 public final class WidgetHelper {
 	public static final @NotNull WidgetHelper INSTANCE = new WidgetHelper();

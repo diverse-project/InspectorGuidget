@@ -1,18 +1,17 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtLambda;
 import spoon.reflect.reference.CtTypeReference;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-
-public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<?>>  {
+public class LambdaListenerProcessor extends InspectorGuidgetProcessor<CtLambda<?>> {
 	protected final @NotNull Set<CtLambda<?>> allListenerLambdas;
 
 	public LambdaListenerProcessor() {

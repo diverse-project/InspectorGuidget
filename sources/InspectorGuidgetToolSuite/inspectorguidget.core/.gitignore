@@ -1,4 +1,4 @@
-/.idea/workspace.xml
-/target
-/inspectorguidget.core.iml
+.idea/
+target/
+*.iml
 *.log

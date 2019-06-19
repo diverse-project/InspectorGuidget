@@ -46,7 +46,7 @@ import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.Filter;
-import spoon.support.reflect.reference.SpoonClassNotFoundException;
+import spoon.support.SpoonClassNotFoundException;
 
 /**
  * An analyser to find the widget(s) that produce(s) a given command.
@@ -89,12 +89,12 @@ public class CommandWidgetFinder {
 
 		CtClass<?> listenerClass = null;
 		try {
-			CtElement cmdParent = cmd.getExecutable().getParent();
+			final CtElement cmdParent = cmd.getExecutable().getParent();
 
 			if(cmdParent instanceof CtClass<?>) {
 				listenerClass = (CtClass<?>) cmdParent;
 			}
-		}catch(ParentNotInitializedException ex) {
+		}catch(final ParentNotInitializedException ex) {
 			LOG.log(Level.INFO, "ParentNotInitializedException in process", ex);
 		}
 
@@ -196,26 +196,33 @@ public class CommandWidgetFinder {
 			// Collecting them
 				distinct().collect(Collectors.toCollection(HashSet::new));
 
-		return widgetUsages.parallelStream().map(usage -> usage.getUsagesWithCons().parallelStream().filter(m -> {
-			// Ignoring the statements that are parts of a listener method. The statements that must be analysed
-			// or those that configure the widgetUsages.
-			try {
-				CtExecutable<?> ex = m.getParent(CtExecutable.class);
-				return ex == null || !WidgetHelper.INSTANCE.isListenerClassMethod(ex);
-			}catch(ParentNotInitializedException ex) {
-				return true;
-			}
-		}).
-			// Getting the code statement that uses the variable
-				map(varac -> SpoonHelper.INSTANCE.getStatementParentNotCtrlFlow(varac)).
-				filter(stat -> stat.isPresent()).
-			// Looking for the variables used in the conditions in the code statement
-				map(stat -> vars.stream().filter(varr -> !stat.get().getElements(new MyVariableAccessFilter(varr)).isEmpty()).
-				collect(Collectors.toList())).
-				filter(list -> !list.isEmpty()).
-				map(var -> new VarMatch(usage, var))).
+		return widgetUsages
+			.parallelStream()
+			.map(usage -> usage.getUsagesWithCons()
+				.parallelStream()
+				.filter(m -> {
+					// Ignoring the statements that are parts of a listener method. The statements that must be analysed
+					// or those that configure the widgetUsages.
+					try {
+						CtExecutable<?> ex = m.getParent(CtExecutable.class);
+						return ex == null || !WidgetHelper.INSTANCE.isListenerClassMethod(ex);
+					}catch(ParentNotInitializedException ex) {
+						return true;
+					}
+				})
+				// Getting the code statement that uses the variable
+				.map(varac -> SpoonHelper.INSTANCE.getStatementParentNotCtrlFlow(varac))
+				.filter(stat -> stat.isPresent())
+				// Looking for the variables used in the conditions in the code statement
+				.map(stat -> vars
+					.stream()
+					.filter(varr -> !stat.get().getElements(new MyVariableAccessFilter(varr)).isEmpty())
+					.collect(Collectors.toList()))
+				.filter(list -> !list.isEmpty())
+				.map(var -> new VarMatch(usage, var)))
 			// Collecting all the variables used in both the command's conditions and the code statements that configure widgetUsages
-				flatMap(s -> s).collect(Collectors.toList());
+				.flatMap(s -> s)
+			.collect(Collectors.toList());
 	}
 
 
@@ -227,7 +234,7 @@ public class CommandWidgetFinder {
 		if(inv != null || !listenerMethod.isParentInitialized() || !(listenerMethod.getParent() instanceof CtClass<?>))
 			return Optional.empty();
 
-		Optional<CtClass> ctClass = listenerMethod.getParent().getElements(new ThisAccessFilter(false)).stream().
+		final Optional<CtClass> ctClass = listenerMethod.getParent().getElements(new ThisAccessFilter(false)).stream().
 			filter(thisacc -> thisacc.isParentInitialized() && thisacc.getParent() instanceof CtInvocation<?>).
 			map(thisacc -> {
 				final CtInvocation<?> invok = (CtInvocation<?>) thisacc.getParent();
@@ -241,7 +248,7 @@ public class CommandWidgetFinder {
 				return Optional.ofNullable(clazz);
 			}).filter(clazz -> clazz.isPresent()).findFirst().orElseGet(() -> Optional.empty());
 
-		return Optional.ofNullable(ctClass.orElseGet(() -> null));
+		return Optional.ofNullable(ctClass.orElse(null));
 	}
 
 
@@ -253,11 +260,13 @@ public class CommandWidgetFinder {
 	private @NotNull Set<WidgetProcessor.WidgetUsage> getVarWidgetUsedInCmdConditions(final @NotNull Command cmd) {
 		final TypeRefFilter filter = new TypeRefFilter(WidgetHelper.INSTANCE.getWidgetTypes(cmd.getExecutable().getFactory()));
 		// Getting the widget types used in the conditions.
-		final List<CtTypeReference<?>> types = cmd.getConditions().stream().
+		final List<CtTypeReference<?>> types = cmd.getConditions()
+			.stream()
 			// We do not keep the conditional statements that come from of if else if else.
-			filter(cond -> cond.isSameCondition()).
-			map(cond -> cond.realStatmt.getElements(filter)).
-			flatMap(s -> s.stream()).distinct().collect(Collectors.toList());
+			.filter(cond -> cond.isSameCondition())
+			.map(cond -> cond.realStatmt.getElements(filter))
+			.flatMap(s -> s.stream()).distinct()
+			.collect(Collectors.toList());
 
 		// Getting the widget usages which variable is used in the conditions.
 		return widgetUsages.parallelStream().filter(u -> types.stream().anyMatch(w -> {
@@ -286,8 +295,7 @@ public class CommandWidgetFinder {
 			return Collections.emptySet();
 		}
 
-		Optional<WidgetProcessor.WidgetUsage> lisVar = getAssociatedListenerVariableThroughInvocation(invok);
-		return lisVar.isPresent() ? Collections.singleton(lisVar.get()) : Collections.emptySet();
+		return getAssociatedListenerVariableThroughInvocation(invok).map(Collections::singleton).orElse(Collections.emptySet());
 	}
 
 
@@ -300,7 +308,7 @@ public class CommandWidgetFinder {
 		// Looking for 'this' usages
 		final CtType<?> interf = WidgetHelper.INSTANCE.getListenerInterface(cmd.getExecutable()).orElse(null);
 
-		Set<WidgetProcessor.WidgetUsage> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
+		final Set<WidgetProcessor.WidgetUsage> ref = clazz.getElements(new ThisAccessFilter(false)).stream().
 			// Keeping the 'this' usages that are parameters of a method call
 				filter(thisacc -> {
 				try {
@@ -356,10 +364,10 @@ public class CommandWidgetFinder {
 				return Optional.empty();
 			}
 
-			List<CtMethod<?>> methods = clazz.getMethodsByName(((CtInvocation<?>) target).getExecutable().getSimpleName());
+			final List<CtMethod<?>> methods = clazz.getMethodsByName(((CtInvocation<?>) target).getExecutable().getSimpleName());
 
 			if(methods.size() == 1) {
-				List<CtReturn<?>> returns = methods.get(0).getBody().getElements(new ReturnFilter());
+				final List<CtReturn<?>> returns = methods.get(0).getBody().getElements(new ReturnFilter());
 
 				if(returns.size() == 1 && returns.get(0).getReturnedExpression() instanceof CtVariableAccess<?>) {
 					return getMatchingWidgetUsage(((CtVariableAccess<?>) returns.get(0).getReturnedExpression()).getVariable().getDeclaration());
@@ -405,7 +413,7 @@ public class CommandWidgetFinder {
 		}
 
 		private Set<WidgetProcessor.WidgetUsage> getWidgetUsages(final @NotNull List<WidgetFinderEntry> otherEntries, final @NotNull Set<WidgetFinderEntry> visited) {
-			int size = widgetsFromStringLiterals.size() + widgetsFromSharedVars.size() + widgetsUsedInConditions.size();
+			final int size = widgetsFromStringLiterals.size() + widgetsFromSharedVars.size() + widgetsUsedInConditions.size();
 
 			switch(size) {
 				case 0:
@@ -437,8 +445,8 @@ public class CommandWidgetFinder {
 		 * @return All the usages found. Cannot be null.
 		 */
 		public Set<WidgetProcessor.WidgetUsage> getWidgetUsages(final @NotNull Collection<WidgetFinderEntry> found) {
-			int size = widgetsFromStringLiterals.size() + widgetsFromSharedVars.size() + widgetsUsedInConditions.size();
-			List<WidgetFinderEntry> otherCmds;
+			final int size = widgetsFromStringLiterals.size() + widgetsFromSharedVars.size() + widgetsUsedInConditions.size();
+			final List<WidgetFinderEntry> otherCmds;
 
 			if(size == 0) {
 				final CtExecutable<?> exec = command.getExecutable();

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import spoon.SpoonAPI;
 import spoon.compiler.Environment;
-import spoon.compiler.SpoonCompiler;
 import spoon.processing.Processor;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtElement;
@@ -14,6 +13,7 @@ import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.Filter;
+import spoon.support.compiler.jdt.JDTBasedSpoonCompiler;
 
 public class BlobListenerAnalyser implements SpoonAPI {
 	private static int NB_CMDS = 3;
@@ -79,8 +79,8 @@ public class BlobListenerAnalyser implements SpoonAPI {
 	}
 
 	@Override
-	public void buildModel() {
-		cmdAnalyser.buildModel();
+	public CtModel buildModel() {
+		return cmdAnalyser.buildModel();
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class BlobListenerAnalyser implements SpoonAPI {
 	}
 
 	@Override
-	public SpoonCompiler createCompiler() {
+	public JDTBasedSpoonCompiler createCompiler() {
 		return cmdAnalyser.createCompiler();
 	}
 

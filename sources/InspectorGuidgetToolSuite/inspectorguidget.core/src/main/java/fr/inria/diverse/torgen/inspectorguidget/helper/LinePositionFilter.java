@@ -8,6 +8,7 @@ public class LinePositionFilter extends LineFilter {
 	final int end;
 
 	public LinePositionFilter(final int start, final int end) {
+		super();
 		this.start = start;
 		this.end = end;
 	}

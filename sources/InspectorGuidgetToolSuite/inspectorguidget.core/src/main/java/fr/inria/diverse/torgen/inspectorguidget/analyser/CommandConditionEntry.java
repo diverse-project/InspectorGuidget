@@ -25,6 +25,7 @@ public class CommandConditionEntry {
 	public final CtExpression<Boolean> effectiveStatmt;
 
 	public CommandConditionEntry(final @NotNull CtCodeElement realStatmt, final @NotNull CtExpression<Boolean> effectiveStatmt) {
+		super();
 		this.realStatmt = realStatmt;
 		this.effectiveStatmt = effectiveStatmt;
 	}

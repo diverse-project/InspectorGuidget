@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.After;
@@ -44,7 +45,7 @@ public class TestWidgetFinder {
 	@After
 	public void tearsDown() {
 		if(TestInspectorGuidget.SHOW_MODEL) {
-			SpoonStructurePrinter printer = new SpoonStructurePrinter();
+			final SpoonStructurePrinter printer = new SpoonStructurePrinter();
 			printer.scan(Collections.singletonList(cmdAnalyser.getModelBuilder().getFactory().Package().getRootPackage()));
 		}
 	}
@@ -53,7 +54,7 @@ public class TestWidgetFinder {
 		Stream.of(paths).forEach(p -> cmdAnalyser.addInputResource(p));
 		cmdAnalyser.run();
 
-		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), cmdAnalyser.getModelBuilder());
+		final Launcher launcher = new Launcher(Collections.singletonList(widgetProc), cmdAnalyser.getModelBuilder());
 		launcher.process();
 
 		finder = new CommandWidgetFinder(
@@ -99,7 +100,9 @@ public class TestWidgetFinder {
 	public void testLambdaOnSingleFieldWidgetEqualCond() {
 		initTest("src/test/resources/java/widgetsIdentification/LambdaOnFieldWidgetsEqualCond.java");
 		assertEquals(1, results.size());
-		assertEquals(2, new ArrayList<>(results.values()).get(0).getWidgetUsages(results.values()).size());
+		final Set<WidgetProcessor.WidgetUsage> res = new ArrayList<>(results.values()).get(0).getWidgetUsages(results.values());
+		System.out.println(res);
+		assertEquals(2, res.size());
 		assertEquals("b", new ArrayList<>(results.values()).get(0).getRegisteredWidgets().iterator().next().widgetVar.getSimpleName());
 		assertEquals("a", new ArrayList<>(results.values()).get(0).getWidgetsUsedInConditions().iterator().next().widgetVar.getSimpleName());
 	}
@@ -140,12 +143,12 @@ public class TestWidgetFinder {
 	@Test
 	public void testClassListenerInheritance() {
 		initTest("src/test/resources/java/widgetsIdentification/ClassListenerInheritance.java");
-		CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);
+		final CommandWidgetBugsDetector detector = new CommandWidgetBugsDetector(results);
 		detector.process();
 
 		assertEquals(2, results.size());
 
-		List<Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry>> entries = results.entrySet().stream().sorted((a, b) ->
+		final List<Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry>> entries = results.entrySet().stream().sorted((a, b) ->
 			a.getKey().getExecutable().getPosition().getLine() < b.getKey().getExecutable().getPosition().getLine() ? -1 :
 			a.getKey().getExecutable().getPosition().getLine() == b.getKey().getExecutable().getPosition().getLine() ? 0 : 1)
 			.collect(Collectors.toList());
@@ -302,7 +305,7 @@ public class TestWidgetFinder {
 	@Test
 	public void testNoMatchingWidgetButTwoCandidates() {
 		initTest("src/test/resources/java/refactoring/RefactoringCommandNotPossible.java");
-		List<Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry>> entries =
+		final List<Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry>> entries =
 			results.entrySet().stream().sorted(Comparator.comparing(entry -> entry.getKey().getLineStart())).collect(Collectors.toList());
 		assertEquals(0, entries.get(0).getValue().getWidgetUsages(results.values()).size());
 		assertEquals(0, entries.get(1).getValue().getWidgetUsages(results.values()).size());
@@ -313,7 +316,7 @@ public class TestWidgetFinder {
 	@Test
 	public void testSuperSwitchActionListener() {
 		initTest("src/test/resources/java/refactoring/SuperSwitchActionListener.java");
-		List<Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry>> entries =
+		final List<Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry>> entries =
 			results.entrySet().stream().sorted(Comparator.comparing(entry -> entry.getKey().getLineStart())).collect(Collectors.toList());
 		assertEquals(1, entries.get(0).getValue().getWidgetUsages(results.values()).size());
 		assertEquals(1, entries.get(1).getValue().getWidgetUsages(results.values()).size());

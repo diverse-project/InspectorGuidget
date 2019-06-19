@@ -99,14 +99,16 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		synchronized(commands) {
-			commands.entrySet().forEach(entry -> {
-				entry.getValue().removeCommandsIf(cmd -> !cmd.hasRelevantCommandStatement());
+			commands.forEach((key, value) -> {
+				value.removeCommandsIf(cmd -> !cmd.hasRelevantCommandStatement());
 
-				List<Command> badcmd = entry.getValue().getCommands().stream().filter(cmd -> !cmd.getMainStatmtEntry().isPresent() ||
-										cmd.getMainStatmtEntry().get().getStatmts().isEmpty()).collect(Collectors.toList());
+				final List<Command> badcmd = value.getCommands()
+					.stream()
+					.filter(cmd -> cmd.getMainStatmtEntry().isEmpty() || cmd.getMainStatmtEntry().get().getStatmts().isEmpty())
+					.collect(Collectors.toList());
 				badcmd.forEach(cmd -> LOG.log(Level.SEVERE, "Invalid command extracted: " + cmd));
 				if(!badcmd.isEmpty()) {
-					entry.getValue().removeAllCommands(badcmd);
+					value.removeAllCommands(badcmd);
 				}
 			});
 		}
@@ -338,7 +340,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 			if(conds.isEmpty()) {
 				// when no conditional, the content of the method forms a command.
-				UIListener list = new UIListener(listenerMethod);
+				final UIListener list = new UIListener(listenerMethod);
 
 				if(listenerMethod.getBody()==null && listenerMethod instanceof CtLambda<?>) {
 					// It means it is a lambda
@@ -356,7 +358,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				conds.forEach(cond -> extractCommandsFromConditionalStatements(cond, listenerMethod, conds));
 
 				// Treating the potential code block located after the last conditional statement
-				UIListener uiListener;
+				final UIListener uiListener;
 
 				synchronized(commands) {
 					uiListener = commands.get(listenerMethod);
@@ -434,26 +436,31 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				}).flatMap(s -> s).collect(Collectors.toList()));
 		}
 
-		final List<CtParameterReference<?>> guiParams = exec.getParameters().stream().map(param -> param.getReference()).collect(Collectors.toList());
+		final List<CtParameterReference<?>> guiParams = exec.getParameters()
+			.stream()
+			.map(param -> param.getReference())
+			.collect(Collectors.toList());
 		final CtBlock<?> mainBlock = exec.getBody();
 
 		// Getting all the conditional statements
-		conds.addAll(mainBlock.getElements(new ConditionalFilter()).stream().
-						// Keeping those making use of a GUI parameter.
-						filter(cond -> conditionalUsesGUIParam(cond, guiParams, mainBlock)).
-						// a listener may be defined into the current listener.
-						// So, removing the conditional statements that are not contained in the current executable.
-						filter(cond -> cond.getParent(CtExecutable.class)==exec).
-						// The conditionals statements that are empty are removed not to be considered furthermore.
-						filter(cond -> !(cond instanceof CtIf) || !SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)cond)).
-						map(cond -> {
-							if(cond instanceof CtIf) {
-								return Collections.singletonList(cond);
-							}
-							return ((CtSwitch<?>)cond).getCases().stream().map(ca -> (CtStatement)ca).collect(Collectors.toList());
-						}).flatMap(s -> s.stream()).
-						map(v -> new Tuple<>(v, v)).
-						collect(Collectors.toList()));
+		conds.addAll(mainBlock.getElements(new ConditionalFilter())
+			.stream()
+			// Keeping those making use of a GUI parameter.
+			.filter(cond -> conditionalUsesGUIParam(cond, guiParams, mainBlock))
+			// a listener may be defined into the current listener.
+			// So, removing the conditional statements that are not contained in the current executable.
+			.filter(cond -> cond.getParent(CtExecutable.class)==exec)
+			// The conditionals statements that are empty are removed not to be considered furthermore.
+			.filter(cond -> !(cond instanceof CtIf) || !SpoonHelper.INSTANCE.isEmptyIfStatement((CtIf)cond))
+			.map(cond -> {
+				if(cond instanceof CtIf) {
+					return Collections.singletonList(cond);
+				}
+				return ((CtSwitch<?>)cond).getCases().stream().map(ca -> (CtStatement)ca).collect(Collectors.toList());
+			})
+			.flatMap(s -> s.stream())
+			.map(v -> new Tuple<>(v, v))
+			.collect(Collectors.toList()));
 
 		final Set<CtStatement> condsSet = conds.stream().map(c -> c.b).collect(Collectors.toSet());
 
@@ -487,9 +494,8 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		}
 
 		// Check whether a GUI parameter is directly used in the statement.
-		//FIXME 5.5
 //		if(guiParams.stream().anyMatch(param -> elt.getElements(new BasicFilter<>(CtParameterReference.class)).stream().noneMatch(ref -> ref.equals(param)))){
-		if(guiParams.stream().anyMatch(param -> !elt.getReferences(new DirectReferenceFilter<>(param)).isEmpty())) {
+		if(guiParams.stream().anyMatch(param -> !elt.getElements(new DirectReferenceFilter<>(param)).isEmpty())) {
 			return true;
 		}
 

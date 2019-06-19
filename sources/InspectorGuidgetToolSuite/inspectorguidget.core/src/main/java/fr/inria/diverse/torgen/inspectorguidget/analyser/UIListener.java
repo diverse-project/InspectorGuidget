@@ -24,7 +24,7 @@ public class UIListener {
 		executable = exec;
 	}
 
-	public void setSuperListener(@Nullable UIListener superList) {
+	public void setSuperListener(final @Nullable UIListener superList) {
 		superListener = Optional.ofNullable(superList);
 	}
 
@@ -32,15 +32,15 @@ public class UIListener {
 		return executable;
 	}
 
-	public void addCommand(@NotNull Command cmd) {
+	public void addCommand(final @NotNull Command cmd) {
 		cmds.add(cmd);
 	}
 
-	public void removeCommandsIf(@NotNull Predicate<? super Command> pred) {
+	public void removeCommandsIf(final @NotNull Predicate<? super Command> pred) {
 		cmds.removeIf(pred);
 	}
 
-	public void removeAllCommands(@NotNull List<Command> cmdToRm) {
+	public void removeAllCommands(final @NotNull List<Command> cmdToRm) {
 		cmds.removeAll(cmdToRm);
 	}
 
@@ -61,6 +61,6 @@ public class UIListener {
 	}
 
 	public int getNbSuperCmds() {
-		return superListener.isPresent() ? superListener.get().getNbTotalCmds() : 0;
+		return superListener.map(UIListener::getNbTotalCmds).orElse(0);
 	}
 }

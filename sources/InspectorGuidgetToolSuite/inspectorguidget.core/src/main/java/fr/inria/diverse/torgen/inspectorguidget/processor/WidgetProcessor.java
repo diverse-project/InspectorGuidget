@@ -3,20 +3,47 @@ package fr.inria.diverse.torgen.inspectorguidget.processor;
 import fr.inria.diverse.torgen.inspectorguidget.filter.MyVariableAccessFilter;
 import fr.inria.diverse.torgen.inspectorguidget.helper.SpoonHelper;
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtCodeElement;
+import spoon.reflect.code.CtConstructorCall;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldWrite;
+import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.code.CtThisAccess;
+import spoon.reflect.code.CtTypeAccess;
+import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.code.CtVariableRead;
+import spoon.reflect.code.CtVariableWrite;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtField;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtPackage;
+import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.ModifierKind;
+import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.InvocationFilter;
 import spoon.reflect.visitor.filter.VariableAccessFilter;
-
-import java.util.*;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  * Detects declaration of widgets.
@@ -62,13 +89,13 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 //		final Map<CtVariable<?>, List<WidgetUsage>> usages = widgetUsages.parallelStream().collect(Collectors.groupingBy(u -> u.widgetVar));
 		final Map<CtVariable<?>, List<WidgetUsage>> usages = new IdentityHashMap<>();
 		widgetUsages.forEach(u -> {
-			List<WidgetUsage> usage = usages.computeIfAbsent(u.widgetVar, k -> new ArrayList<>());
+			final List<WidgetUsage> usage = usages.computeIfAbsent(u.widgetVar, k -> new ArrayList<>());
 			usage.add(u);
 		});
 
 
 		// For each variable, computing its usages
-		List<WidgetUsage> finalUsages = usages.entrySet().parallelStream().map(entry -> {
+		final List<WidgetUsage> finalUsages = usages.entrySet().parallelStream().map(entry -> {
 			// We suppose the usage cannot be empty because of the constructor call.
 			if(entry.getValue().isEmpty()) {
 				LOG.log(Level.SEVERE, () -> "This variable does not have widget usage: " + entry.getValue());
@@ -119,10 +146,10 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 				final CtElement consCallParent = u.creation.get().getParent();
 
 				if(consCallParent instanceof CtAssignment<?, ?>) {
-					List<CtVariableAccess<?>> varCreation = consCallParent.getElements(new MyVariableAccessFilter(u.widgetVar));
+					final List<CtVariableAccess<?>> varCreation = consCallParent.getElements(new MyVariableAccessFilter(u.widgetVar));
 					u.accesses.removeAll(varCreation);
 				}
-			}catch(ParentNotInitializedException ex) {
+			}catch(final ParentNotInitializedException ex) {
 				LOG.log(Level.SEVERE, "The parent of " + u.creation.get() + " is not initialised.", ex);
 			}
 		});
@@ -141,12 +168,12 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 	@Override
 	public boolean isToBeProcessed(final CtTypeReference<?> type) {
-		String ty = type.getQualifiedName();
+		final String ty = type.getQualifiedName();
 
 		if(cacheTypeChecked.containsKey(ty)) {
 			return cacheTypeChecked.get(ty);
 		}else {
-			boolean ok = isASubTypeOf(type, controlType);
+			final boolean ok = isASubTypeOf(type, controlType);
 			cacheTypeChecked.put(ty, ok);
 			return ok;
 		}
@@ -219,7 +246,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 		}else if(visib == null || visib == ModifierKind.PROTECTED) {
 			try {
 				meth.getParent(CtPackage.class).getElements(new InvocationFilter(meth)).forEach(invok -> analyseWidgetInvocation(invok));
-			}catch(NullPointerException ex) {
+			}catch(final NullPointerException ex) {
 				LOG.log(Level.SEVERE, "NPE in analyseMethodUse");
 			}
 		}
@@ -232,8 +259,8 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 			// The constructor must not be already present in the widget usages.
 			if(widgets.stream().noneMatch(u -> u.creation.isPresent() && u.creation.get()==call)) {
-				if(widgets.size() == 1 && !widgets.get(0).creation.isPresent()) {
-					WidgetUsage widgetUsage = widgets.get(0);
+				if(widgets.size() == 1 && widgets.get(0).creation.isEmpty()) {
+					final WidgetUsage widgetUsage = widgets.get(0);
 					widgetUsages.remove(widgetUsage);
 					widgetUsages.add(new WidgetUsage(var, call, widgetUsage.accesses));
 				} else {
@@ -254,10 +281,10 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			}
 			// When the creation of the widget is stored in an already defined local var...
 			else if(parent instanceof CtAssignment<?,?>) {
-				CtAssignment<?, ?> assig = (CtAssignment<?, ?>) parent;
+				final CtAssignment<?, ?> assig = (CtAssignment<?, ?>) parent;
 
 				if(assig.getAssigned() instanceof CtVariableAccess<?>) {
-					CtVariable<?> declaration = ((CtVariableAccess<?>) assig.getAssigned()).getVariable().getDeclaration();
+					final CtVariable<?> declaration = ((CtVariableAccess<?>) assig.getAssigned()).getVariable().getDeclaration();
 					if(declaration != null) {
 						processConstructorCallInVar(declaration, call);
 					}
@@ -385,6 +412,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		public WidgetUsage(final @NotNull CtVariable<?> widgetVar, final @Nullable CtConstructorCall<?> creation,
 						   final @NotNull List<CtVariableAccess<?>> accesses) {
+			super();
 			this.widgetVar = widgetVar;
 			this.creation = Optional.ofNullable(creation);
 			this.accesses = accesses;
@@ -392,9 +420,9 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		public @NotNull List<CtCodeElement> getUsagesWithCons() {
 			if(accesses.isEmpty()) {
-				return creation.isPresent() ? Collections.singletonList(creation.get()) : Collections.emptyList();
+				return creation.<List<CtCodeElement>>map(Collections::singletonList).orElse(Collections.emptyList());
 			}
-			final List<CtCodeElement> stats = new ArrayList<>((List<CtCodeElement>)(List<?>)accesses);
+			final List<CtCodeElement> stats = new ArrayList<>((List<CtCodeElement>) (List<?>) accesses);
 			creation.ifPresent(cons -> stats.add(cons));
 			return stats;
 		}
@@ -404,12 +432,12 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 			if(this == o) return true;
 			if(o == null || getClass() != o.getClass()) return false;
 
-			WidgetUsage that = (WidgetUsage) o;
+			final WidgetUsage that = (WidgetUsage) o;
 
 			if(!widgetVar.equals(that.widgetVar)) return false;
 			if(!widgetVar.getPosition().equals(that.widgetVar.getPosition())) return false;
 			if(creation.isPresent() != that.creation.isPresent()) return false;
-			return !creation.isPresent() ||
+			return creation.isEmpty() ||
 				creation.get().equals(that.creation.get()) &&
 				creation.get().getPosition().equals(that.creation.get().getPosition()) &&
 				accesses.equals(that.accesses);
@@ -431,7 +459,7 @@ public class WidgetProcessor extends InspectorGuidgetProcessor<CtTypeReference<?
 
 		@Override
 		public String toString() {
-			String creat = creation.flatMap(c ->
+			final String creat = creation.flatMap(c ->
 				Optional.of(c.toString() + " " + SpoonHelper.INSTANCE.formatPosition(c.getPosition()))).orElse("nope");
 			return "WidgetUsage{var: " + widgetVar + " (" + SpoonHelper.INSTANCE.formatPosition(widgetVar.getPosition()) +
 				"), construct: " + creat + ", nbAccessses:" + accesses.size() + "}";

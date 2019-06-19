@@ -13,7 +13,7 @@ class T extends JFrame {
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		but1 = new JButton("foo1");
 		but1.addActionListener((ActionEvent e) -> {
-			if ((fileChooser.showDialog(T.this, "foo")) == (JFileChooser.APPROVE_OPTION)) {
+			if ((fileChooser.showDialog(this, "foo")) == (JFileChooser.APPROVE_OPTION)) {
 				System.out.println("foo");
 			}
 		});

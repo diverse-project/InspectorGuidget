@@ -1,12 +1,11 @@
 package fr.inria.diverse.torgen.inspectorguidget.processor;
 
 import fr.inria.diverse.torgen.inspectorguidget.helper.WidgetHelper;
-import org.jetbrains.annotations.NotNull;
-import spoon.reflect.declaration.CtClass;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
+import spoon.reflect.declaration.CtClass;
 
 public class ActionProcessor extends InspectorGuidgetProcessor<CtClass<?>> {
 	private final @NotNull Set<CtClass<?>> actions;

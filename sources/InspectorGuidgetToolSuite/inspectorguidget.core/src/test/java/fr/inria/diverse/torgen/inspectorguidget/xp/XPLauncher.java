@@ -39,8 +39,8 @@ public abstract class XPLauncher {
 
 
 
-	private static int countLines(String str){
-		String[] lines = str.split("\r\n|\r|\n");
+	private static int countLines(final String str){
+		final String[] lines = str.split("\r\n|\r|\n");
 		return  lines.length;
 	}
 
@@ -51,10 +51,10 @@ public abstract class XPLauncher {
 		ListenerCommandRefactor.LOG.setLevel(java.util.logging.Level.OFF);
 
 		try {
-			FileHandler fh = new FileHandler("refactoring.log");
+			final FileHandler fh = new FileHandler("refactoring.log");
 			fh.setFormatter(new SimpleFormatter());
 			ListenerCommandRefactor.LOG.addHandler(fh);
-		}catch(IOException e) {
+		}catch(final IOException e) {
 			e.printStackTrace();
 		}
 
@@ -66,7 +66,7 @@ public abstract class XPLauncher {
 //		blobAnalyser.getCmdAnalyser().getEnvironment().setNoClasspath(true);
 		blobAnalyser.run();
 
-		List<Map.Entry<CtExecutable<?>, UIListener>> nonEmptyListeners = blobAnalyser.getCmdAnalyser().getCommands().entrySet().parallelStream().
+		final List<Map.Entry<CtExecutable<?>, UIListener>> nonEmptyListeners = blobAnalyser.getCmdAnalyser().getCommands().entrySet().parallelStream().
 			filter(entry -> entry.getValue().getNbTotalCmds() > 0).collect(Collectors.toList());
 
 		System.out.println("Number of listener methods having at least one command: " + nonEmptyListeners.size());
@@ -85,13 +85,13 @@ public abstract class XPLauncher {
 
 		try(final PrintWriter out = new PrintWriter("listeners-" + getProjectName() + ".csv")) {
 			out.println(listenerInfos);
-		}catch(FileNotFoundException e) {
+		}catch(final FileNotFoundException e) {
 			e.printStackTrace();
 		}
 
 		final long time = System.currentTimeMillis();
 
-		Launcher launcher = new Launcher(Collections.singletonList(widgetProc), blobAnalyser.getCmdAnalyser().getModelBuilder());
+		final Launcher launcher = new Launcher(Collections.singletonList(widgetProc), blobAnalyser.getCmdAnalyser().getModelBuilder());
 		launcher.process();
 
 		finder = new CommandWidgetFinder(
@@ -104,17 +104,17 @@ public abstract class XPLauncher {
 
 		filterBlobsToRefactor().forEach(cmd -> {
 			System.out.println("Blob found in " + cmd);
-			Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
+			final Map.Entry<Command, CommandWidgetFinder.WidgetFinderEntry> entry = finder.getResults().entrySet().stream().
 				filter(e -> e.getKey()==cmd).findAny().get();
-			ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), false, genRefacClassesOnly, allEntries);
+			final ListenerCommandRefactor	refactor = new ListenerCommandRefactor(cmd, entry.getValue(), usingLambda(), false, genRefacClassesOnly, allEntries);
 			refactor.execute();
 			collectedTypes.addAll(refactor.getRefactoredTypes());
 		});
 
 		System.out.println("Refactoring time: " + (System.currentTimeMillis() - time));
 
-		Factory factory = blobAnalyser.getCmdAnalyser().getFactory();
-		Environment env = factory.getEnvironment();
+		final Factory factory = blobAnalyser.getCmdAnalyser().getFactory();
+		final Environment env = factory.getEnvironment();
 		env.useTabulations(true);
 		env.setAutoImports(true);
 		env.setShouldCompile(true);
@@ -122,13 +122,15 @@ public abstract class XPLauncher {
 
 		if(genRefacClassesOnly) {
 			collectedTypes.forEach(type -> {
-				JavaOutputProcessor processor = new JavaOutputProcessor(new File(getOutputFolder()), new DefaultJavaPrettyPrinter(env));
+				final JavaOutputProcessor processor = new JavaOutputProcessor(new DefaultJavaPrettyPrinter(env));
+				processor.getEnvironment().setSourceOutputDirectory(new File(getOutputFolder()));
 				processor.setFactory(factory);
 				processor.createJavaFile(type);
 			});
 		}else {
 			blobAnalyser.getCmdAnalyser().getModel().getAllTypes().stream().filter(type -> type.getParent(CtType.class)==null).forEach(type -> {
-				JavaOutputProcessor processor = new JavaOutputProcessor(new File(getOutputFolder()), new DefaultJavaPrettyPrinter(env));
+				final JavaOutputProcessor processor = new JavaOutputProcessor(new DefaultJavaPrettyPrinter(env));
+				processor.getEnvironment().setSourceOutputDirectory(new File(getOutputFolder()));
 				processor.setFactory(factory);
 				processor.createJavaFile(type);
 			});

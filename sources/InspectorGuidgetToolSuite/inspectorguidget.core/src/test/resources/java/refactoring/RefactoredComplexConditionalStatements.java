@@ -11,9 +11,9 @@ class D {
 		but1.addActionListener((ActionEvent e) -> System.out.println("but1"));
 		but2 = new JButton();
 		but2.addActionListener((ActionEvent e) -> {
-			if ((e.getModifiers()) == 0)
-				return ;
-
+			if ((e.getModifiers()) == 0) {
+				return;
+			}
 			System.out.println("but2");
 		});
 	}

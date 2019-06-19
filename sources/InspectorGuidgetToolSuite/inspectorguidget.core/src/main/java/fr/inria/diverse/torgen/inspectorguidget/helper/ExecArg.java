@@ -1,8 +1,8 @@
 package fr.inria.diverse.torgen.inspectorguidget.helper;
 
 import fr.inria.diverse.torgen.inspectorguidget.analyser.InspectorGuidetAnalyser;
+import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +15,9 @@ public class ExecArg {
 	}
 
 	public void parse(final @Nullable String[] args, final @NotNull InspectorGuidetAnalyser launcher) {
-		if(args == null || args.length == 0 || !EXEC_SRC_ARG.equals(args[0])) throw getArgumentException();
+		if(args == null || args.length == 0 || !EXEC_SRC_ARG.equals(args[0])) {
+			throw getArgumentException();
+		}
 
 		int i = 1;
 		while(i < args.length && !args[i].equals(EXEC_CP_ARG)) {
@@ -25,8 +27,8 @@ public class ExecArg {
 
 		if(i < args.length && EXEC_CP_ARG.equals(args[i])) {
 			i++;
-			System.out.println(IntStream.range(i, args.length).mapToObj(j -> args[j]).collect(Collectors.toList()));
-			launcher.setSourceClasspath(IntStream.range(i, args.length).mapToObj(j -> args[j]).toArray(String[]::new));
+			System.out.println(Arrays.stream(args, i, args.length).collect(Collectors.toList()));
+			launcher.setSourceClasspath(Arrays.stream(args, i, args.length).toArray(String[]::new));
 		}
 	}
 
