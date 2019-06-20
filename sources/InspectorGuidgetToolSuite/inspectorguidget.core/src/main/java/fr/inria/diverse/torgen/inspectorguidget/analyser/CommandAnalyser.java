@@ -125,11 +125,17 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 		// Adding all the required elements.
 		cmd.addAllStatements(
 			inferLocalVarUsagesRecursive(
-				cmd.getStatements().stream().map(stat -> stat.getStatmts().stream()).flatMap(s -> s).collect(Collectors.toSet()),
+				cmd.getStatements()
+					.stream()
+					.map(stat -> stat.getStatmts().stream())
+					.flatMap(s -> s)
+					.collect(Collectors.toSet()),
 				new HashSet<>(), uiList.getExecutable()
-			).parallelStream().filter(exp -> !cmd.hasStatement(exp) && !isPartOfMainCommandBlockOrCondition(exp, uiList.getCommands())).
-			map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp instanceof CtStatement ? exp : exp.getParent(CtStatement.class)))).
-			collect(Collectors.toList())
+			)
+			.parallelStream()
+			.filter(exp -> !cmd.hasStatement(exp) && !isPartOfMainCommandBlockOrCondition(exp, uiList.getCommands()))
+			.map(exp -> new CommandStatmtEntry(false, Collections.singletonList(exp instanceof CtStatement ? exp : exp.getParent(CtStatement.class))))
+			.collect(Collectors.toList())
 		);
 	}
 
@@ -144,30 +150,42 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private Set<CtElement> inferLocalVarUsagesRecursive(final @NotNull Set<CtElement> stats, final @NotNull Set<CtElement> analysedStats,
 														final @NotNull CtExecutable<?> listener) {
 		// For each statement of the command.
-		Set<CtElement> inferred = stats.parallelStream().map(elt ->
-			// Getting the local var used in the statement.
-			elt.getElements(new LocalVariableAccessFilter()).stream().
-				// Only the local variables defined in the listener must be considered.
-				filter(var -> var.getDeclaration().getParent(CtExecutable.class)==listener).
-				map(var ->
-					// Finding the uses of the local var in the executable
-					var.getDeclaration().getParent(CtExecutable.class).getBody().getElements(new MyVariableAccessFilter(var.getDeclaration())).stream().
-						// Considering the var accesses that operate before the statement only.
-						filter(varacesss -> varacesss.getPosition().getLine() <= elt.getPosition().getLine()).
-						map(varaccess -> {
-							// Getting all the super conditional statements.
-							List<CtElement> exps = SpoonHelper.INSTANCE.getSuperConditionalExpressions(varaccess);
-							// Getting the main expression of the var access (or the var access itself).
-							exps.add(SpoonHelper.INSTANCE.getParentOf(varaccess, CtExpression.class, listener).orElse(varaccess));
-							exps.add(var.getDeclaration());
-							return exps;
-						}).flatMap(s -> s.stream())
-				).flatMap(s -> s)).flatMap(s -> s).filter(s -> s!=null).distinct().collect(Collectors.toSet());
+		final Set<CtElement> inferred = stats
+			.parallelStream()
+			.map(elt ->
+				// Getting the local var used in the statement.
+				elt.getElements(new LocalVariableAccessFilter())
+					.stream()
+					// Only the local variables defined in the listener must be considered.
+					.filter(var -> var.getDeclaration().getParent(CtExecutable.class)==listener)
+					.map(var ->
+						// Finding the uses of the local var in the executable
+						var.getDeclaration().getParent(CtExecutable.class).getBody().getElements(new MyVariableAccessFilter(var.getDeclaration()))
+							.stream()
+							// Considering the var accesses that operate before the statement only.
+							.filter(varacesss -> varacesss.getPosition().getLine() <= elt.getPosition().getLine())
+							.map(varaccess -> {
+								// Getting all the super conditional statements.
+								List<CtElement> exps = SpoonHelper.INSTANCE.getSuperConditionalExpressions(varaccess);
+								// Getting the main expression of the var access (or the var access itself).
+								exps.add(SpoonHelper.INSTANCE.getParentOf(varaccess, CtExpression.class, listener).orElse(varaccess));
+								exps.add(var.getDeclaration());
+								return exps;
+							})
+							.flatMap(s -> s.stream())
+					)
+					.flatMap(s -> s)
+			)
+			.flatMap(s -> s)
+			.filter(s -> s != null)
+			.collect(Collectors.toSet());
 
 		if(!inferred.isEmpty()) {
 			analysedStats.addAll(stats);
-			inferred.addAll(inferLocalVarUsagesRecursive(inferred.parallelStream().
-					filter(exp -> !analysedStats.contains(exp)).collect(Collectors.toSet()), analysedStats, listener));
+			inferred.addAll(inferLocalVarUsagesRecursive(inferred
+				.parallelStream()
+				.filter(exp -> !analysedStats.contains(exp))
+				.collect(Collectors.toSet()), analysedStats, listener));
 		}
 
 		return inferred;
@@ -201,7 +219,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 
 	private void extractCommandsFromConditionalStatements(final @NotNull CtElement condStat, final @NotNull CtExecutable<?> listenerMethod,
 														  final @NotNull List<CtStatement> conds) {
-		UIListener uiListener;
+		final UIListener uiListener;
 		synchronized(commands) {
 			uiListener = commands.computeIfAbsent(listenerMethod, k -> new UIListener(listenerMethod));
 		}
@@ -228,7 +246,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				!SpoonHelper.INSTANCE.containsWriteLocalVarsOnly(theCase.getStatements())).//FIXME 5.5
 			ifPresent(theCase -> {
 				final List<CtElement> stats = new ArrayList<>(theCase.getStatements());
-				CtSwitch<?> swit = (CtSwitch<?>) theCase.getParent();
+				final CtSwitch<?> swit = (CtSwitch<?>) theCase.getParent();
 				final List<CommandConditionEntry> conds = getsuperConditionalStatements(swit);
 				conds.add(0, new CommandConditionEntry(cas, SpoonHelper.INSTANCE.createEqExpressionFromSwitchCase(swit, cas)));
 				//For each case, a condition is created using the case value.
@@ -286,13 +304,13 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 	private List<CommandConditionEntry> getsuperConditionalStatements(final @NotNull CtElement condStat) {
 		CtElement currElt = condStat;
 		CtElement parent = currElt.getParent();
-		List<CommandConditionEntry> conds = new ArrayList<>();
+		final List<CommandConditionEntry> conds = new ArrayList<>();
 
 		// Exploring the parents to identify the conditional statements
-		while(parent!=null) {
+		while(parent != null) {
 			if(parent instanceof CtIf) {
-				CtIf ctif = (CtIf) parent;
-				CtExpression<Boolean> condition = ctif.getCondition();
+				final CtIf ctif = (CtIf) parent;
+				final CtExpression<Boolean> condition = ctif.getCondition();
 
 				// Identifying the block of the if used and adding a condition.
 				if(ctif.getThenStatement()==currElt) {
@@ -307,12 +325,12 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				}
 			}else if(parent instanceof CtSwitch<?>) {
 				final CtElement elt = currElt;
-				CtSwitch<?> ctswitch = (CtSwitch<?>) parent;
+				final CtSwitch<?> ctswitch = (CtSwitch<?>) parent;
 				// Identifying the case statement used and creating a condition.
 				// The use of orElse(null) is mandatory here (berk!) to avoid a strange compilation bug with generics and casting.
-				CtCase<?> caz = ctswitch.getCases().stream().filter(cas -> cas == elt).findFirst().orElse(null);
+				final CtCase<?> caz = ctswitch.getCases().stream().filter(cas -> cas == elt).findFirst().orElse(null);
 
-				if(caz==null) {
+				if(caz == null) {
 					LOG.log(Level.SEVERE, "Cannot find the origin of the statement " + elt + " in the switch statement " +
 							SpoonHelper.INSTANCE.formatPosition(parent.getPosition()) +  " + : " + parent);
 				}else {
@@ -342,7 +360,7 @@ public class CommandAnalyser extends InspectorGuidetAnalyser {
 				// when no conditional, the content of the method forms a command.
 				final UIListener list = new UIListener(listenerMethod);
 
-				if(listenerMethod.getBody()==null && listenerMethod instanceof CtLambda<?>) {
+				if(listenerMethod.getBody() == null && listenerMethod instanceof CtLambda<?>) {
 					// It means it is a lambda
 					list.addCommand(new Command(new CommandStatmtEntry(true, Collections.singletonList(((CtLambda<?>)listenerMethod).getExpression())),
 						Collections.emptyList(), listenerMethod));

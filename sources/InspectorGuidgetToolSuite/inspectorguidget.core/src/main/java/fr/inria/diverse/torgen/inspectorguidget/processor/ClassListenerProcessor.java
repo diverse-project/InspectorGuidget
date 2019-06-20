@@ -98,15 +98,15 @@ public class ClassListenerProcessor extends InspectorGuidgetProcessor<CtClass<?>
 	 * Store each method from cl that implements interf
 	 */
 	private Set<CtMethod<?>> getImplementedListenerMethods(final @NotNull CtClass<?> cl, final @NotNull CtTypeReference<?> interf) {
-		return Arrays.stream(interf.getActualClass().getMethods())
-			.parallel()
+		return interf.getTypeDeclaration().getMethods()
+			.parallelStream()
 			.map(interfM -> {
-				CtMethod<?> m = cl.getMethod(interfM.getName(), getTypeRefFromClasses(interfM.getParameterTypes()));
+				CtMethod<?> m = cl.getMethod(interfM.getSimpleName(), getTypeRefFromClasses(interfM.getParameterTypes()));
 
 				//FIXME generics in methods are not correctly managed by Spoon or Java (getClass from Class
 				// does not provide any generics). So...
 				if(m == null && cl.isSubtypeOf(WidgetHelper.INSTANCE.getJFXListenersRef(getFactory()).get(0))) {
-					m = cl.getMethodsByName(interfM.getName()).get(0);
+					m = cl.getMethodsByName(interfM.getSimpleName()).get(0);
 				}
 				return m;
 			})

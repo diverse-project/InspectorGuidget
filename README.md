@@ -1,3 +1,6 @@
+Read-only repo.
+For the latest developments, look at https://github.com/inspectorguidget
+
 # InspectorGuidget
 A tool to detect GUI design smells such as blob listeners in java SWING/AWT/JavaFX GUI listeners by raising warnings in the Eclipse Java editor.
 

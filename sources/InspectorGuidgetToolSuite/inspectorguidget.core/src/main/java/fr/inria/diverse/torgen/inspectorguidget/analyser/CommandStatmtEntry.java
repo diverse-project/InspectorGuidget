@@ -1,6 +1,7 @@
 package fr.inria.diverse.torgen.inspectorguidget.analyser;
 
 import fr.inria.diverse.torgen.inspectorguidget.filter.FindElementFilter;
+import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtElement;
@@ -91,11 +92,11 @@ public class CommandStatmtEntry {
 		if(this == o) return true;
 		if(o == null || getClass() != o.getClass()) return false;
 
-		CommandStatmtEntry that = (CommandStatmtEntry) o;
+		final CommandStatmtEntry that = (CommandStatmtEntry) o;
 
 		if(mainEntry != that.mainEntry) return false;
 		if(dispatchMethod != that.dispatchMethod) return false;
-		return statmts != null ? statmts.equals(that.statmts) : that.statmts == null;
+		return Objects.equals(statmts, that.statmts);
 
 	}
 

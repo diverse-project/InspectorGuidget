@@ -51,7 +51,7 @@ public class TestFXProcessor extends AbstractProcessor<CtMethod<?>> {
 	}
 
 	private @NotNull List<CtInvocation<?>> getTestAssertions(final @NotNull CtMethod<?> method) {
-		return method.getBody().getElements(invok -> invok.getExecutable().getSimpleName().startsWith("assert"));
+		return method.getBody().getElements((CtInvocation<?> invok) -> invok.getExecutable().getSimpleName().startsWith("assert"));
 	}
 
 
